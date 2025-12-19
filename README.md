@@ -1,15 +1,18 @@
 # igent
 
-A cross-platform desktop application built with Electron.
+A secure Electron-based automation application for iWallet deployment management. Features a clean architecture with separated main, preload, and renderer processes following Electron security best practices.
 
-## Description
+## Features
 
-[Add a brief description of what your application does]
+- 🔒 **Secure Architecture**: Three-process model with IPC communication
+- 🚀 **Deployment Automation**: Plan and execute deployment commands
+- 🖥️ **Cross-Platform**: Built with Electron for macOS, Windows, and Linux
+- ⚡ **Modern Stack**: ES Modules, ESLint, Prettier
 
 ## Prerequisites
 
 - Node.js (v16 or higher)
-- npm or yarn
+- npm (v7 or higher)
 
 ## Installation
 
@@ -27,49 +30,89 @@ npm install
 ## Development
 
 ```bash
-# Run the application in development mode
+# Run the application
 npm start
-```
-
-## Building
-
-```bash
-# Build for your current platform
-npm run build
-
-# Build for specific platforms
-npm run build:mac
-npm run build:win
-npm run build:linux
 ```
 
 ## Project Structure
 
 ```
 igent/
-├── main.js           # Main process entry point
-├── package.json      # Project configuration
-├── src/              # Source files
-├── assets/           # Static assets (icons, images)
-└── dist/             # Built application
+├── src/
+│   ├── main/              # Main process (Node.js backend)
+│   │   ├── index.js       # Application entry point
+│   │   └── agent/
+│   │       ├── planner.js # Deployment command planning
+│   │       └── executor.js # Shell command execution
+│   ├── preload/           # Preload scripts (security bridge)
+│   │   └── index.cjs      # Context bridge for IPC
+│   └── renderer/          # Renderer process (UI frontend)
+│       ├── index.html     # Application UI
+│       └── renderer.js    # Client-side logic
+├── package.json
+├── eslint.config.mjs
+└── README.md
 ```
 
-## Features
+## Architecture
 
-- [List key features of your application]
+### Electron's 3-Process Security Model
 
-## Technologies Used
+**Main Process** ([src/main/index.js](src/main/index.js))
 
-- [Electron](https://www.electronjs.org/)
-- Node.js
+- Runs in Node.js with full system access
+- Creates application windows
+- Handles IPC requests from renderer
+- Executes privileged operations (shell commands)
+
+**Preload Script** ([src/preload/index.cjs](src/preload/index.cjs))
+
+- Secure bridge between main and renderer
+- Uses `contextBridge` to expose safe APIs
+- Prevents direct Node.js access from renderer
+- **Security layer**: Only approved operations allowed
+
+**Renderer Process** ([src/renderer/](src/renderer/))
+
+- Runs in Chromium browser (sandboxed)
+- Handles UI and user interactions
+- Can only access browser APIs + preload-exposed methods
+- Cannot directly run shell commands or access file system
+
+### Execution Flow
+
+```
+User Action (renderer.js)
+    ↓
+window.igent API call (exposed by preload)
+    ↓
+IPC Message (secure channel)
+    ↓
+Main Process Handler (main/index.js)
+    ↓
+Agent Logic (planner/executor)
+    ↓
+Shell Execution / Response
+    ↓
+IPC Response back to Renderer
+    ↓
+UI Update
+```
+
+## Technologies
+
+- **Electron** - Desktop application framework
+- **Node.js** - Backend runtime
+- **ES Modules** - Modern JavaScript modules
+- **ESLint & Prettier** - Code quality tools
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - Open to contributions by developers. See [LICENSE](LICENSE) file for details.
 
-## Author
+## Contributing
 
-[Your Name]
+Contributions are welcome! This project follows the MIT license, allowing free use, modification, and distribution.
 
 ## Contributing
 
