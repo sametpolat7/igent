@@ -3,6 +3,7 @@ import { ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { planDeployment } from './agent/planner.js';
+import { executeCommands } from './agent/executor.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,10 @@ function createWindow() {
 
   ipcMain.handle('agent:plan-deploy', async (_event, payload) => {
     return planDeployment(payload);
+  });
+
+  ipcMain.handle('agent:execute', async (_event, commands) => {
+    return executeCommands(commands);
   });
 }
 
