@@ -1,27 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
-    <title>igent</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>igent - Deployment Manager</title>
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <h1>igent - iWallet Automation App</h1>
-    <p id="version"></p>
-
-    <br>
-
-    <div>
-      <h2>Deploy to iWallet Test Servers</h2>
-      <label for="branch">Branch to deploy:</label>
-      <input id="branch" placeholder="branch name">
-      <button id="plan">Plan deploy</button>
-      <pre id="output"></pre>
+    <div class="header">
+      <h1>🚀 igent</h1>
     </div>
 
-    <br>
+    <div class="container">
+      <h2>Deploy to Test Server</h2>
 
-    <button id="execute" disabled>Execute</button>
+      <!-- Server Selection -->
+      <div class="form-group">
+        <label for="server" class="form-label">Test Server</label>
+        <select id="server" class="form-control">
+          <option value="">Select a server...</option>
+        </select>
+      </div>
+
+      <!-- Directory Selection -->
+      <div class="form-group">
+        <label for="directory" class="form-label">Application Directory</label>
+        <select id="directory" class="form-control" disabled>
+          <option value="">Select a directory...</option>
+        </select>
+      </div>
+
+      <!-- Branch Input -->
+      <div class="form-group">
+        <label for="branch" class="form-label">Git Branch</label>
+        <input
+          id="branch"
+          type="text"
+          class="form-control"
+          placeholder="e.g., main, develop, feature/new-feature"
+          autocomplete="off"
+        >
+      </div>
+
+      <!-- Deploy Button -->
+      <button id="deploy" class="btn btn-primary" disabled>
+        Plan Deployment
+      </button>
+
+      <!-- Plan Display -->
+      <div id="status" class="status-section">
+        <h3>📋 Deployment Plan</h3>
+        <pre id="commands" class="commands-display"></pre>
+        <div class="button-group">
+          <button id="execute" class="btn btn-success">
+            ▶ Execute Deployment
+          </button>
+          <button id="cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Result Section -->
+      <div id="result" class="result-section">
+        <h3>Result</h3>
+        <pre id="output" class="output-display"></pre>
+      </div>
+    </div>
+
     <script src="renderer.js"></script>
   </body>
 </html>

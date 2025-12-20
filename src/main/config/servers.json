@@ -1,0 +1,41 @@
+{
+  "stest": {
+    "sshHost": "stest",
+    "allowedDirectories": [
+      "test-tc",
+      "test-at",
+      "test-cy",
+      "test-ao",
+      "test-sc",
+      "mobil",
+      "mobil1",
+      "panel",
+      "panel1"
+    ]
+  },
+  "itest": {
+    "sshHost": "itest",
+    "allowedDirectories": [
+      "itest",
+      "inewtest"
+    ]
+  },
+  "academy": {
+    "sshHost": "academy",
+    "allowedDirectories": [
+      "academy"
+    ]
+  },
+  "messt": {
+    "sshHost": "messt",
+    "allowedDirectories": [
+      "messt"
+    ]
+  },
+  "plus": {
+    "sshHost": "plus",
+    "allowedDirectories": [
+      "iwallet_plus"
+    ]
+  }
+}
