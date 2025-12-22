@@ -19,6 +19,7 @@ import {
   validateString,
   validateNonEmpty,
 } from '../../../utils/validators.js';
+import { logStart, logSuccess, logError } from '../../../utils/logger.js';
 
 const execAsync = promisify(exec);
 
@@ -50,9 +51,9 @@ export async function executeGitDeployment({ commands, sshHost }) {
   const commandSequence = commands.join(' && ');
   const sshCommand = buildSSHCommand(sshHost, commandSequence);
 
-  console.log('[GitDeploymentExecutor] Starting execution:', {
+  logStart('GitDeployment', 'Executing deployment', {
     host: sshHost,
-    commandCount: commands.length,
+    commands: commands.length,
   });
 
   try {
@@ -73,7 +74,7 @@ export async function executeGitDeployment({ commands, sshHost }) {
       executedAt: new Date().toISOString(),
     };
 
-    console.log('[GitDeploymentExecutor] Execution completed successfully');
+    logSuccess('GitDeployment', 'Deployment completed successfully');
     return result;
   } catch (error) {
     const errorResult = {
@@ -87,7 +88,7 @@ export async function executeGitDeployment({ commands, sshHost }) {
       executedAt: new Date().toISOString(),
     };
 
-    console.error('[GitDeploymentExecutor] Execution failed:', errorResult);
+    logError('GitDeployment', 'Deployment failed', errorResult);
 
     const enhancedError = new Error('Command execution failed');
     Object.assign(enhancedError, errorResult);

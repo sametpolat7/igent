@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { planOperation, AGENT_TYPES } from './agent/planner.js';
 import { executeOperation } from './agent/executor.js';
 import { loadServersConfig } from './config/loadConfig.js';
+import { logError } from './utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,7 +41,7 @@ function registerIPCHandlers() {
     try {
       return loadServersConfig();
     } catch (error) {
-      console.error('Failed to load servers:', error);
+      logError('IPC', 'Failed to load servers', error);
       throw new Error(`Configuration error: ${error.message}`);
     }
   });
@@ -50,7 +51,7 @@ function registerIPCHandlers() {
     try {
       return planOperation(AGENT_TYPES.GIT_DEPLOYMENT, payload);
     } catch (error) {
-      console.error('Planning failed:', error);
+      logError('IPC', 'Planning failed', error);
       throw new Error(`Planning error: ${error.message}`);
     }
   });
@@ -60,7 +61,7 @@ function registerIPCHandlers() {
     try {
       return await executeOperation(AGENT_TYPES.GIT_DEPLOYMENT, payload);
     } catch (error) {
-      console.error('Execution failed:', error);
+      logError('IPC', 'Execution failed', error);
       throw new Error(`Execution error: ${error.message}`);
     }
   });

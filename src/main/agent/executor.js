@@ -9,6 +9,7 @@
 
 import { executeGitDeployment } from './types/git-deployment/executor.js';
 import { AGENT_TYPES } from './planner.js';
+import { logDebug } from '../utils/logger.js';
 
 /**
  * Execute an agent operation by routing to the appropriate implementation
@@ -19,7 +20,7 @@ import { AGENT_TYPES } from './planner.js';
  * @throws {Error} If agent type is unknown or execution fails
  */
 export async function executeOperation(agentType, params) {
-  console.log(`[Executor] Routing to agent type: ${agentType}`);
+  logDebug('Executor', `Routing to ${agentType}`);
 
   switch (agentType) {
     case AGENT_TYPES.GIT_DEPLOYMENT:

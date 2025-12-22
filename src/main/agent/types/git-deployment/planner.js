@@ -17,6 +17,7 @@ import {
   validatePattern,
   validateIncludes,
 } from '../../../utils/validators.js';
+import { logSuccess } from '../../../utils/logger.js';
 
 const BASE_DIRECTORY = '/var/webs';
 const DEFAULT_MAIN_BRANCH = 'main';
@@ -77,11 +78,11 @@ export function planGitDeployment({ serverKey, directory, branch }) {
     createdAt: new Date().toISOString(),
   };
 
-  console.log('[GitDeploymentPlanner] Deployment plan created:', {
+  logSuccess('GitDeployment', 'Plan created', {
     server: serverKey,
     directory,
     branch,
-    commandCount: commands.length,
+    commands: commands.length,
   });
 
   return plan;

@@ -17,6 +17,7 @@ import {
   validateArrayNotEmpty,
   validateProperty,
 } from '../utils/validators.js';
+import { logSuccess } from '../utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,7 +72,9 @@ export function loadServersConfig() {
       }
     }
 
-    console.log('[Config] Loaded servers:', Object.keys(config).join(', '));
+    logSuccess('Config', 'Loaded servers', {
+      servers: Object.keys(config),
+    });
 
     return config;
   } catch (error) {

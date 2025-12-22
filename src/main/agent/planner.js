@@ -8,6 +8,7 @@
  */
 
 import { planGitDeployment } from './types/git-deployment/planner.js';
+import { logDebug } from '../utils/logger.js';
 
 export const AGENT_TYPES = {
   GIT_DEPLOYMENT: 'git-deployment',
@@ -24,7 +25,7 @@ export const AGENT_TYPES = {
  * @throws {Error} If agent type is unknown or planning fails
  */
 export function planOperation(agentType, params) {
-  console.log(`[Planner] Routing to agent type: ${agentType}`);
+  logDebug('Planner', `Routing to ${agentType}`);
 
   switch (agentType) {
     case AGENT_TYPES.GIT_DEPLOYMENT:
