@@ -1,13 +1,13 @@
 /**
- * Base Planner - Base planner that delegates to specific implementations
+ * Base Planner - Routes planning requests to specific agent types
  *
  * Architecture:
- * This is the main planner that orchestrates different agent implementations.
+ * This is the main planner that orchestrates different agent types.
  * Each specific agent (e.g., git-deployment, database-migration, config-update)
- * should have its own implementation in the implementations/ directory.
+ * should have its own implementation in the types/ directory.
  */
 
-import { planGitDeployment } from './implementations/git-deployment/planner.js';
+import { planGitDeployment } from './types/git-deployment/planner.js';
 
 export const AGENT_TYPES = {
   GIT_DEPLOYMENT: 'git-deployment',
@@ -39,14 +39,4 @@ export function planOperation(agentType, params) {
         `Unknown agent type: "${agentType}". Available types: ${Object.values(AGENT_TYPES).join(', ')}`
       );
   }
-}
-
-/**
- * Legacy function for backward compatibility
- * Routes git deployment requests to the new structure
- *
- * @deprecated Use planOperation(AGENT_TYPES.GIT_DEPLOYMENT, params) instead
- */
-export function planDeployment(params) {
-  return planOperation(AGENT_TYPES.GIT_DEPLOYMENT, params);
 }

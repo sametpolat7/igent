@@ -1,13 +1,13 @@
 /**
- * Base Executor - Base executor that delegates to specific implementations
+ * Base Executor - Routes execution requests to specific agent types
  *
  * Architecture:
- * This is the main executor that orchestrates different agent implementations.
+ * This is the main executor that orchestrates different agent types.
  * Each specific agent (e.g., git-deployment, database-migration, config-update)
- * should have its own implementation in the implementations/ directory.
+ * should have its own implementation in the types/ directory.
  */
 
-import { executeGitDeployment } from './implementations/git-deployment/executor.js';
+import { executeGitDeployment } from './types/git-deployment/executor.js';
 import { AGENT_TYPES } from './planner.js';
 
 /**
@@ -34,14 +34,4 @@ export async function executeOperation(agentType, params) {
         `Unknown agent type: "${agentType}". Available types: ${Object.values(AGENT_TYPES).join(', ')}`
       );
   }
-}
-
-/**
- * Legacy function for backward compatibility
- * Routes git deployment execution requests to the new structure
- *
- * @deprecated Use executeOperation(AGENT_TYPES.GIT_DEPLOYMENT, params) instead
- */
-export async function executeCommands(params) {
-  return await executeOperation(AGENT_TYPES.GIT_DEPLOYMENT, params);
 }

@@ -10,8 +10,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { planDeployment } from './agent/planner.js';
-import { executeCommands } from './agent/executor.js';
+import { planOperation, AGENT_TYPES } from './agent/planner.js';
+import { executeOperation } from './agent/executor.js';
 import { loadServersConfig } from './config/loadConfig.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -48,7 +48,7 @@ function registerIPCHandlers() {
   // Deployment planning
   ipcMain.handle('agent:plan-deploy', async (_event, payload) => {
     try {
-      return planDeployment(payload);
+      return planOperation(AGENT_TYPES.GIT_DEPLOYMENT, payload);
     } catch (error) {
       console.error('Planning failed:', error);
       throw new Error(`Planning error: ${error.message}`);
@@ -58,7 +58,7 @@ function registerIPCHandlers() {
   // Execute commands on remote server
   ipcMain.handle('agent:execute', async (_event, payload) => {
     try {
-      return await executeCommands(payload);
+      return await executeOperation(AGENT_TYPES.GIT_DEPLOYMENT, payload);
     } catch (error) {
       console.error('Execution failed:', error);
       throw new Error(`Execution error: ${error.message}`);
