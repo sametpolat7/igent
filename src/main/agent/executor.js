@@ -114,7 +114,6 @@ function buildSSHCommand(host, commandSequence) {
   // Escape single quotes in command sequence for bash -c
   const escapedCommands = commandSequence.replace(/'/g, "'\\''");
 
-  // Use -t for pseudo-TTY allocation (required for interactive commands)
   // Use bash -l -c to run as login shell (loads full environment)
-  return `ssh -t ${host} "bash -l -c '${escapedCommands}'"`;
+  return `ssh ${host} "bash -l -c '${escapedCommands}'"`;
 }

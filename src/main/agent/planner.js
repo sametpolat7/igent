@@ -147,18 +147,16 @@ function generateGitDeploymentCommands({ directory, branch }) {
     `git pull origin ${branch}`,
 
     // 6. Restore stashed changes (if any)
-    `git stash pop`,
+    `git stash pop || true`,
 
-    // FIXME: rails command not found.
     // 7. Run database migrations
-    // `rails db:migrate`,
+    `rails db:migrate`,
 
     // 8. Rebuild assets
-    // `rails assets:clobber`,
-    // `rails assets:precompile`,
+    `rails assets:clobber`,
+    `rails assets:precompile`,
 
-    // FIXME: failed to restart test-tc.service.
     // 9. Restart application service
-    // `systemctl restart ${directory}.service`,
+    `sudo systemctl restart ${directory}.service`,
   ];
 }
