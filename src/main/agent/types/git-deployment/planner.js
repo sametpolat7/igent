@@ -11,7 +11,12 @@
  */
 
 import { loadServersConfig } from '../../../config/loadConfig.js';
-import { validateGitDeploymentParams } from '../../../validators/index.js';
+import {
+  validateString,
+  validateNonEmpty,
+  validatePattern,
+  validateIncludes,
+} from '../../../utils/validators.js';
 
 const BASE_DIRECTORY = '/var/webs';
 const DEFAULT_MAIN_BRANCH = 'main';
@@ -29,9 +34,32 @@ const DEFAULT_MAIN_BRANCH = 'main';
 export function planGitDeployment({ serverKey, directory, branch }) {
   const serversConfig = loadServersConfig();
 
-  validateGitDeploymentParams({ serverKey, directory, branch }, serversConfig);
+  // Validate server key
+  validateString(serverKey, 'Server key');
+  validateNonEmpty(serverKey, 'Server key');
+  validateIncludes(serverKey, Object.keys(serversConfig), 'Server key');
 
   const serverConfig = serversConfig[serverKey];
+
+  // Validate directory
+  validateString(directory, 'Directory');
+  validateNonEmpty(directory, 'Directory');
+  if (!serverConfig.allowedDirectories) {
+    throw new Error(
+      `Server "${serverKey}" has no allowed directories configured`
+    );
+  }
+  validateIncludes(directory, serverConfig.allowedDirectories, 'Directory');
+
+  // Validate branch
+  validateString(branch, 'Branch name');
+  validateNonEmpty(branch, 'Branch name');
+  validatePattern(branch, /^[a-zA-Z0-9_./-]+$/, 'Branch name');
+
+  // Validate SSH host
+  if (!serverConfig.sshHost || serverConfig.sshHost.length === 0) {
+    throw new Error(`Server "${serverKey}" has no SSH host configured`);
+  }
 
   // Generate deployment command sequence
   const commands = generateGitDeploymentCommands({

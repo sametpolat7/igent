@@ -13,7 +13,12 @@
 
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
-import { validateSSHExecutionParams } from '../../../validators/index.js';
+import {
+  validateArray,
+  validateArrayNotEmpty,
+  validateString,
+  validateNonEmpty,
+} from '../../../utils/validators.js';
 
 const execAsync = promisify(exec);
 
@@ -30,7 +35,17 @@ const MAX_BUFFER_SIZE = 1024 * 1024 * 10; // 10MB buffer for command output
  * @throws {Error} If execution fails or validation errors occur
  */
 export async function executeGitDeployment({ commands, sshHost }) {
-  validateSSHExecutionParams({ commands, sshHost });
+  // Validate commands
+  validateArray(commands, 'Commands');
+  validateArrayNotEmpty(commands, 'Commands');
+  for (const cmd of commands) {
+    validateString(cmd, 'Command');
+    validateNonEmpty(cmd, 'Command');
+  }
+
+  // Validate SSH host
+  validateString(sshHost, 'SSH host');
+  validateNonEmpty(sshHost, 'SSH host');
 
   const commandSequence = commands.join(' && ');
   const sshCommand = buildSSHCommand(sshHost, commandSequence);

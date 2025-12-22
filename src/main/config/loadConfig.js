@@ -9,7 +9,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateServerConfig } from '../validators/index.js';
+import {
+  validateObject,
+  validateString,
+  validateNonEmpty,
+  validateArray,
+  validateArrayNotEmpty,
+  validateProperty,
+} from '../utils/validators.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,7 +37,39 @@ export function loadServersConfig() {
     const fileContent = fs.readFileSync(CONFIG_FILE_PATH, 'utf-8');
     const config = JSON.parse(fileContent);
 
-    validateServerConfig(config);
+    // Validate configuration structure
+    validateObject(config, 'Configuration');
+
+    const serverKeys = Object.keys(config);
+    if (serverKeys.length === 0) {
+      throw new Error('Configuration must contain at least one server');
+    }
+
+    // Validate each server
+    for (const serverKey of serverKeys) {
+      const serverConfig = config[serverKey];
+      validateObject(serverConfig, `Server "${serverKey}" configuration`);
+      validateProperty(serverConfig, 'sshHost', `Server "${serverKey}"`);
+      validateString(serverConfig.sshHost, `Server "${serverKey}" sshHost`);
+      validateNonEmpty(serverConfig.sshHost, `Server "${serverKey}" sshHost`);
+      validateProperty(
+        serverConfig,
+        'allowedDirectories',
+        `Server "${serverKey}"`
+      );
+      validateArray(
+        serverConfig.allowedDirectories,
+        `Server "${serverKey}" allowedDirectories`
+      );
+      validateArrayNotEmpty(
+        serverConfig.allowedDirectories,
+        `Server "${serverKey}" allowedDirectories`
+      );
+      for (const dir of serverConfig.allowedDirectories) {
+        validateString(dir, `Server "${serverKey}" directory`);
+        validateNonEmpty(dir, `Server "${serverKey}" directory`);
+      }
+    }
 
     console.log('[Config] Loaded servers:', Object.keys(config).join(', '));
 
