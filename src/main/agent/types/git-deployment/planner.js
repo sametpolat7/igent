@@ -11,6 +11,7 @@
  */
 
 import { loadServersConfig } from '../../../config/loadConfig.js';
+import { validateGitDeploymentParams } from '../../../validators/index.js';
 
 const BASE_DIRECTORY = '/var/webs';
 const DEFAULT_MAIN_BRANCH = 'main';
@@ -28,7 +29,7 @@ const DEFAULT_MAIN_BRANCH = 'main';
 export function planGitDeployment({ serverKey, directory, branch }) {
   const serversConfig = loadServersConfig();
 
-  validateDeploymentParams({ serverKey, directory, branch }, serversConfig);
+  validateGitDeploymentParams({ serverKey, directory, branch }, serversConfig);
 
   const serverConfig = serversConfig[serverKey];
 
@@ -56,65 +57,6 @@ export function planGitDeployment({ serverKey, directory, branch }) {
   });
 
   return plan;
-}
-
-/**
- * Validate deployment parameters
- *
- * @param {Object} params - Parameters to validate
- * @param {Object} serversConfig - Loaded server configuration
- * @throws {Error} If validation fails
- */
-function validateDeploymentParams(
-  { serverKey, directory, branch },
-  serversConfig
-) {
-  if (!serverKey || typeof serverKey !== 'string') {
-    throw new Error('Server key is required and must be a string');
-  }
-
-  if (!serversConfig[serverKey]) {
-    throw new Error(
-      `Unknown server: "${serverKey}". Available servers: ${Object.keys(serversConfig).join(', ')}`
-    );
-  }
-
-  const serverConfig = serversConfig[serverKey];
-
-  if (!directory || typeof directory !== 'string') {
-    throw new Error('Directory is required and must be a string');
-  }
-
-  if (!serverConfig.allowedDirectories) {
-    throw new Error(
-      `Server "${serverKey}" has no allowed directories configured`
-    );
-  }
-
-  if (!serverConfig.allowedDirectories.includes(directory)) {
-    throw new Error(
-      `Directory "${directory}" is not allowed on server "${serverKey}". ` +
-        `Allowed directories: ${serverConfig.allowedDirectories.join(', ')}`
-    );
-  }
-
-  if (!branch || typeof branch !== 'string') {
-    throw new Error('Branch name is required and must be a string');
-  }
-
-  if (!/^[a-zA-Z0-9_./-]+$/.test(branch)) {
-    throw new Error(
-      'Invalid branch name. Only alphanumeric characters, hyphens, underscores, slashes, and dots are allowed'
-    );
-  }
-
-  if (
-    !serverConfig.sshHost ||
-    typeof serverConfig.sshHost !== 'string' ||
-    serverConfig.sshHost.length === 0
-  ) {
-    throw new Error(`Server "${serverKey}" has no SSH host configured`);
-  }
 }
 
 /**

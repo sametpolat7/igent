@@ -13,6 +13,7 @@
 
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
+import { validateSSHExecutionParams } from '../../../validators/index.js';
 
 const execAsync = promisify(exec);
 
@@ -29,7 +30,7 @@ const MAX_BUFFER_SIZE = 1024 * 1024 * 10; // 10MB buffer for command output
  * @throws {Error} If execution fails or validation errors occur
  */
 export async function executeGitDeployment({ commands, sshHost }) {
-  validateExecutionParams({ commands, sshHost });
+  validateSSHExecutionParams({ commands, sshHost });
 
   const commandSequence = commands.join(' && ');
   const sshCommand = buildSSHCommand(sshHost, commandSequence);
@@ -76,28 +77,6 @@ export async function executeGitDeployment({ commands, sshHost }) {
     const enhancedError = new Error('Command execution failed');
     Object.assign(enhancedError, errorResult);
     throw enhancedError;
-  }
-}
-
-/**
- * Validate execution parameters
- *
- * @param {Object} params - Parameters to validate
- * @throws {Error} If validation fails
- */
-function validateExecutionParams({ commands, sshHost }) {
-  if (!Array.isArray(commands) || commands.length === 0) {
-    throw new Error('Commands must be a non-empty array');
-  }
-
-  for (const cmd of commands) {
-    if (typeof cmd !== 'string' || cmd.trim().length === 0) {
-      throw new Error('All commands must be non-empty strings');
-    }
-  }
-
-  if (typeof sshHost !== 'string' || sshHost.trim().length === 0) {
-    throw new Error('SSH host must be a non-empty string');
   }
 }
 
