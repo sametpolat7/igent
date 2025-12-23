@@ -1,13 +1,12 @@
 {
   "name": "igent",
   "version": "1.0.0",
-  "description": "",
+  "description": "Git deployment agent for managing remote server deployments",
   "main": "src/main/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron ."
   },
-  "keywords": [],
+  "keywords": ["electron", "git", "deployment", "automation"],
   "author": "",
   "license": "MIT",
   "type": "module",

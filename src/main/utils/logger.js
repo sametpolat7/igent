@@ -1,12 +1,4 @@
-/**
- * Logger Utility
- *
- * Centralized logging system with visual formatting and context.
- * Provides consistent, readable output across the application.
- */
-
-// ANSI color codes for terminal output
-const colors = {
+const COLORS = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
   dim: '\x1b[2m',
@@ -19,8 +11,7 @@ const colors = {
   gray: '\x1b[90m',
 };
 
-// Log level symbols
-const symbols = {
+const SYMBOLS = {
   info: '→',
   success: '✓',
   warn: '⚠',
@@ -28,9 +19,6 @@ const symbols = {
   debug: '•',
 };
 
-/**
- * Format timestamp for logs
- */
 function getTimestamp() {
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, '0');
@@ -39,16 +27,10 @@ function getTimestamp() {
   return `${hours}:${minutes}:${seconds}`;
 }
 
-/**
- * Format module name with color
- */
 function formatModule(module) {
-  return `${colors.dim}[${colors.cyan}${module}${colors.dim}]${colors.reset}`;
+  return `${COLORS.dim}[${COLORS.cyan}${module}${COLORS.dim}]${COLORS.reset}`;
 }
 
-/**
- * Format object for pretty printing
- */
 function formatData(data) {
   if (typeof data === 'object' && data !== null) {
     return JSON.stringify(data, null, 2);
@@ -56,123 +38,82 @@ function formatData(data) {
   return String(data);
 }
 
-/**
- * Log info message
- *
- * @param {string} module - Module name (e.g., 'Planner', 'Executor')
- * @param {string} message - Log message
- * @param {any} [data] - Optional data to log
- */
 export function logInfo(module, message, data) {
-  const timestamp = `${colors.gray}${getTimestamp()}${colors.reset}`;
-  const symbol = `${colors.blue}${symbols.info}${colors.reset}`;
+  const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
+  const symbol = `${COLORS.blue}${SYMBOLS.info}${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.log(`${timestamp} ${symbol} ${moduleStr} ${message}`);
   if (data !== undefined) {
-    console.log(`${colors.dim}${formatData(data)}${colors.reset}`);
+    console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
   }
 }
 
-/**
- * Log success message
- *
- * @param {string} module - Module name
- * @param {string} message - Log message
- * @param {any} [data] - Optional data to log
- */
 export function logSuccess(module, message, data) {
-  const timestamp = `${colors.gray}${getTimestamp()}${colors.reset}`;
-  const symbol = `${colors.green}${symbols.success}${colors.reset}`;
+  const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
+  const symbol = `${COLORS.green}${SYMBOLS.success}${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.log(
-    `${timestamp} ${symbol} ${moduleStr} ${colors.green}${message}${colors.reset}`
+    `${timestamp} ${symbol} ${moduleStr} ${COLORS.green}${message}${COLORS.reset}`
   );
   if (data !== undefined) {
-    console.log(`${colors.dim}${formatData(data)}${colors.reset}`);
+    console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
   }
 }
 
-/**
- * Log warning message
- *
- * @param {string} module - Module name
- * @param {string} message - Log message
- * @param {any} [data] - Optional data to log
- */
 export function logWarn(module, message, data) {
-  const timestamp = `${colors.gray}${getTimestamp()}${colors.reset}`;
-  const symbol = `${colors.yellow}${symbols.warn}${colors.reset}`;
+  const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
+  const symbol = `${COLORS.yellow}${SYMBOLS.warn}${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.log(
-    `${timestamp} ${symbol} ${moduleStr} ${colors.yellow}${message}${colors.reset}`
+    `${timestamp} ${symbol} ${moduleStr} ${COLORS.yellow}${message}${COLORS.reset}`
   );
   if (data !== undefined) {
-    console.log(`${colors.dim}${formatData(data)}${colors.reset}`);
+    console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
   }
 }
 
-/**
- * Log error message
- *
- * @param {string} module - Module name
- * @param {string} message - Log message
- * @param {any} [error] - Optional error object or data
- */
 export function logError(module, message, error) {
-  const timestamp = `${colors.gray}${getTimestamp()}${colors.reset}`;
-  const symbol = `${colors.red}${symbols.error}${colors.reset}`;
+  const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
+  const symbol = `${COLORS.red}${SYMBOLS.error}${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.error(
-    `${timestamp} ${symbol} ${moduleStr} ${colors.red}${message}${colors.reset}`
+    `${timestamp} ${symbol} ${moduleStr} ${COLORS.red}${message}${COLORS.reset}`
   );
   if (error !== undefined) {
     if (error instanceof Error) {
-      console.error(`${colors.red}${error.message}${colors.reset}`);
+      console.error(`${COLORS.red}${error.message}${COLORS.reset}`);
       if (error.stack) {
-        console.error(`${colors.dim}${error.stack}${colors.reset}`);
+        console.error(`${COLORS.dim}${error.stack}${COLORS.reset}`);
       }
     } else {
-      console.error(`${colors.dim}${formatData(error)}${colors.reset}`);
+      console.error(`${COLORS.dim}${formatData(error)}${COLORS.reset}`);
     }
   }
 }
 
-/**
- * Log debug message (minimal output)
- *
- * @param {string} module - Module name
- * @param {string} message - Log message
- */
 export function logDebug(module, message) {
-  const timestamp = `${colors.gray}${getTimestamp()}${colors.reset}`;
-  const symbol = `${colors.gray}${symbols.debug}${colors.reset}`;
+  const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
+  const symbol = `${COLORS.gray}${SYMBOLS.debug}${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.log(
-    `${timestamp} ${symbol} ${moduleStr} ${colors.dim}${message}${colors.reset}`
+    `${timestamp} ${symbol} ${moduleStr} ${COLORS.dim}${message}${COLORS.reset}`
   );
 }
 
-/**
- * Log operation start
- *
- * @param {string} module - Module name
- * @param {string} operation - Operation name
- * @param {Object} params - Operation parameters
- */
 export function logStart(module, operation, params) {
-  const timestamp = `${colors.gray}${getTimestamp()}${colors.reset}`;
-  const symbol = `${colors.blue}▶${colors.reset}`;
+  const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
+  const symbol = `${COLORS.blue}▶${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.log(
-    `${timestamp} ${symbol} ${moduleStr} ${colors.bright}${operation}${colors.reset}`
+    `${timestamp} ${symbol} ${moduleStr} ${COLORS.bright}${operation}${COLORS.reset}`
   );
   if (params && Object.keys(params).length > 0) {
-    console.log(`${colors.dim}${formatData(params)}${colors.reset}`);
+    console.log(`${COLORS.dim}${formatData(params)}${COLORS.reset}`);
   }
 }
