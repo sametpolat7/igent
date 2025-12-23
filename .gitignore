@@ -3,10 +3,11 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Build output
+# Build output (distributables)
 dist/
-build/
 out/
+
+# Platform-specific build artifacts
 *.app
 *.exe
 *.dmg
