@@ -49,6 +49,56 @@ body {
   margin: 0;
 }
 
+/* === Navigation Tabs === */
+
+.nav-tabs {
+  max-width: 700px;
+  margin: 0 auto 20px;
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.nav-tab {
+  flex: 1;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.nav-tab:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-tab.active {
+  background: white;
+  color: #667eea;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* === View Containers === */
+
+.view-container {
+  display: none;
+}
+
+.view-container.active {
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
 /* === Main Container === */
 
 .container {
@@ -367,6 +417,52 @@ body {
   background: #f8d7da;
   color: #721c24;
   border-left-color: #dc3545;
+}
+
+/* === Coming Soon View === */
+
+.coming-soon {
+  text-align: center;
+  padding: 80px 40px;
+}
+
+.coming-soon-icon {
+  display: inline-block;
+  padding: 30px 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.coming-soon h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 12px;
+}
+
+.coming-soon p {
+  font-size: 16px;
+  color: #718096;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.coming-soon .badge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: #edf2f7;
+  color: #667eea;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 /* === Scrollbar Styles === */

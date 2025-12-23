@@ -2,9 +2,15 @@ const state = {
   servers: {},
   currentPlan: null,
   isExecuting: false,
+  currentView: 'git-deployment',
 };
 
 const elements = {
+  // Navigation
+  navTabs: document.querySelectorAll('.nav-tab'),
+  viewContainers: document.querySelectorAll('.view-container'),
+
+  // Git Deployment View
   serverSelect: document.getElementById('server'),
   directorySelect: document.getElementById('directory'),
   branchInput: document.getElementById('branch'),
@@ -22,10 +28,45 @@ const elements = {
 };
 
 async function initialize() {
+  setupViewSwitching();
   await loadServers();
   attachEventListeners();
   setupProgressListener();
   console.log('[Renderer] Application initialized');
+}
+
+function setupViewSwitching() {
+  elements.navTabs.forEach((tab) => {
+    tab.addEventListener('click', (event) => {
+      const targetView = event.target.dataset.view;
+      switchView(targetView);
+    });
+  });
+}
+
+function switchView(viewName) {
+  // Update state
+  state.currentView = viewName;
+
+  // Update tab active states
+  elements.navTabs.forEach((tab) => {
+    if (tab.dataset.view === viewName) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  // Update view container active states
+  elements.viewContainers.forEach((container) => {
+    if (container.id === `view-${viewName}`) {
+      container.classList.add('active');
+    } else {
+      container.classList.remove('active');
+    }
+  });
+
+  console.log(`[Renderer] Switched to view: ${viewName}`);
 }
 
 async function loadServers() {
@@ -267,7 +308,6 @@ function displaySuccess(result) {
   elements.resultSection.style.borderLeft = '4px solid #28a745';
 
   let output = 'DEPLOYMENT SUCCESSFUL\n\n';
-  output += `Executed at: ${new Date(result.executedAt).toLocaleString()}\n\n`;
   output += `Completed ${result.totalSteps} steps in ${result.totalDuration}s`;
 
   elements.outputDisplay.innerText = output;

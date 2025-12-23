@@ -7,77 +7,117 @@
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
     >
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>igent - Deployment Manager</title>
+    <title>igent - Intelligent Operations Manager</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <div class="header">
       <h1>igent</h1>
-      <p class="subtitle">Deployment Manager</p>
+      <p class="subtitle">Intelligent Deployment & Operations Manager</p>
     </div>
 
-    <div class="container">
-      <h2>Deploy to Test Server</h2>
-
-      <!-- Server Selection -->
-      <div class="form-group">
-        <label for="server" class="form-label">Test Server</label>
-        <select id="server" class="form-control">
-          <option value="">Select a server...</option>
-        </select>
-      </div>
-
-      <!-- Directory Selection -->
-      <div class="form-group">
-        <label for="directory" class="form-label">Application Directory</label>
-        <select id="directory" class="form-control" disabled>
-          <option value="">Select a directory...</option>
-        </select>
-      </div>
-
-      <!-- Branch Input -->
-      <div class="form-group">
-        <label for="branch" class="form-label">Git Branch</label>
-        <input
-          id="branch"
-          type="text"
-          class="form-control"
-          placeholder="e.g., main, develop, feature/new-feature"
-          autocomplete="off"
-        >
-      </div>
-
-      <!-- Deploy Button -->
-      <button id="deploy" class="btn btn-primary" disabled>
-        Plan Deployment
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-view="git-deployment">
+        Git Deployment
       </button>
+      <button class="nav-tab" data-view="database-operations">
+        Database Operations
+      </button>
+      <button class="nav-tab" data-view="server-management">
+        Server Management
+      </button>
+    </nav>
 
-      <!-- Plan Display -->
-      <div id="status" class="status-section">
-        <h3>Deployment Plan</h3>
-        <pre id="commands" class="commands-display"></pre>
-        <div class="button-group">
-          <button id="execute" class="btn btn-success">
-            Execute Deployment
-          </button>
-          <button id="cancel" class="btn btn-secondary">Cancel</button>
+    <!-- View: Git Deployment -->
+    <div id="view-git-deployment" class="view-container active">
+      <div class="container">
+        <h2>Deploy to Test Server</h2>
+
+        <!-- Server Selection -->
+        <div class="form-group">
+          <label for="server" class="form-label">Test Server</label>
+          <select id="server" class="form-control">
+            <option value="">Select a server...</option>
+          </select>
+        </div>
+
+        <!-- Directory Selection -->
+        <div class="form-group">
+          <label for="directory" class="form-label">Application Directory</label>
+          <select id="directory" class="form-control" disabled>
+            <option value="">Select a directory...</option>
+          </select>
+        </div>
+
+        <!-- Branch Input -->
+        <div class="form-group">
+          <label for="branch" class="form-label">Git Branch</label>
+          <input
+            id="branch"
+            type="text"
+            class="form-control"
+            placeholder="e.g., main, develop, feature/new-feature"
+            autocomplete="off"
+          >
+        </div>
+
+        <!-- Deploy Button -->
+        <button id="deploy" class="btn btn-primary" disabled>
+          Plan Deployment
+        </button>
+
+        <!-- Plan Display -->
+        <div id="status" class="status-section">
+          <h3>Deployment Plan</h3>
+          <pre id="commands" class="commands-display"></pre>
+          <div class="button-group">
+            <button id="execute" class="btn btn-success">
+              Execute Deployment
+            </button>
+            <button id="cancel" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progress" class="progress-section">
+          <h3>Execution Progress</h3>
+          <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar"></div>
+          </div>
+          <div id="progress-status" class="progress-status"></div>
+          <div id="progress-steps" class="progress-steps"></div>
+        </div>
+
+        <!-- Result Section -->
+        <div id="result" class="result-section">
+          <h3>Result</h3>
+          <pre id="output" class="output-display"></pre>
         </div>
       </div>
+    </div>
 
-      <!-- Progress Section -->
-      <div id="progress" class="progress-section">
-        <h3>Execution Progress</h3>
-        <div class="progress-bar-container">
-          <div id="progress-bar" class="progress-bar"></div>
+    <!-- View: Database Operations -->
+    <div id="view-database-operations" class="view-container">
+      <div class="container">
+        <div class="coming-soon">
+          <div class="coming-soon-icon">DATABASE</div>
+          <h2>Database Operations</h2>
+          <p>Manage database migrations, backups, and queries</p>
+          <span class="badge">Coming Soon</span>
         </div>
-        <div id="progress-status" class="progress-status"></div>
-        <div id="progress-steps" class="progress-steps"></div>
       </div>
+    </div>
 
-      <!-- Result Section -->
-      <div id="result" class="result-section">
-        <h3>Result</h3>
-        <pre id="output" class="output-display"></pre>
+    <!-- View: Server Management -->
+    <div id="view-server-management" class="view-container">
+      <div class="container">
+        <div class="coming-soon">
+          <div class="coming-soon-icon">SERVER</div>
+          <h2>Server Management</h2>
+          <p>Monitor and manage server resources, logs, and services</p>
+          <span class="badge">Coming Soon</span>
+        </div>
       </div>
     </div>
 
