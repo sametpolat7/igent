@@ -212,17 +212,17 @@ function updateStepDisplay(data) {
 
   // Determine step status class
   let stepClass = 'progress-step';
-  let statusIcon = '⏳';
+  let statusText = 'Running';
 
   if (status === 'running') {
     stepClass += ' running';
-    statusIcon = '⚙️';
+    statusText = 'Running';
   } else if (status === 'step-complete') {
     stepClass += ' success';
-    statusIcon = '✓';
+    statusText = 'Completed';
   } else if (status === 'step-failed') {
     stepClass += ' failed';
-    statusIcon = '✗';
+    statusText = 'Failed';
   }
 
   stepElement.className = stepClass;
@@ -230,7 +230,7 @@ function updateStepDisplay(data) {
   // Build step content
   let content = `
     <div class="progress-step-header">
-      <span>${statusIcon} Step ${currentStep}</span>
+      <span><strong>${statusText}</strong> Step ${currentStep}</span>
       ${duration ? `<span class="progress-step-time">${duration}s</span>` : ''}
     </div>
     <div class="progress-step-command">${command}</div>
@@ -266,7 +266,7 @@ function displaySuccess(result) {
   elements.resultSection.style.color = '#155724';
   elements.resultSection.style.borderLeft = '4px solid #28a745';
 
-  let output = '✓ DEPLOYMENT SUCCESSFUL\n\n';
+  let output = 'DEPLOYMENT SUCCESSFUL\n\n';
   output += `Executed at: ${new Date(result.executedAt).toLocaleString()}\n\n`;
   output += `Completed ${result.totalSteps} steps in ${result.totalDuration}s`;
 
@@ -281,7 +281,7 @@ function displayError(error) {
   elements.resultSection.style.color = '#721c24';
   elements.resultSection.style.borderLeft = '4px solid #dc3545';
 
-  let errorMessage = '✗ DEPLOYMENT FAILED\n\n';
+  let errorMessage = 'DEPLOYMENT FAILED\n\n';
 
   if (error.failedAtStep && error.failedCommand) {
     errorMessage += `Failed at Step ${error.failedAtStep}/${error.totalSteps}\n`;

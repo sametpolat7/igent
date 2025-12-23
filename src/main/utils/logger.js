@@ -11,14 +11,6 @@ const COLORS = {
   gray: '\x1b[90m',
 };
 
-const SYMBOLS = {
-  info: '→',
-  success: '✓',
-  warn: '⚠',
-  error: '✗',
-  debug: '•',
-};
-
 function getTimestamp() {
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, '0');
@@ -40,10 +32,10 @@ function formatData(data) {
 
 export function logInfo(module, message, data) {
   const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
-  const symbol = `${COLORS.blue}${SYMBOLS.info}${COLORS.reset}`;
+  const label = `${COLORS.blue}INFO${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
-  console.log(`${timestamp} ${symbol} ${moduleStr} ${message}`);
+  console.log(`${timestamp} ${label} ${moduleStr} ${message}`);
   if (data !== undefined) {
     console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
   }
@@ -51,11 +43,11 @@ export function logInfo(module, message, data) {
 
 export function logSuccess(module, message, data) {
   const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
-  const symbol = `${COLORS.green}${SYMBOLS.success}${COLORS.reset}`;
+  const label = `${COLORS.green}${COLORS.bright}SUCCESS${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.log(
-    `${timestamp} ${symbol} ${moduleStr} ${COLORS.green}${message}${COLORS.reset}`
+    `${timestamp} ${label} ${moduleStr} ${COLORS.green}${message}${COLORS.reset}`
   );
   if (data !== undefined) {
     console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
@@ -64,11 +56,11 @@ export function logSuccess(module, message, data) {
 
 export function logWarn(module, message, data) {
   const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
-  const symbol = `${COLORS.yellow}${SYMBOLS.warn}${COLORS.reset}`;
+  const label = `${COLORS.yellow}${COLORS.bright}WARN${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.log(
-    `${timestamp} ${symbol} ${moduleStr} ${COLORS.yellow}${message}${COLORS.reset}`
+    `${timestamp} ${label} ${moduleStr} ${COLORS.yellow}${message}${COLORS.reset}`
   );
   if (data !== undefined) {
     console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
@@ -77,11 +69,11 @@ export function logWarn(module, message, data) {
 
 export function logError(module, message, error) {
   const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
-  const symbol = `${COLORS.red}${SYMBOLS.error}${COLORS.reset}`;
+  const label = `${COLORS.red}${COLORS.bright}ERROR${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.error(
-    `${timestamp} ${symbol} ${moduleStr} ${COLORS.red}${message}${COLORS.reset}`
+    `${timestamp} ${label} ${moduleStr} ${COLORS.red}${message}${COLORS.reset}`
   );
   if (error !== undefined) {
     if (error instanceof Error) {
@@ -97,21 +89,21 @@ export function logError(module, message, error) {
 
 export function logDebug(module, message) {
   const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
-  const symbol = `${COLORS.gray}${SYMBOLS.debug}${COLORS.reset}`;
+  const label = `${COLORS.gray}DEBUG${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.log(
-    `${timestamp} ${symbol} ${moduleStr} ${COLORS.dim}${message}${COLORS.reset}`
+    `${timestamp} ${label} ${moduleStr} ${COLORS.dim}${message}${COLORS.reset}`
   );
 }
 
 export function logStart(module, operation, params) {
   const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
-  const symbol = `${COLORS.blue}▶${COLORS.reset}`;
+  const label = `${COLORS.blue}${COLORS.bright}START${COLORS.reset}`;
   const moduleStr = formatModule(module);
 
   console.log(
-    `${timestamp} ${symbol} ${moduleStr} ${COLORS.bright}${operation}${COLORS.reset}`
+    `${timestamp} ${label} ${moduleStr} ${COLORS.bright}${operation}${COLORS.reset}`
   );
   if (params && Object.keys(params).length > 0) {
     console.log(`${COLORS.dim}${formatData(params)}${COLORS.reset}`);

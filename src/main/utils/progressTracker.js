@@ -49,14 +49,14 @@ export class ProgressTracker {
       case 'step-complete':
         logInfo(
           this.operationName,
-          `[${this.currentStep}/${this.totalSteps}] ✓ Completed in ${duration}s`
+          `[${this.currentStep}/${this.totalSteps}] Completed in ${duration}s`
         );
         break;
 
       case 'step-failed':
         logInfo(
           this.operationName,
-          `[${this.currentStep}/${this.totalSteps}] ✗ Failed after ${duration}s`
+          `[${this.currentStep}/${this.totalSteps}] FAILED after ${duration}s`
         );
         if (stderr) {
           logDebug(this.operationName, `Error output: ${stderr}`);
@@ -69,14 +69,14 @@ export class ProgressTracker {
       case 'completed':
         logInfo(
           this.operationName,
-          `✓ Completed all ${this.totalSteps} steps in ${duration}s`
+          `Completed all ${this.totalSteps} steps in ${duration}s`
         );
         break;
 
       case 'failed':
         logInfo(
           this.operationName,
-          `✗ Failed at step ${this.currentStep}/${this.totalSteps} after ${duration}s`
+          `FAILED at step ${this.currentStep}/${this.totalSteps} after ${duration}s`
         );
         break;
     }

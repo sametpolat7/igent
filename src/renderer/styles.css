@@ -36,9 +36,17 @@ body {
 }
 
 .header h1 {
-  font-size: 32px;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+.header .subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0.9;
+  margin: 0;
 }
 
 /* === Main Container === */
@@ -285,6 +293,24 @@ body {
   align-items: center;
 }
 
+.progress-step-header strong {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.progress-step.running .progress-step-header strong {
+  color: #667eea;
+}
+
+.progress-step.success .progress-step-header strong {
+  color: #48bb78;
+}
+
+.progress-step.failed .progress-step-header strong {
+  color: #f56565;
+}
+
 .progress-step-command {
   color: #4a5568;
   margin-bottom: 4px;
@@ -308,8 +334,10 @@ body {
 
 .result-section h3 {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .output-display {
@@ -324,6 +352,7 @@ body {
   word-break: break-all;
   max-height: 400px;
   overflow-y: auto;
+  font-weight: 500;
 }
 
 /* Success state */
