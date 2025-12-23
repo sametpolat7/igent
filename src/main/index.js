@@ -34,7 +34,7 @@ function registerIPCHandlers() {
 
   ipcMain.handle('agent:plan-deploy', async (_event, payload) => {
     try {
-      return planOperation(AGENT_TYPES.GIT_DEPLOYMENT, payload);
+      return planOperation(AGENT_TYPES.SERVER_DEPLOYMENT, payload);
     } catch (error) {
       logError('IPC', 'Planning failed', error);
       throw new Error(`Planning error: ${error.message}`);
@@ -47,7 +47,7 @@ function registerIPCHandlers() {
         event.sender.send('agent:progress', progressData);
       };
 
-      return await executeOperation(AGENT_TYPES.GIT_DEPLOYMENT, {
+      return await executeOperation(AGENT_TYPES.SERVER_DEPLOYMENT, {
         ...payload,
         progressCallback,
       });

@@ -1,7 +1,7 @@
 {
   "name": "igent",
   "version": "1.0.0",
-  "description": "Git deployment agent for managing remote server deployments",
+  "description": "Server deployment agent for managing remote server deployments",
   "main": "src/main/index.js",
   "scripts": {
     "start": "electron .",

@@ -13,7 +13,7 @@ const execAsync = promisify(exec);
 const EXECUTION_TIMEOUT_MS = 300000;
 const MAX_BUFFER_SIZE = 1024 * 1024 * 10;
 
-export async function executeGitDeployment({
+export async function executeServerDeployment({
   commands,
   sshHost,
   progressCallback,
@@ -30,12 +30,12 @@ export async function executeGitDeployment({
 
   // Initialize progress tracker
   const progress = new ProgressTracker(
-    'GitDeployment',
+    'ServerDeployment',
     commands.length,
     progressCallback
   );
 
-  logStart('GitDeployment', 'Executing deployment', {
+  logStart('ServerDeployment', 'Executing deployment', {
     host: sshHost,
     commands: commands.length,
   });
@@ -98,7 +98,7 @@ export async function executeGitDeployment({
       executedAt: new Date().toISOString(),
     };
 
-    logSuccess('GitDeployment', `Deployment completed in ${totalDuration}s`);
+    logSuccess('ServerDeployment', `Deployment completed in ${totalDuration}s`);
     return result;
   } catch (error) {
     // Failure
@@ -121,7 +121,7 @@ export async function executeGitDeployment({
     };
 
     logError(
-      'GitDeployment',
+      'ServerDeployment',
       `Deployment failed at step ${errorResult.failedAtStep}`,
       {
         command: errorResult.failedCommand,

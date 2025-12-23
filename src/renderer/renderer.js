@@ -2,7 +2,7 @@ const state = {
   servers: {},
   currentPlan: null,
   isExecuting: false,
-  currentView: 'git-deployment',
+  currentView: 'server-deployment',
 };
 
 const elements = {
@@ -10,7 +10,7 @@ const elements = {
   navTabs: document.querySelectorAll('.nav-tab'),
   viewContainers: document.querySelectorAll('.view-container'),
 
-  // Git Deployment View
+  // Server Deployment View
   serverSelect: document.getElementById('server'),
   directorySelect: document.getElementById('directory'),
   branchInput: document.getElementById('branch'),
