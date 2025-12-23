@@ -13,6 +13,10 @@ const elements = {
   commandsDisplay: document.getElementById('commands'),
   executeButton: document.getElementById('execute'),
   cancelButton: document.getElementById('cancel'),
+  progressSection: document.getElementById('progress'),
+  progressBar: document.getElementById('progress-bar'),
+  progressStatus: document.getElementById('progress-status'),
+  progressSteps: document.getElementById('progress-steps'),
   resultSection: document.getElementById('result'),
   outputDisplay: document.getElementById('output'),
 };
@@ -20,6 +24,7 @@ const elements = {
 async function initialize() {
   await loadServers();
   attachEventListeners();
+  setupProgressListener();
   console.log('[Renderer] Application initialized');
 }
 
@@ -119,6 +124,13 @@ async function handleExecute() {
   elements.cancelButton.disabled = true;
   elements.deployButton.disabled = true;
 
+  // Hide results and show progress
+  elements.resultSection.style.display = 'none';
+  elements.progressSection.style.display = 'block';
+  elements.progressSteps.innerHTML = '';
+  elements.progressBar.style.width = '0%';
+  elements.progressStatus.textContent = 'Initializing...';
+
   try {
     console.log('[Renderer] Starting execution...');
 
@@ -142,6 +154,98 @@ function handleCancel() {
   elements.statusSection.style.display = 'none';
 }
 
+function setupProgressListener() {
+  window.igent.onProgress((progressData) => {
+    console.log('[Renderer] Progress update:', progressData);
+    updateProgress(progressData);
+  });
+}
+
+function updateProgress(data) {
+  const { status, currentStep, totalSteps, message } = data;
+
+  // Update progress bar
+  if (totalSteps > 0) {
+    const percentage = ((currentStep || 0) / totalSteps) * 100;
+    elements.progressBar.style.width = `${percentage}%`;
+  }
+
+  // Update status message
+  elements.progressStatus.textContent = message;
+
+  // Handle different statuses
+  switch (status) {
+    case 'started':
+      elements.progressSteps.innerHTML = '';
+      break;
+
+    case 'running':
+    case 'step-complete':
+    case 'step-failed':
+      updateStepDisplay(data);
+      break;
+
+    case 'completed':
+      elements.progressBar.style.width = '100%';
+      break;
+
+    case 'failed':
+      elements.progressBar.style.width = '100%';
+      elements.progressBar.style.background =
+        'linear-gradient(90deg, #f56565 0%, #e53e3e 100%)';
+      break;
+  }
+}
+
+function updateStepDisplay(data) {
+  const { currentStep, command, status, duration, error, stderr } = data;
+  const stepId = `step-${currentStep}`;
+
+  let stepElement = document.getElementById(stepId);
+
+  if (!stepElement) {
+    stepElement = document.createElement('div');
+    stepElement.id = stepId;
+    stepElement.className = 'progress-step';
+    elements.progressSteps.appendChild(stepElement);
+  }
+
+  // Determine step status class
+  let stepClass = 'progress-step';
+  let statusIcon = '⏳';
+
+  if (status === 'running') {
+    stepClass += ' running';
+    statusIcon = '⚙️';
+  } else if (status === 'step-complete') {
+    stepClass += ' success';
+    statusIcon = '✓';
+  } else if (status === 'step-failed') {
+    stepClass += ' failed';
+    statusIcon = '✗';
+  }
+
+  stepElement.className = stepClass;
+
+  // Build step content
+  let content = `
+    <div class="progress-step-header">
+      <span>${statusIcon} Step ${currentStep}</span>
+      ${duration ? `<span class="progress-step-time">${duration}s</span>` : ''}
+    </div>
+    <div class="progress-step-command">${command}</div>
+  `;
+
+  if (status === 'step-failed') {
+    content += `<div style="color: #e53e3e; font-size: 11px; margin-top: 4px;">Error: ${error || stderr}</div>`;
+  }
+
+  stepElement.innerHTML = content;
+
+  // Auto-scroll to latest step
+  stepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 function displayPlan(plan) {
   elements.commandsDisplay.innerText =
     `Server: ${plan.serverKey}\n` +
@@ -155,18 +259,22 @@ function displayPlan(plan) {
 }
 
 function displaySuccess(result) {
+  elements.progressSection.style.display = 'none';
   elements.statusSection.style.display = 'none';
   elements.resultSection.style.display = 'block';
   elements.resultSection.style.background = '#d4edda';
   elements.resultSection.style.color = '#155724';
   elements.resultSection.style.borderLeft = '4px solid #28a745';
 
-  elements.outputDisplay.innerText =
-    '✓ DEPLOYMENT SUCCESSFUL\n\n' +
-    (result.stdout || 'Deployment completed without output');
+  let output = '✓ DEPLOYMENT SUCCESSFUL\n\n';
+  output += `Executed at: ${new Date(result.executedAt).toLocaleString()}\n\n`;
+  output += `Completed ${result.totalSteps} steps in ${result.totalDuration}s`;
+
+  elements.outputDisplay.innerText = output;
 }
 
 function displayError(error) {
+  elements.progressSection.style.display = 'none';
   elements.statusSection.style.display = 'none';
   elements.resultSection.style.display = 'block';
   elements.resultSection.style.background = '#f8d7da';
@@ -175,23 +283,25 @@ function displayError(error) {
 
   let errorMessage = '✗ DEPLOYMENT FAILED\n\n';
 
+  if (error.failedAtStep && error.failedCommand) {
+    errorMessage += `Failed at Step ${error.failedAtStep}/${error.totalSteps}\n`;
+    errorMessage += `Command: ${error.failedCommand}\n`;
+    errorMessage += `Duration: ${error.totalDuration}s\n\n`;
+  }
+
   if (error.stderr) {
     errorMessage += `Error Output:\n${error.stderr}\n\n`;
   }
 
-  if (error.stdout) {
-    errorMessage += `Standard Output:\n${error.stdout}\n\n`;
-  }
-
   if (error.error) {
-    errorMessage += `Error: ${error.error}\n`;
+    errorMessage += `Message: ${error.error}\n`;
   }
 
   if (error.exitCode) {
     errorMessage += `Exit Code: ${error.exitCode}\n`;
   }
 
-  if (!error.stderr && !error.stdout && !error.error) {
+  if (!error.stderr && !error.error) {
     errorMessage += error.message || 'Unknown error occurred';
   }
 
@@ -211,6 +321,7 @@ function showError(title, error) {
 
 function hideResults() {
   elements.statusSection.style.display = 'none';
+  elements.progressSection.style.display = 'none';
   elements.resultSection.style.display = 'none';
   state.currentPlan = null;
 }

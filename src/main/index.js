@@ -41,9 +41,16 @@ function registerIPCHandlers() {
     }
   });
 
-  ipcMain.handle('agent:execute', async (_event, payload) => {
+  ipcMain.handle('agent:execute', async (event, payload) => {
     try {
-      return await executeOperation(AGENT_TYPES.GIT_DEPLOYMENT, payload);
+      const progressCallback = (progressData) => {
+        event.sender.send('agent:progress', progressData);
+      };
+
+      return await executeOperation(AGENT_TYPES.GIT_DEPLOYMENT, {
+        ...payload,
+        progressCallback,
+      });
     } catch (error) {
       logError('IPC', 'Execution failed', error);
       throw new Error(`Execution error: ${error.message}`);

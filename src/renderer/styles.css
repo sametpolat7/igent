@@ -191,6 +191,111 @@ body {
   gap: 10px;
 }
 
+/* === Progress Section === */
+
+.progress-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: #edf2f7;
+  border-radius: 8px;
+  border: 2px solid #cbd5e0;
+  display: none;
+}
+
+.progress-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 16px;
+}
+
+.progress-bar-container {
+  background: white;
+  border-radius: 8px;
+  height: 24px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+  width: 0%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+}
+
+.progress-status {
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 4px solid #667eea;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.progress-steps {
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.progress-step {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-size: 12px;
+  border-left: 3px solid #cbd5e0;
+  background: #f7fafc;
+}
+
+.progress-step.running {
+  border-left-color: #667eea;
+  background: #ebf4ff;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.progress-step.success {
+  border-left-color: #48bb78;
+  background: #f0fff4;
+}
+
+.progress-step.failed {
+  border-left-color: #f56565;
+  background: #fff5f5;
+}
+
+.progress-step-header {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-step-command {
+  color: #4a5568;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.progress-step-time {
+  font-size: 11px;
+  color: #718096;
+}
+
 /* === Result Section === */
 
 .result-section {
@@ -273,7 +378,17 @@ body {
   }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .status-section,
+.progress-section,
 .result-section {
   animation: fadeIn 0.3s ease-out;
 }
