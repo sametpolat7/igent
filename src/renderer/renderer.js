@@ -10,6 +10,9 @@ const elements = {
   navTabs: document.querySelectorAll('.nav-tab'),
   viewContainers: document.querySelectorAll('.view-container'),
 
+  // Clock
+  clock: document.getElementById('clock'),
+
   // Server Update View
   serverSelect: document.getElementById('server'),
   directorySelect: document.getElementById('directory'),
@@ -21,7 +24,7 @@ const elements = {
   cancelButton: document.getElementById('cancel'),
   progressSection: document.getElementById('progress'),
   progressBar: document.getElementById('progress-bar'),
-  progressStatus: document.getElementById('progress-status'),
+  progressPercentage: document.getElementById('progress-percentage'),
   progressSteps: document.getElementById('progress-steps'),
   resultSection: document.getElementById('result'),
   outputDisplay: document.getElementById('output'),
@@ -32,7 +35,20 @@ async function initialize() {
   await loadServers();
   attachEventListeners();
   setupProgressListener();
+  startClock();
   console.log('[Renderer] Application initialized');
+}
+
+function startClock() {
+  function updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    elements.clock.textContent = `${hours}:${minutes}:${seconds}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
 }
 
 function setupViewSwitching() {
@@ -165,12 +181,21 @@ async function handleExecute() {
   elements.cancelButton.disabled = true;
   elements.planButton.disabled = true;
 
-  // Hide results and show progress
+  // Hide plan section, results and show progress
+  elements.statusSection.style.display = 'none';
   elements.resultSection.style.display = 'none';
   elements.progressSection.style.display = 'block';
   elements.progressSteps.innerHTML = '';
   elements.progressBar.style.width = '0%';
-  elements.progressStatus.textContent = 'Initializing...';
+  elements.progressPercentage.textContent = '0%';
+
+  // Smooth scroll to progress section
+  setTimeout(() => {
+    elements.progressSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+    });
+  }, 100);
 
   try {
     console.log('[Renderer] Starting execution...');
@@ -203,16 +228,21 @@ function setupProgressListener() {
 }
 
 function updateProgress(data) {
-  const { status, currentStep, totalSteps, message } = data;
+  const { status, currentStep, totalSteps } = data;
 
   // Update progress bar
   if (totalSteps > 0) {
-    const percentage = ((currentStep || 0) / totalSteps) * 100;
-    elements.progressBar.style.width = `${percentage}%`;
-  }
+    let completedSteps = currentStep || 0;
 
-  // Update status message
-  elements.progressStatus.textContent = message;
+    // If currently running a step, show progress up to but not including this step
+    if (status === 'running') {
+      completedSteps = Math.max(0, currentStep - 1);
+    }
+
+    const percentage = Math.round((completedSteps / totalSteps) * 100);
+    elements.progressBar.style.width = `${percentage}%`;
+    elements.progressPercentage.textContent = `${percentage}%`;
+  }
 
   // Handle different statuses
   switch (status) {
@@ -228,12 +258,14 @@ function updateProgress(data) {
 
     case 'completed':
       elements.progressBar.style.width = '100%';
+      elements.progressPercentage.textContent = '100%';
+      elements.progressBar.style.background =
+        'linear-gradient(90deg, #10b981 0%, #059669 100%)';
       break;
 
     case 'failed':
-      elements.progressBar.style.width = '100%';
       elements.progressBar.style.background =
-        'linear-gradient(90deg, #f56565 0%, #e53e3e 100%)';
+        'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)';
       break;
   }
 }
@@ -288,40 +320,54 @@ function updateStepDisplay(data) {
 }
 
 function displayPlan(plan) {
-  elements.commandsDisplay.innerText =
-    `Server: ${plan.serverKey}\n` +
-    `Directory: ${plan.directory}\n` +
-    `Branch: ${plan.branch}\n` +
-    `Commands:\n${plan.commands.map((cmd, i) => `${i + 1}. ${cmd}`).join('\n')}`;
+  elements.commandsDisplay.innerHTML =
+    `<strong>Server:</strong> ${plan.serverKey}\n` +
+    `<strong>Directory:</strong> ${plan.directory}\n` +
+    `<strong>Branch:</strong> ${plan.branch}\n\n` +
+    `<strong>Commands:</strong>\n${plan.commands.map((cmd, i) => `${i + 1}. ${cmd}`).join('\n')}`;
 
   elements.statusSection.style.display = 'block';
   elements.executeButton.disabled = false;
   elements.cancelButton.disabled = false;
+
+  // Smooth scroll to status section
+  setTimeout(() => {
+    elements.statusSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+    });
+  }, 100);
 }
 
 function displaySuccess(result) {
   elements.progressSection.style.display = 'none';
   elements.statusSection.style.display = 'none';
   elements.resultSection.style.display = 'block';
-  elements.resultSection.style.background = '#d4edda';
-  elements.resultSection.style.color = '#155724';
-  elements.resultSection.style.borderLeft = '4px solid #28a745';
+  elements.resultSection.style.background = '#d1fae5';
+  elements.resultSection.style.color = '#065f46';
 
-  let output = 'DEPLOYMENT SUCCESSFUL\n\n';
+  let output = '<strong>Process Successful</strong>\n\n';
   output += `Completed ${result.totalSteps} steps in ${result.totalDuration}s`;
 
-  elements.outputDisplay.innerText = output;
+  elements.outputDisplay.innerHTML = output;
+
+  // Smooth scroll to result section
+  setTimeout(() => {
+    elements.resultSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+    });
+  }, 100);
 }
 
 function displayError(error) {
   elements.progressSection.style.display = 'none';
   elements.statusSection.style.display = 'none';
   elements.resultSection.style.display = 'block';
-  elements.resultSection.style.background = '#f8d7da';
-  elements.resultSection.style.color = '#721c24';
-  elements.resultSection.style.borderLeft = '4px solid #dc3545';
+  elements.resultSection.style.background = '#fee2e2';
+  elements.resultSection.style.color = '#991b1b';
 
-  let errorMessage = 'DEPLOYMENT FAILED\n\n';
+  let errorMessage = '<strong>Process Failed</strong>\n\n';
 
   if (error.failedAtStep && error.failedCommand) {
     errorMessage += `Failed at Step ${error.failedAtStep}/${error.totalSteps}\n`;
@@ -345,16 +391,23 @@ function displayError(error) {
     errorMessage += error.message || 'Unknown error occurred';
   }
 
-  elements.outputDisplay.innerText = errorMessage;
+  elements.outputDisplay.innerHTML = errorMessage;
+
+  // Smooth scroll to result section
+  setTimeout(() => {
+    elements.resultSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+    });
+  }, 100);
 }
 
 function showError(title, error) {
   console.error(`[Renderer] ${title}:`, error);
 
   elements.resultSection.style.display = 'block';
-  elements.resultSection.style.background = '#f8d7da';
-  elements.resultSection.style.color = '#721c24';
-  elements.resultSection.style.borderLeft = '4px solid #dc3545';
+  elements.resultSection.style.background = '#fee2e2';
+  elements.resultSection.style.color = '#991b1b';
 
   elements.outputDisplay.innerText = `${title}\n\n${error.message || error}`;
 }

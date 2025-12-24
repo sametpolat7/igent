@@ -12,8 +12,14 @@
   </head>
   <body>
     <div class="header">
-      <h1>igent</h1>
-      <p class="subtitle">Intelligent Operations Manager</p>
+      <div class="logo-container">
+        <img src="../../assets/logo/igent.png" alt="igent logo" class="logo">
+      </div>
+      <div class="header-center">
+        <h1>igent</h1>
+        <p class="subtitle">Intelligent Operations Manager</p>
+      </div>
+      <div class="clock" id="clock"></div>
     </div>
 
     <!-- Navigation Tabs -->
@@ -64,7 +70,7 @@
         </button>
 
         <div id="status" class="status-section">
-          <h3>Plan</h3>
+          <h3>Process Plan</h3>
           <pre id="commands" class="commands-display"></pre>
           <div class="button-group">
             <button id="execute" class="btn btn-success">
@@ -76,10 +82,12 @@
 
         <div id="progress" class="progress-section">
           <h3>Execution Progress</h3>
-          <div class="progress-bar-container">
-            <div id="progress-bar" class="progress-bar"></div>
+          <div class="progress-wrapper">
+            <div class="progress-bar-container">
+              <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="progress-percentage" class="progress-percentage">0%</div>
           </div>
-          <div id="progress-status" class="progress-status"></div>
           <div id="progress-steps" class="progress-steps"></div>
         </div>
 
@@ -90,11 +98,10 @@
       </div>
     </div>
 
-    <!-- View: File Editing -->
-    <div id="view-file-editing" class="view-container">
+    <!-- View: File Edit -->
+    <div id="view-file-edit" class="view-container">
       <div class="container">
         <div class="coming-soon">
-          <div class="coming-soon-icon">FILE EDITING</div>
           <h2>File Editing</h2>
           <p>Manage file editing tasks and operations</p>
           <span class="badge">Coming Soon</span>
@@ -102,12 +109,11 @@
       </div>
     </div>
 
-    <!-- View: Queue Check -->
-    <div id="view-queue-check" class="view-container">
+    <!-- View: Queue Control -->
+    <div id="view-queue-control" class="view-container">
       <div class="container">
         <div class="coming-soon">
-          <div class="coming-soon-icon">QUEUE</div>
-          <h2>Queue Check</h2>
+          <h2>Queue Control</h2>
           <p>Monitor and manage task queues and job processing</p>
           <span class="badge">Coming Soon</span>
         </div>
