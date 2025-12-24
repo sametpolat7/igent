@@ -172,7 +172,7 @@ async function handleUpdate() {
 
 async function handleExecute() {
   if (!state.currentPlan) {
-    showError('No deployment plan', new Error('Please plan deployment first'));
+    showError('No update plan', new Error('Please plan update first'));
     return;
   }
 

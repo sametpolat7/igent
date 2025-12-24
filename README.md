@@ -1,14 +1,14 @@
 # igent
 
-Intelligent Operations Manager - A secure Electron desktop application for automated server deployment and operations management.
+Intelligent Operations Manager - A Electron desktop application for automated server updates and operations management.
 
 ## Overview
 
-igent is a professional-grade deployment automation tool built with security, extensibility, and user experience as core principles. The application provides a clean, type-safe architecture for managing remote server operations through a modern desktop interface.
+igent is a professional-grade update automation tool built with security, extensibility, and user experience as core principles. The application provides a clean, type-safe architecture for managing remote server operations through a modern desktop interface.
 
-**Current Focus:** Automated Git-based deployments to test servers with comprehensive validation and real-time progress tracking.
+**Current Focus:** Automated Git-based updates to test servers with comprehensive validation and real-time progress tracking.
 
-**Architecture Philosophy:** Type-based agent system designed for seamless extensibility to support multiple operational workflows beyond deployment.
+**Architecture Philosophy:** Type-based agent system designed for seamless extensibility to support multiple operational workflows beyond update.
 
 ## Features
 
@@ -19,7 +19,7 @@ igent is a professional-grade deployment automation tool built with security, ex
 - Directory whitelisting and parameter validation
 - SSH-based authentication without credential storage
 
-**Deployment Automation**
+**update Automation**
 
 - Automated Git pull operations with branch switching
 - Rails database migration execution
@@ -93,8 +93,8 @@ igent/
 │   │   │   ├── planner.js            # Route to type-specific planners
 │   │   │   ├── executor.js           # Route to type-specific executors
 │   │   │   └── types/                # Agent type implementations
-│   │   │       ├── server-update/    # Server deployment type
-│   │   │       │   ├── planner.js   # Deployment planning
+│   │   │       ├── server-update/    # Server update type
+│   │   │       │   ├── planner.js   # update planning
 │   │   │       │   └── executor.js  # SSH execution
 │   │   │       ├── file-edit/        # Future: File editing
 │   │   │       └── queue-control/    # Future: Job queue management
@@ -256,11 +256,11 @@ Six-layer validation ensures security and reliability:
 4. Enter the Git branch name to deploy
 5. Click "Create Plan" to generate and review commands
 6. Review the planned command sequence
-7. Click "Execute" to begin deployment
+7. Click "Execute" to begin update
 8. Monitor real-time progress updates
 9. Review execution results
 
-### Typical Deployment Sequence
+### Typical Update Sequence
 
 The server update process executes the following operations:
 
