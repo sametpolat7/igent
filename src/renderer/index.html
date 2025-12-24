@@ -13,28 +13,27 @@
   <body>
     <div class="header">
       <h1>igent</h1>
-      <p class="subtitle">Intelligent Deployment & Operations Manager</p>
+      <p class="subtitle">Intelligent Operations Manager</p>
     </div>
 
     <!-- Navigation Tabs -->
     <nav class="nav-tabs">
-      <button class="nav-tab active" data-view="server-deployment">
-        Server Deployment
+      <button class="nav-tab active" data-view="server-update">
+        Server Update
       </button>
-      <button class="nav-tab" data-view="database-operations">
-        Database Operations
+      <button class="nav-tab" data-view="file-edit">
+        File Edit
       </button>
-      <button class="nav-tab" data-view="server-management">
-        Server Management
+      <button class="nav-tab" data-view="queue-control">
+        Queue Control
       </button>
     </nav>
 
-    <!-- View: Server Deployment -->
-    <div id="view-server-deployment" class="view-container active">
+    <!-- View: Server Update -->
+    <div id="view-server-update" class="view-container active">
       <div class="container">
         <h2>Deploy to Test Server</h2>
 
-        <!-- Server Selection -->
         <div class="form-group">
           <label for="server" class="form-label">Test Server</label>
           <select id="server" class="form-control">
@@ -42,7 +41,6 @@
           </select>
         </div>
 
-        <!-- Directory Selection -->
         <div class="form-group">
           <label for="directory" class="form-label">Application Directory</label>
           <select id="directory" class="form-control" disabled>
@@ -50,7 +48,6 @@
           </select>
         </div>
 
-        <!-- Branch Input -->
         <div class="form-group">
           <label for="branch" class="form-label">Branch</label>
           <input
@@ -62,24 +59,21 @@
           >
         </div>
 
-        <!-- Deploy Button -->
-        <button id="deploy" class="btn btn-primary" disabled>
-          Plan Deployment
+        <button id="plan" class="btn btn-primary" disabled>
+          Create Plan
         </button>
 
-        <!-- Plan Display -->
         <div id="status" class="status-section">
-          <h3>Deployment Plan</h3>
+          <h3>Plan</h3>
           <pre id="commands" class="commands-display"></pre>
           <div class="button-group">
             <button id="execute" class="btn btn-success">
-              Execute Deployment
+              Execute
             </button>
             <button id="cancel" class="btn btn-secondary">Cancel</button>
           </div>
         </div>
 
-        <!-- Progress Section -->
         <div id="progress" class="progress-section">
           <h3>Execution Progress</h3>
           <div class="progress-bar-container">
@@ -89,7 +83,6 @@
           <div id="progress-steps" class="progress-steps"></div>
         </div>
 
-        <!-- Result Section -->
         <div id="result" class="result-section">
           <h3>Result</h3>
           <pre id="output" class="output-display"></pre>
@@ -97,25 +90,25 @@
       </div>
     </div>
 
-    <!-- View: Database Operations -->
-    <div id="view-database-operations" class="view-container">
+    <!-- View: File Editing -->
+    <div id="view-file-editing" class="view-container">
       <div class="container">
         <div class="coming-soon">
-          <div class="coming-soon-icon">DATABASE</div>
-          <h2>Database Operations</h2>
-          <p>Manage database migrations, backups, and queries</p>
+          <div class="coming-soon-icon">FILE EDITING</div>
+          <h2>File Editing</h2>
+          <p>Manage file editing tasks and operations</p>
           <span class="badge">Coming Soon</span>
         </div>
       </div>
     </div>
 
-    <!-- View: Server Management -->
-    <div id="view-server-management" class="view-container">
+    <!-- View: Queue Check -->
+    <div id="view-queue-check" class="view-container">
       <div class="container">
         <div class="coming-soon">
-          <div class="coming-soon-icon">SERVER</div>
-          <h2>Server Management</h2>
-          <p>Monitor and manage server resources, logs, and services</p>
+          <div class="coming-soon-icon">QUEUE</div>
+          <h2>Queue Check</h2>
+          <p>Monitor and manage task queues and job processing</p>
           <span class="badge">Coming Soon</span>
         </div>
       </div>

@@ -1,7 +1,7 @@
 {
   "name": "igent",
   "version": "1.0.0",
-  "description": "Server deployment agent for managing remote server deployments",
+  "description": "Server Update agent for managing remote Server Updates",
   "main": "src/main/index.js",
   "scripts": {
     "start": "electron .",

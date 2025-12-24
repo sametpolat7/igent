@@ -10,7 +10,7 @@ import { logSuccess } from '../../../utils/logger.js';
 const BASE_DIRECTORY = '/var/webs';
 const DEFAULT_MAIN_BRANCH = 'main';
 
-export function planServerDeployment({ serverKey, directory, branch }) {
+export function planServerUpdate({ serverKey, directory, branch }) {
   const serversConfig = loadServersConfig();
 
   validateString(serverKey, 'Server key');
@@ -36,7 +36,7 @@ export function planServerDeployment({ serverKey, directory, branch }) {
     throw new Error(`Server "${serverKey}" has no SSH host configured`);
   }
 
-  const commands = generateServerDeploymentCommands({
+  const commands = generateServerUpdateCommands({
     directory,
     branch,
   });
@@ -50,7 +50,7 @@ export function planServerDeployment({ serverKey, directory, branch }) {
     createdAt: new Date().toISOString(),
   };
 
-  logSuccess('ServerDeployment', 'Plan created', {
+  logSuccess('serverUpdate', 'Plan created', {
     server: serverKey,
     directory,
     branch,
@@ -60,7 +60,7 @@ export function planServerDeployment({ serverKey, directory, branch }) {
   return plan;
 }
 
-function generateServerDeploymentCommands({ directory, branch }) {
+function generateServerUpdateCommands({ directory, branch }) {
   const appPath = `${BASE_DIRECTORY}/${directory}`;
 
   return [

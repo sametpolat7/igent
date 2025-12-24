@@ -2,7 +2,7 @@ const state = {
   servers: {},
   currentPlan: null,
   isExecuting: false,
-  currentView: 'server-deployment',
+  currentView: 'server-update',
 };
 
 const elements = {
@@ -10,11 +10,11 @@ const elements = {
   navTabs: document.querySelectorAll('.nav-tab'),
   viewContainers: document.querySelectorAll('.view-container'),
 
-  // Server Deployment View
+  // Server Update View
   serverSelect: document.getElementById('server'),
   directorySelect: document.getElementById('directory'),
   branchInput: document.getElementById('branch'),
-  deployButton: document.getElementById('deploy'),
+  planButton: document.getElementById('plan'),
   statusSection: document.getElementById('status'),
   commandsDisplay: document.getElementById('commands'),
   executeButton: document.getElementById('execute'),
@@ -90,7 +90,7 @@ function attachEventListeners() {
   elements.serverSelect.addEventListener('change', handleServerChange);
   elements.directorySelect.addEventListener('change', validateForm);
   elements.branchInput.addEventListener('input', validateForm);
-  elements.deployButton.addEventListener('click', handleDeploy);
+  elements.planButton.addEventListener('click', handleUpdate);
   elements.executeButton.addEventListener('click', handleExecute);
   elements.cancelButton.addEventListener('click', handleCancel);
 }
@@ -101,7 +101,7 @@ function handleServerChange(event) {
   elements.directorySelect.innerHTML =
     '<option value="">Select a directory...</option>';
   elements.directorySelect.disabled = true;
-  elements.deployButton.disabled = true;
+  elements.planButton.disabled = true;
 
   hideResults();
 
@@ -125,20 +125,20 @@ function validateForm() {
   const branch = elements.branchInput.value.trim();
 
   const isValid = server && directory && branch;
-  elements.deployButton.disabled = !isValid;
+  elements.planButton.disabled = !isValid;
 }
 
-async function handleDeploy() {
+async function handleUpdate() {
   const serverKey = elements.serverSelect.value;
   const directory = elements.directorySelect.value;
   const branch = elements.branchInput.value.trim();
 
   hideResults();
 
-  elements.deployButton.disabled = true;
+  elements.planButton.disabled = true;
 
   try {
-    state.currentPlan = await window.igent.planDeploy({
+    state.currentPlan = await window.igent.plan({
       serverKey,
       directory,
       branch,
@@ -163,7 +163,7 @@ async function handleExecute() {
   state.isExecuting = true;
   elements.executeButton.disabled = true;
   elements.cancelButton.disabled = true;
-  elements.deployButton.disabled = true;
+  elements.planButton.disabled = true;
 
   // Hide results and show progress
   elements.resultSection.style.display = 'none';

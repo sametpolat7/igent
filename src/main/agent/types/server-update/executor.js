@@ -13,7 +13,7 @@ const execAsync = promisify(exec);
 const EXECUTION_TIMEOUT_MS = 300000;
 const MAX_BUFFER_SIZE = 1024 * 1024 * 10;
 
-export async function executeServerDeployment({
+export async function executeServerUpdate({
   commands,
   sshHost,
   progressCallback,
@@ -30,12 +30,12 @@ export async function executeServerDeployment({
 
   // Initialize progress tracker
   const progress = new ProgressTracker(
-    'ServerDeployment',
+    'serverUpdate',
     commands.length,
     progressCallback
   );
 
-  logStart('ServerDeployment', 'Executing deployment', {
+  logStart('serverUpdate', 'Executing deployment', {
     host: sshHost,
     commands: commands.length,
   });
@@ -98,7 +98,7 @@ export async function executeServerDeployment({
       executedAt: new Date().toISOString(),
     };
 
-    logSuccess('ServerDeployment', `Deployment completed in ${totalDuration}s`);
+    logSuccess('serverUpdate', `Deployment completed in ${totalDuration}s`);
     return result;
   } catch (error) {
     // Failure
@@ -121,7 +121,7 @@ export async function executeServerDeployment({
     };
 
     logError(
-      'ServerDeployment',
+      'serverUpdate',
       `Deployment failed at step ${errorResult.failedAtStep}`,
       {
         command: errorResult.failedCommand,

@@ -1,13 +1,13 @@
-import { executeServerDeployment } from './types/server-deployment/executor.js';
+import { executeServerUpdate } from './types/server-update/executor.js';
 import { AGENT_TYPES } from './planner.js';
 import { logDebug } from '../utils/logger.js';
 
-export async function executeOperation(agentType, params) {
+export async function executeProcess(agentType, params) {
   logDebug('Executor', `Routing to ${agentType}`);
 
   switch (agentType) {
-    case AGENT_TYPES.SERVER_DEPLOYMENT:
-      return await executeServerDeployment(params);
+    case AGENT_TYPES.SERVER_UPDATE:
+      return await executeServerUpdate(params);
 
     default:
       throw new Error(
