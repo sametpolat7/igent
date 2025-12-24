@@ -1,273 +1,511 @@
 # igent
 
-A secure, user-friendly Electron desktop application for automated deployment management. Built with a clean architecture designed for future extensibility.
+Intelligent Operations Manager - A secure Electron desktop application for automated server deployment and operations management.
 
-## 🎯 Current Scope
+## Overview
 
-**Primary Responsibility:** Successfully pull and update development branches on selected test server and directory combinations.
+igent is a professional-grade deployment automation tool built with security, extensibility, and user experience as core principles. The application provides a clean, type-safe architecture for managing remote server operations through a modern desktop interface.
 
-**Design Philosophy:** Simple, focused, and extensible. The architecture is intentionally designed to support future enhancements:
+**Current Focus:** Automated Git-based deployments to test servers with comprehensive validation and real-time progress tracking.
 
-- Multiple operational actions
-- AI-powered planning
-- Agent-style workflows
+**Architecture Philosophy:** Type-based agent system designed for seamless extensibility to support multiple operational workflows beyond deployment.
 
-## ✨ Features
+## Features
 
-- 🔒 **Secure Architecture**: Three-process model with IPC communication following Electron security best practices
-- 🚀 **Git Deployment**: Automated git pull, database migration, and asset compilation
-- ✅ **Validation**: Directory whitelisting and parameter validation
-- 🎨 **Clean UI**: Modern, intuitive interface with real-time feedback
-- 📝 **Detailed Logging**: Comprehensive error messages and execution logs
-- 🔧 **Extensible Design**: Well-structured codebase ready for future enhancements
+**Security First**
 
-## 🛠️ Tech Stack
+- Three-process architecture following Electron security best practices
+- Context isolation with secure IPC communication
+- Directory whitelisting and parameter validation
+- SSH-based authentication without credential storage
 
-- **Electron** - Desktop application framework
-- **Node.js** - Backend runtime (ES Modules)
-- **Vanilla JavaScript** - Frontend (no framework overhead)
-- **SSH** - Secure remote command execution
-- **ESLint + Prettier** - Code quality and formatting
+**Deployment Automation**
 
-## 📋 Prerequisites
+- Automated Git pull operations with branch switching
+- Rails database migration execution
+- Asset compilation and caching management
+- Service restart automation
+- Sequential command execution with session state preservation
 
-- Node.js (v16 or higher)
-- npm (v7 or higher)
-- SSH access to configured servers
+**User Experience**
 
-## 🚀 Installation
+- Real-time progress tracking with step-by-step feedback
+- Multi-view navigation interface
+- Detailed execution logs with success and error states
+- Live clock widget for timestamping operations
+
+**Code Quality**
+
+- TypeScript-style validation layer
+- Comprehensive error handling and logging
+- ESLint and Prettier integration
+- ES Modules throughout the codebase
+
+## Technology Stack
+
+- Electron 39 - Cross-platform desktop framework
+- Node.js (ES Modules) - Backend runtime environment
+- Vanilla JavaScript - Lightweight frontend without framework overhead
+- SSH - Secure remote command execution
+- ESLint - Code quality enforcement
+
+## Prerequisites
+
+- Node.js v16 or higher
+- npm v7 or higher
+- SSH access configured for target servers
+- SSH keys set up in ~/.ssh/config
+
+## Installation
 
 ```bash
-# Clone the repository
 git clone <repository-url>
-
-# Navigate to the project directory
 cd igent
-
-# Install dependencies
 npm install
 ```
 
-## 💻 Development
+## Development
 
 ```bash
-# Run the application
 npm start
 ```
 
-## 📁 Project Structure
+## Building for Production
+
+```bash
+# Build for current platform
+npm run build
+
+# Platform-specific builds
+npm run build:mac
+npm run build:win
+npm run build:linux
+```
+
+## Project Structure
 
 ```
 igent/
 ├── src/
-│   ├── main/                    # Main Process (Node.js Backend)
-│   │   ├── index.js            # Application entry point & IPC handlers
-│   │   ├── agent/              # Core deployment logic
-│   │   │   ├── planner.js     # Deployment planning & validation
-│   │   │   └── executor.js    # Remote SSH command execution
-│   │   └── config/             # Configuration management
-│   │       ├── loadConfig.js  # Config loader with validation
-│   │       └── servers.json   # Server definitions
-│   ├── preload/                # Security Bridge
-│   │   └── index.cjs          # Context bridge for secure IPC
-│   └── renderer/               # Renderer Process (UI Frontend)
-│       ├── index.html         # Application UI structure
-│       ├── styles.css         # Application styling
-│       └── renderer.js        # Client-side logic & event handling
-├── package.json
-├── eslint.config.mjs
-└── README.md
+│   ├── main/                           # Main Process (Node.js)
+│   │   ├── index.js                   # Application entry, IPC handlers
+│   │   ├── agent/                     # Type-based agent system
+│   │   │   ├── planner.js            # Route to type-specific planners
+│   │   │   ├── executor.js           # Route to type-specific executors
+│   │   │   └── types/                # Agent type implementations
+│   │   │       ├── server-update/    # Server deployment type
+│   │   │       │   ├── planner.js   # Deployment planning
+│   │   │       │   └── executor.js  # SSH execution
+│   │   │       ├── file-edit/        # Future: File editing
+│   │   │       └── queue-control/    # Future: Job queue management
+│   │   ├── config/                    # Configuration management
+│   │   │   ├── loadConfig.js         # Config loader with validation
+│   │   │   └── servers.json          # Server definitions
+│   │   └── utils/                     # Shared utilities
+│   │       ├── logger.js             # Colored console logging
+│   │       ├── progressTracker.js    # Progress tracking system
+│   │       └── validators.js         # Type validation functions
+│   ├── preload/                       # Security Bridge
+│   │   └── index.cjs                 # Context bridge for IPC
+│   └── renderer/                      # Renderer Process (UI)
+│       ├── index.html                # Application interface
+│       ├── renderer.js               # Client-side logic
+│       └── styles.css                # Application styling
+├── assets/                            # Application resources
+│   ├── icons/                        # Platform-specific icons
+│   └── logo/                         # Brand assets
+├── package.json                       # Project configuration
+├── eslint.config.mjs                  # Linting rules
+├── ARCHITECTURE.js                    # Architecture documentation
+├── LICENSE                            # MIT License
+└── README.md                          # This file
 ```
 
-## 🏗️ Architecture
+## Architecture
 
-### Electron's 3-Process Security Model
+### Electron Security Model
 
-#### **Main Process** ([src/main/index.js](src/main/index.js))
+igent implements Electron's recommended three-process security architecture:
 
-- Runs in Node.js with full system access
-- Creates and manages application windows
-- Registers IPC handlers globally
-- Coordinates deployment planning and execution
-- Handles application lifecycle
+**Main Process** - Full system access (Node.js)
 
-#### **Preload Script** ([src/preload/index.cjs](src/preload/index.cjs))
+- Application lifecycle management
+- Window creation with security preload injection
+- IPC handler registration and request routing
+- Agent system coordination
+- Configuration loading and validation
 
-- Secure bridge between main and renderer processes
-- Uses `contextBridge` to expose only approved APIs
-- Prevents direct Node.js/Electron API access from renderer
-- **Critical security layer**: Only whitelisted operations allowed
+**Preload Script** - Security bridge (CommonJS)
 
-#### **Renderer Process** ([src/renderer/](src/renderer/))
+- Context isolation enforcement
+- Selective API exposure via contextBridge
+- IPC channel whitelisting
+- Progress event relay to renderer
 
-- Runs in Chromium browser (sandboxed)
-- Handles UI and user interactions
-- Communicates via `window.igent` API
-- Cannot directly execute system commands or access file system
+**Renderer Process** - Sandboxed browser environment
+
+- User interface and interaction handling
+- State management and form validation
+- IPC communication via exposed window.igent API
+- No direct access to Node.js or Electron APIs
+
+### Type-Based Agent System
+
+The application uses a type-routing architecture that separates concerns and enables easy extensibility:
+
+```
+Agent Request → Planner Router → Type-Specific Planner → Validation & Command Generation
+                      ↓
+Agent Response ← Executor Router ← Type-Specific Executor ← SSH Execution & Progress
+```
+
+**Current Implementation:**
+
+SERVER_UPDATE Type:
+
+- Planner: Validates server, directory, branch; generates Git and Rails commands
+- Executor: Executes commands sequentially via SSH with progress callbacks
+
+**Future Types (UI placeholders exist):**
+
+FILE_EDIT Type: Remote file editing operations
+QUEUE_CONTROL Type: Background job queue management
 
 ### Data Flow
 
-```
-User Input (UI)
-    ↓
-Form Validation (renderer.js)
-    ↓
-window.igent API Call (preload)
-    ↓
-IPC Message (secure channel)
-    ↓
-Main Process Handler (index.js)
-    ↓
-Planning (planner.js)
-  - Validate server/directory/branch
-  - Generate command sequence
-    ↓
-Execution (executor.js)
-  - Build SSH command
-  - Execute remotely
-  - Return results
-    ↓
-IPC Response to Renderer
-    ↓
-UI Update (success/error display)
-```
+**Planning Phase:**
 
-## 🔒 Security Features
+1. User selects server, directory, and branch in UI
+2. Form validation ensures all fields are populated
+3. Click "Create Plan" triggers IPC call to main process
+4. Main process routes to appropriate agent type planner
+5. Planner validates against configuration and whitelist
+6. Command sequence generated and returned to UI
+7. User reviews planned commands before execution
 
-1. **Directory Whitelisting**: Only pre-approved directories can be deployed
-2. **Server Configuration**: Centralized server definitions prevent unauthorized access
-3. **Input Validation**: Branch names and parameters are validated to prevent injection
-4. **Context Isolation**: Renderer process cannot access Node.js APIs
-5. **SSH Authentication**: Uses system SSH credentials (no password storage)
+**Execution Phase:**
 
-## 🎨 UI Workflow
-
-1. **Select Server** → Populates available directories
-2. **Select Directory** → Choose application to deploy
-3. **Enter Branch** → Specify git branch name
-4. **Plan Deployment** → Review commands before execution
-5. **Execute** → Run deployment with real-time feedback
-
-## 🧩 Component Overview
-
-### Agent System (Future-Ready)
-
-The current implementation uses a simple agent pattern that's ready to evolve:
-
-**Planner** ([planner.js](src/main/agent/planner.js))
-
-- Validates deployment requests
-- Generates command sequences
-- Future: Support multiple deployment strategies (Docker, custom scripts)
-
-**Executor** ([executor.js](src/main/agent/executor.js))
-
-- Executes commands via SSH
-- Provides detailed error handling
-- Future: Support parallel execution, retry logic, streaming output
+1. User confirms by clicking "Execute"
+2. IPC call sends plan to main process executor
+3. Executor creates progress tracker with callback
+4. Commands executed sequentially via SSH
+5. Each command completion triggers progress event
+6. Progress events relayed to renderer via IPC
+7. UI updates progress bar and step display in real-time
+8. Final result displayed with success/error state
 
 ### Configuration System
 
-**Server Configuration** ([servers.json](src/main/config/servers.json))
+**Server Configuration** (servers.json)
 
 ```json
 {
   "server-key": {
-    "sshHost": ["host1", "host2"],
+    "sshHost": "hostname-or-alias",
     "allowedDirectories": ["app1", "app2", "app3"]
   }
 }
 ```
 
-**Future Enhancements:**
+- Centralized server definitions
+- SSH host mapping for connection
+- Directory whitelisting for security
+- Extensible for additional metadata
 
-- Environment-specific configs (dev/staging/prod)
-- Encrypted credentials
-- Per-directory custom commands
-- Deployment hooks (pre/post actions)
+### Validation Architecture
 
-## 🚀 Future Extensibility
+Six-layer validation ensures security and reliability:
 
-The codebase is structured to easily support:
+1. UI Layer: Form validation and button state management
+2. IPC Layer: Context isolation and channel whitelisting
+3. Router Layer: Agent type validation and routing
+4. Business Logic Layer: Server, directory, and branch validation
+5. Execution Layer: Command, host, and resource validation
+6. Configuration Layer: File structure and schema validation
 
-### Multiple Operational Actions
+### Utilities System
 
-- Rollback deployments
-- Database backups
-- Log viewing
-- Service management
-- Health checks
+**Logger** (logger.js)
 
-### AI-Powered Planning
+- Colored, timestamped console output
+- Module-based log organization
+- Multiple log levels (info, success, warn, error, debug)
+- Structured data formatting
 
-- Automatic deployment strategy selection
-- Risk assessment and validation
-- Predictive error detection
-- Smart rollback recommendations
+**ProgressTracker** (progressTracker.js)
 
-### Agent-Style Workflows
+- Step-by-step execution tracking
+- Duration calculation for steps and total operation
+- Callback-based progress emission
+- Console logging integration
 
-- Multi-step deployment pipelines
-- Conditional execution based on results
-- Parallel deployment across servers
-- Automated testing and verification
+**Validators** (validators.js)
 
-## 📝 Adding New Features
+- Type validation (string, array, object)
+- Content validation (non-empty, pattern matching)
+- Whitelist validation (includes checks)
+- Descriptive error messages
 
-### Adding a New Deployment Action
+## Usage
 
-1. **Create command generator** in `planner.js`:
+### Server Update Workflow
 
-```javascript
-export function generateRollbackCommands({ directory, targetCommit }) {
-  return [
-    `cd /var/webs/${directory}`,
-    `git checkout ${targetCommit}`,
-    `rails db:migrate:down`,
-    // ...
-  ];
+1. Launch the application
+2. Select target server from the dropdown
+3. Select application directory (filtered by server)
+4. Enter the Git branch name to deploy
+5. Click "Create Plan" to generate and review commands
+6. Review the planned command sequence
+7. Click "Execute" to begin deployment
+8. Monitor real-time progress updates
+9. Review execution results
+
+### Typical Deployment Sequence
+
+The server update process executes the following operations:
+
+1. Navigate to application directory
+2. Fetch latest changes from Git remote
+3. Stash local changes (if any)
+4. Checkout and pull main branch
+5. Checkout and pull target branch
+6. Restore stashed changes
+7. Run database migrations
+8. Clear compiled assets
+9. Precompile new assets
+10. Restart application service
+
+### Configuration
+
+Edit [src/main/config/servers.json](src/main/config/servers.json) to add or modify servers:
+
+```json
+{
+  "server-identifier": {
+    "sshHost": "server-hostname",
+    "allowedDirectories": ["app-directory-1", "app-directory-2"]
+  }
 }
 ```
 
-2. **Add IPC handler** in `main/index.js`:
+Ensure SSH access is configured in ~/.ssh/config for each sshHost value.
+
+## Extending igent
+
+### Adding a New Agent Type
+
+The type-based architecture makes adding new operational workflows straightforward:
+
+**Step 1: Create Type Directory**
+
+```bash
+mkdir -p src/main/agent/types/new-type
+```
+
+**Step 2: Implement Planner**
+
+Create [src/main/agent/types/new-type/planner.js](src/main/agent/types/new-type/planner.js):
 
 ```javascript
-ipcMain.handle('agent:rollback', async (_event, payload) => {
-  return await executeRollback(payload);
+import { loadServersConfig } from '../../../config/loadConfig.js';
+import { validateString, validateNonEmpty } from '../../../utils/validators.js';
+
+export function planNewType({ param1, param2 }) {
+  // Load and validate configuration
+  const config = loadServersConfig();
+
+  // Validate parameters
+  validateString(param1, 'Parameter 1');
+  validateNonEmpty(param1, 'Parameter 1');
+
+  // Generate commands
+  const commands = generateCommands({ param1, param2 });
+
+  // Return plan
+  return {
+    param1,
+    param2,
+    commands,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function generateCommands({ param1, param2 }) {
+  return [`command1 ${param1}`, `command2 ${param2}`];
+}
+```
+
+**Step 3: Implement Executor**
+
+Create [src/main/agent/types/new-type/executor.js](src/main/agent/types/new-type/executor.js):
+
+```javascript
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
+import { ProgressTracker } from '../../../utils/progressTracker.js';
+import { validateArray } from '../../../utils/validators.js';
+
+const execAsync = promisify(exec);
+
+export async function executeNewType({ commands, progressCallback }) {
+  validateArray(commands, 'Commands');
+
+  const progress = new ProgressTracker(
+    'newType',
+    commands.length,
+    progressCallback
+  );
+  progress.start('Starting new type operation');
+
+  for (const command of commands) {
+    progress.stepStart(command);
+
+    try {
+      const { stdout, stderr } = await execAsync(command);
+      progress.stepComplete(command, stdout, stderr);
+    } catch (error) {
+      progress.stepFailed(command, error.message);
+      throw error;
+    }
+  }
+
+  progress.complete();
+
+  return {
+    success: true,
+    totalSteps: commands.length,
+    totalDuration: progress.getTotalDuration(),
+  };
+}
+```
+
+**Step 4: Register Agent Type**
+
+Update [src/main/agent/planner.js](src/main/agent/planner.js):
+
+```javascript
+import { planNewType } from './types/new-type/planner.js';
+
+export const AGENT_TYPES = {
+  SERVER_UPDATE: 'server-update',
+  NEW_TYPE: 'new-type',
+};
+
+export function planProcess(agentType, params) {
+  switch (agentType) {
+    case AGENT_TYPES.NEW_TYPE:
+      return planNewType(params);
+    // ... other cases
+  }
+}
+```
+
+Update [src/main/agent/executor.js](src/main/agent/executor.js):
+
+```javascript
+import { executeNewType } from './types/new-type/executor.js';
+
+export async function executeProcess(agentType, params) {
+  switch (agentType) {
+    case AGENT_TYPES.NEW_TYPE:
+      return await executeNewType(params);
+    // ... other cases
+  }
+}
+```
+
+**Step 5: Add IPC Handler**
+
+Update [src/main/index.js](src/main/index.js):
+
+```javascript
+ipcMain.handle('agent:new-type', async (_event, payload) => {
+  try {
+    return planProcess(AGENT_TYPES.NEW_TYPE, payload);
+  } catch (error) {
+    logError('IPC', 'New type failed', error);
+    throw new Error(`Error: ${error.message}`);
+  }
 });
 ```
 
-3. **Expose in preload** (`preload/index.cjs`):
+**Step 6: Expose in Preload**
+
+Update [src/preload/index.cjs](src/preload/index.cjs):
 
 ```javascript
-rollback: (payload) => ipcRenderer.invoke('agent:rollback', payload),
+contextBridge.exposeInMainWorld('igent', {
+  // ... existing methods
+  newType: (payload) => ipcRenderer.invoke('agent:new-type', payload),
+});
 ```
 
-4. **Update UI** in `renderer.js` to call the new action
+**Step 7: Implement UI**
 
-## 🐛 Troubleshooting
+Add view container in [src/renderer/index.html](src/renderer/index.html) and handler in [src/renderer/renderer.js](src/renderer/renderer.js).
 
-**SSH Connection Issues:**
+## Troubleshooting
 
-- Ensure SSH keys are configured (`~/.ssh/config`)
-- Test SSH access manually: `ssh server-name`
-- Check SSH agent is running
+**SSH Connection Failures**
 
-**Permission Errors:**
+- Verify SSH keys are configured in ~/.ssh/config
+- Test connection manually: `ssh hostname`
+- Ensure SSH agent is running: `ssh-add -l`
 
-- Verify user has sudo/systemctl permissions
-- Check directory ownership and permissions
+**Permission Denied Errors**
 
-**Command Failures:**
+- Verify user has sudo privileges for systemctl commands
+- Check directory ownership and write permissions
+- Confirm user is in appropriate groups
 
-- Review error output in the result panel
-- Check Rails environment is properly configured
-- Verify git remote access
+**Command Execution Timeouts**
 
-## 📄 License
+- Default timeout is 300 seconds (5 minutes)
+- Adjust EXECUTION_TIMEOUT_MS in executor.js if needed
+- Check for hung processes on remote server
 
-MIT License - Open to contributions by developers. See [LICENSE](LICENSE) file for details.
+**Configuration Not Loading**
 
-## Contributing
+- Validate JSON syntax in servers.json
+- Ensure all required fields are present
+- Check file permissions for readability
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+**Progress Not Updating**
+
+- Verify progress callback is passed to executor
+- Check preload IPC channel registration
+- Inspect browser console for renderer errors
+
+## Development Guidelines
+
+**Code Style**
+
+- Use ES Modules (import/export) in all new code
+- Follow ESLint rules defined in eslint.config.mjs
+- Use async/await for asynchronous operations
+- Prefer descriptive variable names over abbreviations
+
+**Error Handling**
+
+- Use try-catch blocks for all async operations
+- Throw descriptive Error objects with context
+- Log errors using logger utility functions
+- Provide user-friendly error messages in UI
+
+**Validation**
+
+- Validate all inputs at the earliest possible layer
+- Use validator utility functions for consistency
+- Provide clear error messages indicating the issue
+- Never trust client-side validation alone
+
+**Testing Workflow**
+
+- Test with actual SSH connections to verify behavior
+- Validate error states and edge cases
+- Ensure progress tracking updates correctly
+- Check UI responsiveness during long operations
+
+## License
+
+MIT License
