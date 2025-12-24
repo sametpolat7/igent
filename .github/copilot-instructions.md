@@ -90,7 +90,7 @@ const tracker = new ProgressTracker(
   totalSteps,
   progressCallback
 );
-tracker.start('OperationName');
+tracker.start('Starting operation...');
 tracker.stepStart(commandText);
 // ... execute command ...
 tracker.stepComplete(commandText, stdout, stderr);
