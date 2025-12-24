@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**igent** is an Electron desktop app for automated server operations via SSH. Current focus: Git-based deployments to test servers with real-time progress tracking. Built with security-first three-process architecture and type-based agent system for extensibility.
+**igent** is an Electron desktop app for automated server operations via SSH. Current focus: Git-based updates to test servers with real-time progress tracking. Built with security-first three-process architecture and type-based agent system for extensibility.
 
 ## Critical Architecture Patterns
 
@@ -90,11 +90,11 @@ const tracker = new ProgressTracker(
   totalSteps,
   progressCallback
 );
-tracker.start();
-tracker.startStep(commandText);
+tracker.start('OperationName');
+tracker.stepStart(commandText);
 // ... execute command ...
-tracker.completeStep(stdout, duration);
-tracker.complete(summary);
+tracker.stepComplete(commandText, stdout, stderr);
+tracker.complete();
 ```
 
 Progress events automatically flow: Executor → IPC → Preload → Renderer UI

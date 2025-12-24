@@ -1,6 +1,6 @@
 # igent
 
-Intelligent Operations Manager - A Electron desktop application for automated server updates and operations management.
+Intelligent Operations Manager - An Electron desktop application for automated server updates and operations management.
 
 ## Overview
 
@@ -94,7 +94,7 @@ igent/
 │   │   │   ├── executor.js           # Route to type-specific executors
 │   │   │   └── types/                # Agent type implementations
 │   │   │       ├── server-update/    # Server update type
-│   │   │       │   ├── planner.js   # update planning
+│   │   │       │   ├── planner.js   # Update planning
 │   │   │       │   └── executor.js  # SSH execution
 │   │   │       ├── file-edit/        # Future: File editing
 │   │   │       └── queue-control/    # Future: Job queue management
