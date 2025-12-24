@@ -1,18 +1,40 @@
 {
   "name": "igent",
   "version": "1.0.0",
-  "description": "Server Update agent for managing remote Server Updates",
+  "description": "Intelligent Operations Manager - Electron application for automated server update and operations management",
   "main": "src/main/index.js",
   "scripts": {
     "start": "electron .",
+    "dev": "electron . --inspect",
     "build": "electron-builder",
     "build:mac": "electron-builder --mac",
     "build:win": "electron-builder --win",
-    "build:linux": "electron-builder --linux"
+    "build:linux": "electron-builder --linux",
+    "lint": "eslint src/**/*.js src/**/*.cjs",
+    "lint:fix": "eslint src/**/*.js src/**/*.cjs --fix",
+    "format": "prettier --write \"src/**/*.{js,cjs,json,html,css}\"",
+    "format:check": "prettier --check \"src/**/*.{js,cjs,json,html,css}\""
   },
-  "keywords": ["electron", "git", "deployment", "automation"],
+  "keywords": [
+    "electron",
+    "deployment",
+    "automation",
+    "devops",
+    "server-management",
+    "git",
+    "ssh",
+    "operations"
+  ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/igent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/igent/issues"
+  },
+  "homepage": "https://github.com/yourusername/igent#readme",
   "build": {
     "appId": "com.igent.app",
     "productName": "igent",
@@ -23,11 +45,22 @@
     "files": [
       "src/**/*",
       "assets/**/*",
-      "package.json"
+      "package.json",
+      "LICENSE"
+    ],
+    "extraResources": [
+      {
+        "from": "ARCHITECTURE.js",
+        "to": "ARCHITECTURE.js"
+      }
     ],
     "mac": {
       "icon": "assets/icons/igent.icns",
       "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
       "target": [
         {
           "target": "dmg",
@@ -44,7 +77,7 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "ia32"]
+          "arch": ["x64"]
         },
         {
           "target": "portable",
@@ -63,12 +96,9 @@
         {
           "target": "deb",
           "arch": ["x64"]
-        },
-        {
-          "target": "rpm",
-          "arch": ["x64"]
         }
-      ]
+      ],
+      "maintainer": "igent developers"
     },
     "dmg": {
       "contents": [
@@ -82,13 +112,18 @@
           "type": "link",
           "path": "/Applications"
         }
-      ]
+      ],
+      "title": "${productName} ${version}",
+      "background": null
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "installerIcon": "assets/icons/igent.ico",
+      "uninstallerIcon": "assets/icons/igent.ico",
+      "deleteAppDataOnUninstall": false
     }
   },
   "type": "module",

@@ -35,12 +35,12 @@ export async function executeServerUpdate({
     progressCallback
   );
 
-  logStart('serverUpdate', 'Executing deployment', {
+  logStart('serverUpdate', 'Executing update', {
     host: sshHost,
     commands: commands.length,
   });
 
-  progress.start(`Starting deployment to ${sshHost}`);
+  progress.start(`Starting update to ${sshHost}`);
 
   const executedCommands = [];
   let failedStep = null;
@@ -98,7 +98,7 @@ export async function executeServerUpdate({
       executedAt: new Date().toISOString(),
     };
 
-    logSuccess('serverUpdate', `Deployment completed in ${totalDuration}s`);
+    logSuccess('serverUpdate', `Update completed in ${totalDuration}s`);
     return result;
   } catch (error) {
     // Failure
@@ -122,7 +122,7 @@ export async function executeServerUpdate({
 
     logError(
       'serverUpdate',
-      `Deployment failed at step ${errorResult.failedAtStep}`,
+      `Update failed at step ${errorResult.failedAtStep}`,
       {
         command: errorResult.failedCommand,
         error: errorResult.error,
