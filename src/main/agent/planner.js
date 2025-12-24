@@ -1,16 +1,16 @@
-import { planGitDeployment } from './types/git-deployment/planner.js';
+import { planServerUpdate } from './types/server-update/planner.js';
 import { logDebug } from '../utils/logger.js';
 
 export const AGENT_TYPES = {
-  GIT_DEPLOYMENT: 'git-deployment',
+  SERVER_UPDATE: 'server-update',
 };
 
-export function planOperation(agentType, params) {
+export function planProcess(agentType, params) {
   logDebug('Planner', `Routing to ${agentType}`);
 
   switch (agentType) {
-    case AGENT_TYPES.GIT_DEPLOYMENT:
-      return planGitDeployment(params);
+    case AGENT_TYPES.SERVER_UPDATE:
+      return planServerUpdate(params);
 
     default:
       throw new Error(

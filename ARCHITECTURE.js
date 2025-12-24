@@ -94,8 +94,8 @@
    
 2. VALIDATION & PLANNING
    ──────────────────────
-   renderer.js → window.igent.planDeploy()
-   preload.cjs → IPC channel: 'agent:plan-deploy'
+   renderer.js → window.igent.plan()
+   preload.cjs → IPC channel: 'agent:plan'
    index.js → IPC handler routes to planner
    planner.js → Validates against servers.json
    planner.js → Generates command sequence
@@ -108,7 +108,7 @@
    
 4. EXECUTION
    ──────────
-   renderer.js → window.igent.execute()
+   renderer.js → window.igent.executeProcess()
    preload.cjs → IPC channel: 'agent:execute'
    index.js → IPC handler routes to executor
    executor.js → Builds SSH command

@@ -1,8 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { planOperation, AGENT_TYPES } from './agent/planner.js';
-import { executeOperation } from './agent/executor.js';
+import { planProcess, AGENT_TYPES } from './agent/planner.js';
+import { executeProcess } from './agent/executor.js';
 import { loadServersConfig } from './config/loadConfig.js';
 import { logError } from './utils/logger.js';
 
@@ -32,18 +32,25 @@ function registerIPCHandlers() {
     }
   });
 
-  ipcMain.handle('agent:plan-deploy', async (_event, payload) => {
+  ipcMain.handle('agent:plan', async (_event, payload) => {
     try {
-      return planOperation(AGENT_TYPES.GIT_DEPLOYMENT, payload);
+      return planProcess(AGENT_TYPES.SERVER_UPDATE, payload);
     } catch (error) {
       logError('IPC', 'Planning failed', error);
       throw new Error(`Planning error: ${error.message}`);
     }
   });
 
-  ipcMain.handle('agent:execute', async (_event, payload) => {
+  ipcMain.handle('agent:execute', async (event, payload) => {
     try {
-      return await executeOperation(AGENT_TYPES.GIT_DEPLOYMENT, payload);
+      const progressCallback = (progressData) => {
+        event.sender.send('agent:progress', progressData);
+      };
+
+      return await executeProcess(AGENT_TYPES.SERVER_UPDATE, {
+        ...payload,
+        progressCallback,
+      });
     } catch (error) {
       logError('IPC', 'Execution failed', error);
       throw new Error(`Execution error: ${error.message}`);

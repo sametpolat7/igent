@@ -2,10 +2,10 @@
  * Application Styles
  * 
  * Design principles:
- * - Clean, minimal interface
+ * - Professional, modern interface
  * - Clear visual hierarchy
- * - Accessible color contrast
- * - Responsive feedback for user actions
+ * - High contrast terminal displays
+ * - Smooth, responsive user experience
  */
 
 /* === Global Styles === */
@@ -16,12 +16,16 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
   font-size: 14px;
   line-height: 1.6;
-  color: #333;
+  color: #1a202c;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
   min-height: 100vh;
@@ -30,15 +34,122 @@ body {
 /* === Header === */
 
 .header {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   color: white;
   margin-bottom: 30px;
+  position: relative;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.logo-container {
+  flex: 0 0 auto;
+  animation: fadeIn 0.8s ease-out;
+  background: white;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+  height: 50px;
+  width: auto;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+.header-center {
+  flex: 1 1 auto;
+  text-align: center;
 }
 
 .header h1 {
   font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.header .subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  opacity: 0.95;
+  margin: 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.clock {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 85px;
+  text-align: center;
+}
+
+/* === Navigation Tabs === */
+
+.nav-tabs {
+  max-width: 700px;
+  margin: 0 auto 20px;
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.nav-tab {
+  flex: 1;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.nav-tab:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.nav-tab.active {
+  background: white;
+  color: #667eea;
   font-weight: 600;
-  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* === View Containers === */
+
+.view-container {
+  display: none;
+}
+
+.view-container.active {
+  display: block;
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* === Main Container === */
@@ -121,11 +232,12 @@ body {
   width: 100%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -133,22 +245,26 @@ body {
 }
 
 .btn-success {
-  background: #48bb78;
+  background: #10b981;
   color: white;
   margin-right: 10px;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
 }
 
 .btn-success:hover:not(:disabled) {
-  background: #38a169;
+  background: #059669;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 .btn-secondary {
-  background: #718096;
+  background: #6b7280;
   color: white;
+  box-shadow: 0 2px 6px rgba(107, 114, 128, 0.3);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #4a5568;
+  background: #4b5563;
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
 }
 
 /* === Status Section === */
@@ -170,25 +286,152 @@ body {
 }
 
 .commands-display {
-  background: white;
+  background: #f8fafc;
   padding: 16px;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
   overflow-x: auto;
   font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.8;
-  color: #2d3748;
+  color: #334155;
   white-space: pre-wrap;
   word-break: break-all;
   max-height: 400px;
   overflow-y: auto;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .button-group {
   margin-top: 16px;
   display: flex;
   gap: 10px;
+}
+
+/* === Progress Section === */
+
+.progress-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: #edf2f7;
+  border-radius: 8px;
+  border: 2px solid #cbd5e0;
+  display: none;
+}
+
+.progress-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 16px;
+}
+
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.progress-bar-container {
+  flex: 1;
+  background: #e5e7eb;
+  border-radius: 10px;
+  height: 24px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #d1d5db;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  transition: width 0.5s ease;
+  width: 0%;
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.progress-percentage {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  min-width: 45px;
+  text-align: right;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+}
+
+.progress-steps {
+  background: #0d1117;
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  border: 1px solid #30363d;
+}
+
+.progress-step {
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-size: 12px;
+  background: #161b22;
+  color: #e6edf3;
+}
+
+.progress-step.running {
+  background: #1c1814;
+  animation: pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
+}
+
+.progress-step.success {
+  background: #0f1c17;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.1);
+}
+
+.progress-step.failed {
+  background: #1c1011;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.1);
+}
+
+.progress-step-header {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-step-header strong {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.progress-step.running .progress-step-header strong {
+  color: #fbbf24;
+}
+
+.progress-step.success .progress-step-header strong {
+  color: #34d399;
+}
+
+.progress-step.failed .progress-step-header strong {
+  color: #f87171;
+}
+
+.progress-step-command {
+  color: #c9d1d9;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.progress-step-time {
+  font-size: 11px;
+  color: #718096;
 }
 
 /* === Result Section === */
@@ -198,66 +441,110 @@ body {
   padding: 20px;
   border-radius: 8px;
   display: none;
-  border-left: 4px solid;
 }
 
 .result-section h3 {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .output-display {
-  background: rgba(255, 255, 255, 0.5);
+  background: #0d1117;
   padding: 16px;
   border-radius: 6px;
   overflow-x: auto;
   font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.8;
   white-space: pre-wrap;
   word-break: break-all;
   max-height: 400px;
   overflow-y: auto;
+  font-weight: 500;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  border: 1px solid #30363d;
 }
 
-/* Success state */
-.result-success {
-  background: #d4edda;
-  color: #155724;
-  border-left-color: #28a745;
+/* === Coming Soon View === */
+
+.coming-soon {
+  text-align: center;
+  padding: 80px 40px;
 }
 
-/* Error state */
-.result-error {
-  background: #f8d7da;
-  color: #721c24;
-  border-left-color: #dc3545;
+.coming-soon h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 12px;
+}
+
+.coming-soon p {
+  font-size: 16px;
+  color: #718096;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.coming-soon .badge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: #ede9fe;
+  color: #6d28d9;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 /* === Scrollbar Styles === */
 
-.commands-display::-webkit-scrollbar,
-.output-display::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.commands-display::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
-.commands-display::-webkit-scrollbar-track,
-.output-display::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+.commands-display::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 5px;
 }
 
-.commands-display::-webkit-scrollbar-thumb,
-.output-display::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 4px;
+.commands-display::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 5px;
+  border: 2px solid #f1f5f9;
 }
 
-.commands-display::-webkit-scrollbar-thumb:hover,
-.output-display::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
+.commands-display::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.output-display::-webkit-scrollbar,
+.progress-steps::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.output-display::-webkit-scrollbar-track,
+.progress-steps::-webkit-scrollbar-track {
+  background: #161b22;
+  border-radius: 5px;
+}
+
+.output-display::-webkit-scrollbar-thumb,
+.progress-steps::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 5px;
+  border: 2px solid #161b22;
+}
+
+.output-display::-webkit-scrollbar-thumb:hover,
+.progress-steps::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
 }
 
 /* === Animations === */
@@ -273,7 +560,17 @@ body {
   }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .status-section,
+.progress-section,
 .result-section {
   animation: fadeIn 0.3s ease-out;
 }
