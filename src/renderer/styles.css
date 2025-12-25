@@ -378,31 +378,26 @@ body {
   font-size: 12px;
   background: #1a2332;
   color: #e2e8f0;
-  border-left: 3px solid transparent;
 }
 
 .progress-step.running {
   background: #1f2937;
-  border-left: 3px solid #fbbf24;
   animation: pulse 1.5s ease-in-out infinite;
   box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
 }
 
 .progress-step.success {
   background: #14261c;
-  border-left: 3px solid #10b981;
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.1);
 }
 
 .progress-step.failed {
   background: #261418;
-  border-left: 3px solid #ef4444;
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.1);
 }
 
 .progress-step.conflict {
   background: #292518;
-  border-left: 3px solid #f59e0b;
   box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
 }
 
@@ -423,7 +418,6 @@ body {
 
 .progress-step.rollback {
   background: #241f14;
-  border-left: 3px solid #d97706;
   margin-left: 16px;
 }
 
@@ -442,7 +436,6 @@ body {
 
 .progress-step.rollback-complete {
   background: #1a2414;
-  border-left-color: #84cc16;
 }
 
 .progress-step.rollback-complete .progress-step-header strong {
@@ -451,7 +444,6 @@ body {
 
 .progress-step.rollback-warning {
   background: #241f14;
-  border-left-color: #f59e0b;
 }
 
 .progress-step.rollback-warning .progress-step-header strong {
@@ -460,7 +452,6 @@ body {
 
 .progress-step.rollback-done {
   background: #1a2414;
-  border-left: 3px solid #84cc16;
   margin-top: 8px;
   box-shadow: 0 0 12px rgba(132, 204, 22, 0.2);
 }
