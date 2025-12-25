@@ -1,11 +1,11 @@
-import { loadServersConfig } from '../../../config/loadConfig.js';
+import { loadServersConfig } from '../../config/loadConfig.js';
 import {
   validateString,
   validateNonEmpty,
   validatePattern,
   validateIncludes,
-} from '../../../utils/validators.js';
-import { logSuccess } from '../../../utils/logger.js';
+} from '../../utils/validators.js';
+import { logSuccess } from '../../utils/logger.js';
 
 const BASE_DIRECTORY = '/var/webs';
 const DEFAULT_MAIN_BRANCH = 'main';
@@ -69,12 +69,11 @@ function generateServerUpdateCommands({ directory, branch }) {
     `git stash`,
     `git checkout ${DEFAULT_MAIN_BRANCH}`,
     `git pull origin ${DEFAULT_MAIN_BRANCH}`,
-    `git checkout ${branch}`,
     `git pull origin ${branch}`,
     `git stash pop || true`,
-    `rails db:migrate`,
-    `rails assets:clobber`,
-    `rails assets:precompile`,
-    `sudo systemctl restart ${directory}.service`,
+    // `rails db:migrate`,
+    // `rails assets:clobber`,
+    // `rails assets:precompile`,
+    // `sudo systemctl restart ${directory}.service`,
   ];
 }

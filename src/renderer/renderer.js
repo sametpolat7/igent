@@ -6,14 +6,9 @@ const state = {
 };
 
 const elements = {
-  // Navigation
   navTabs: document.querySelectorAll('.nav-tab'),
   viewContainers: document.querySelectorAll('.view-container'),
-
-  // Clock
   clock: document.getElementById('clock'),
-
-  // Server Update View
   serverSelect: document.getElementById('server'),
   directorySelect: document.getElementById('directory'),
   branchInput: document.getElementById('branch'),
@@ -25,6 +20,7 @@ const elements = {
   progressSection: document.getElementById('progress'),
   progressBar: document.getElementById('progress-bar'),
   progressPercentage: document.getElementById('progress-percentage'),
+  progressWrapper: document.querySelector('.progress-wrapper'),
   progressSteps: document.getElementById('progress-steps'),
   resultSection: document.getElementById('result'),
   outputDisplay: document.getElementById('output'),
@@ -36,7 +32,6 @@ async function initialize() {
   attachEventListeners();
   setupProgressListener();
   startClock();
-  console.log('[Renderer] Application initialized');
 }
 
 function startClock() {
@@ -61,10 +56,8 @@ function setupViewSwitching() {
 }
 
 function switchView(viewName) {
-  // Update state
   state.currentView = viewName;
 
-  // Update tab active states
   elements.navTabs.forEach((tab) => {
     if (tab.dataset.view === viewName) {
       tab.classList.add('active');
@@ -73,7 +66,6 @@ function switchView(viewName) {
     }
   });
 
-  // Update view container active states
   elements.viewContainers.forEach((container) => {
     if (container.id === `view-${viewName}`) {
       container.classList.add('active');
@@ -81,8 +73,6 @@ function switchView(viewName) {
       container.classList.remove('active');
     }
   });
-
-  console.log(`[Renderer] Switched to view: ${viewName}`);
 }
 
 async function loadServers() {
@@ -95,10 +85,8 @@ async function loadServers() {
       option.textContent = serverKey;
       elements.serverSelect.appendChild(option);
     });
-
-    console.log('[Renderer] Servers loaded:', Object.keys(state.servers));
   } catch (error) {
-    showError('Failed to load servers', error);
+    showError('Failed to load server configuration', error);
   }
 }
 
@@ -115,7 +103,7 @@ function handleServerChange(event) {
   const serverKey = event.target.value;
 
   elements.directorySelect.innerHTML =
-    '<option value="">Select a directory...</option>';
+    '<option value="">Select directory...</option>';
   elements.directorySelect.disabled = true;
   elements.planButton.disabled = true;
 
@@ -160,8 +148,6 @@ async function handleUpdate() {
       branch,
     });
 
-    console.log('[Renderer] Plan created:', state.currentPlan);
-
     displayPlan(state.currentPlan);
   } catch (error) {
     showError('Planning failed', error);
@@ -172,7 +158,10 @@ async function handleUpdate() {
 
 async function handleExecute() {
   if (!state.currentPlan) {
-    showError('No update plan', new Error('Please plan update first'));
+    showError(
+      'No deployment plan available',
+      new Error('Please create a deployment plan first')
+    );
     return;
   }
 
@@ -181,7 +170,6 @@ async function handleExecute() {
   elements.cancelButton.disabled = true;
   elements.planButton.disabled = true;
 
-  // Hide plan section, results and show progress
   elements.statusSection.style.display = 'none';
   elements.resultSection.style.display = 'none';
   elements.progressSection.style.display = 'block';
@@ -189,7 +177,12 @@ async function handleExecute() {
   elements.progressBar.style.width = '0%';
   elements.progressPercentage.textContent = '0%';
 
-  // Smooth scroll to progress section
+  elements.progressWrapper.style.display = 'flex';
+  const conflictHeader = document.getElementById('conflict-header');
+  if (conflictHeader) {
+    conflictHeader.style.display = 'none';
+  }
+
   setTimeout(() => {
     elements.progressSection.scrollIntoView({
       behavior: 'smooth',
@@ -198,16 +191,14 @@ async function handleExecute() {
   }, 100);
 
   try {
-    console.log('[Renderer] Starting execution...');
-
     const result = await window.igent.execute(state.currentPlan);
 
-    console.log('[Renderer] Execution completed:', result);
-
-    displaySuccess(result);
+    if (result.success === false) {
+      displayError(result);
+    } else {
+      displaySuccess(result);
+    }
   } catch (error) {
-    console.error('[Renderer] Execution failed:', error);
-
     displayError(error);
   } finally {
     state.isExecuting = false;
@@ -222,7 +213,6 @@ function handleCancel() {
 
 function setupProgressListener() {
   window.igent.onProgress((progressData) => {
-    console.log('[Renderer] Progress update:', progressData);
     updateProgress(progressData);
   });
 }
@@ -230,11 +220,9 @@ function setupProgressListener() {
 function updateProgress(data) {
   const { status, currentStep, totalSteps } = data;
 
-  // Update progress bar
   if (totalSteps > 0) {
     let completedSteps = currentStep || 0;
 
-    // If currently running a step, show progress up to but not including this step
     if (status === 'running') {
       completedSteps = Math.max(0, currentStep - 1);
     }
@@ -244,7 +232,6 @@ function updateProgress(data) {
     elements.progressPercentage.textContent = `${percentage}%`;
   }
 
-  // Handle different statuses
   switch (status) {
     case 'started':
       elements.progressSteps.innerHTML = '';
@@ -254,6 +241,22 @@ function updateProgress(data) {
     case 'step-complete':
     case 'step-failed':
       updateStepDisplay(data);
+      break;
+
+    case 'conflict-detected':
+      displayConflictStep(data);
+      elements.progressWrapper.style.display = 'none';
+      displayConflictHeader();
+      break;
+
+    case 'rollback-running':
+    case 'rollback-step-complete':
+    case 'rollback-step-warning':
+      displayRollbackStep(data);
+      break;
+
+    case 'rollback-completed':
+      displayRollbackComplete(data);
       break;
 
     case 'completed':
@@ -273,17 +276,8 @@ function updateProgress(data) {
 function updateStepDisplay(data) {
   const { currentStep, command, status, duration, error, stderr } = data;
   const stepId = `step-${currentStep}`;
+  const stepElement = getOrCreateStepElement(stepId, 'progress-step');
 
-  let stepElement = document.getElementById(stepId);
-
-  if (!stepElement) {
-    stepElement = document.createElement('div');
-    stepElement.id = stepId;
-    stepElement.className = 'progress-step';
-    elements.progressSteps.appendChild(stepElement);
-  }
-
-  // Determine step status class
   let stepClass = 'progress-step';
   let statusText = 'Running';
 
@@ -300,7 +294,6 @@ function updateStepDisplay(data) {
 
   stepElement.className = stepClass;
 
-  // Build step content
   let content = `
     <div class="progress-step-header">
       <span><strong>${statusText}</strong> Step ${currentStep}</span>
@@ -314,9 +307,106 @@ function updateStepDisplay(data) {
   }
 
   stepElement.innerHTML = content;
-
-  // Auto-scroll to latest step
   stepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function displayConflictStep(data) {
+  const { currentStep, conflictType, totalSteps } = data;
+  const stepElement = getOrCreateStepElement(
+    'step-conflict',
+    'progress-step conflict'
+  );
+
+  const conflictLabel = getConflictLabel(conflictType);
+
+  stepElement.innerHTML = `
+    <div class="progress-step-header">
+      <span><strong>CONFLICT DETECTED</strong> at Step ${currentStep}/${totalSteps}</span>
+    </div>
+    <div class="progress-step-command">${conflictLabel}</div>
+    <div class="progress-step-info">Starting automatic rollback...</div>
+  `;
+
+  stepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function displayRollbackStep(data) {
+  const { rollbackStep, totalRollbackSteps, command, status, duration } = data;
+  const stepId = `rollback-step-${rollbackStep}`;
+  const stepElement = getOrCreateStepElement(stepId, 'progress-step rollback');
+
+  let stepClass = 'progress-step rollback';
+  let statusText = 'Rolling back';
+
+  if (status === 'rollback-running') {
+    stepClass += ' rollback-running';
+    statusText = 'Rolling back';
+  } else if (status === 'rollback-step-complete') {
+    stepClass += ' rollback-complete';
+    statusText = 'Rolled back';
+  } else if (status === 'rollback-step-warning') {
+    stepClass += ' rollback-warning';
+    statusText = 'Rolled back with warning';
+  }
+
+  stepElement.className = stepClass;
+
+  stepElement.innerHTML = `
+    <div class="progress-step-header">
+      <span><strong>${statusText}</strong> Step ${rollbackStep}/${totalRollbackSteps}</span>
+      ${duration ? `<span class="progress-step-time">${duration}s</span>` : ''}
+    </div>
+    <div class="progress-step-command">${command}</div>
+  `;
+
+  stepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function displayRollbackComplete() {
+  const stepElement = getOrCreateStepElement(
+    'rollback-complete',
+    'progress-step rollback-done'
+  );
+
+  stepElement.innerHTML = `
+    <div class="progress-step-header">
+      <span><strong>ROLLBACK COMPLETE</strong></span>
+    </div>
+    <div class="progress-step-command">Server restored to previous state</div>
+  `;
+
+  stepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function getConflictLabel(conflictType) {
+  const labels = {
+    UNMERGED_INDEX: 'Repository has unmerged paths that block stashing',
+    STASH_CONFLICT: 'Stashed changes conflict with pulled updates',
+    MERGE_CONFLICT: 'Local and remote branches have conflicting changes',
+    UNMERGED_FILE: 'Index contains unmerged files after stash pop',
+  };
+  return labels[conflictType] || `Git conflict: ${conflictType}`;
+}
+
+function displayConflictHeader() {
+  let conflictHeader = document.getElementById('conflict-header');
+
+  if (!conflictHeader) {
+    conflictHeader = document.createElement('div');
+    conflictHeader.id = 'conflict-header';
+    conflictHeader.className = 'conflict-header';
+
+    elements.progressSection
+      .querySelector('h3')
+      .insertAdjacentElement('afterend', conflictHeader);
+  }
+
+  conflictHeader.innerHTML = `
+    <div class="conflict-title">CONFLICT!</div>
+    <div class="conflict-subtitle">Rollback Started...</div>
+  `;
+
+  conflictHeader.style.display = 'flex';
 }
 
 function displayPlan(plan) {
@@ -329,82 +419,71 @@ function displayPlan(plan) {
   elements.statusSection.style.display = 'block';
   elements.executeButton.disabled = false;
   elements.cancelButton.disabled = false;
-
-  // Smooth scroll to status section
-  setTimeout(() => {
-    elements.statusSection.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-    });
-  }, 100);
+  scrollToElement(elements.statusSection);
 }
 
 function displaySuccess(result) {
   elements.progressSection.style.display = 'none';
   elements.statusSection.style.display = 'none';
   elements.resultSection.style.display = 'block';
-  elements.resultSection.style.background = '#d1fae5';
-  elements.resultSection.style.color = '#065f46';
+  elements.resultSection.style.background = '#10b981';
+  elements.resultSection.style.color = '#ffffff';
+  elements.resultSection.style.borderColor = '#059669';
 
-  let output = '<strong>Process Successful</strong>\n\n';
-  output += `Completed ${result.totalSteps} steps in ${result.totalDuration}s`;
-
-  elements.outputDisplay.innerHTML = output;
-
-  // Smooth scroll to result section
-  setTimeout(() => {
-    elements.resultSection.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-    });
-  }, 100);
+  elements.outputDisplay.innerHTML = `Completed ${result.totalSteps} steps in ${result.totalDuration}s`;
+  elements.outputDisplay.style.color = '#e5e7eb';
+  scrollToElement(elements.resultSection);
 }
 
 function displayError(error) {
   elements.progressSection.style.display = 'none';
   elements.statusSection.style.display = 'none';
   elements.resultSection.style.display = 'block';
-  elements.resultSection.style.background = '#fee2e2';
-  elements.resultSection.style.color = '#991b1b';
 
-  let errorMessage = '<strong>Process Failed</strong>\n\n';
+  if (error.isConflict) {
+    elements.resultSection.style.background = '#fbbf24';
+    elements.resultSection.style.color = '#ffffff';
+    elements.resultSection.style.borderColor = '#f59e0b';
 
-  if (error.failedAtStep && error.failedCommand) {
-    errorMessage += `Failed at Step ${error.failedAtStep}/${error.totalSteps}\n`;
-    errorMessage += `Command: ${error.failedCommand}\n`;
-    errorMessage += `Duration: ${error.totalDuration}s\n\n`;
+    elements.outputDisplay.innerHTML = error.message;
+    elements.outputDisplay.style.color = '#e5e7eb';
+  } else {
+    elements.resultSection.style.background = '#ef4444';
+    elements.resultSection.style.color = '#ffffff';
+    elements.resultSection.style.borderColor = '#dc2626';
+
+    let errorMessage = '';
+
+    if (error.failedAtStep && error.failedCommand) {
+      errorMessage += `Failed at Step ${error.failedAtStep}/${error.totalSteps}\n`;
+      errorMessage += `Command: ${error.failedCommand}\n`;
+      errorMessage += `Duration: ${error.totalDuration}s\n\n`;
+    }
+
+    if (error.stderr) {
+      errorMessage += `Error Output:\n${error.stderr}\n\n`;
+    }
+
+    if (error.failureReason) {
+      errorMessage += `Reason: ${error.failureReason}\n`;
+    }
+
+    if (error.exitCode) {
+      errorMessage += `Exit Code: ${error.exitCode}\n`;
+    }
+
+    if (!error.stderr && !error.failureReason) {
+      errorMessage += error.message || 'Unknown error occurred';
+    }
+
+    elements.outputDisplay.innerHTML = errorMessage;
+    elements.outputDisplay.style.color = '#e5e7eb';
   }
 
-  if (error.stderr) {
-    errorMessage += `Error Output:\n${error.stderr}\n\n`;
-  }
-
-  if (error.error) {
-    errorMessage += `Message: ${error.error}\n`;
-  }
-
-  if (error.exitCode) {
-    errorMessage += `Exit Code: ${error.exitCode}\n`;
-  }
-
-  if (!error.stderr && !error.error) {
-    errorMessage += error.message || 'Unknown error occurred';
-  }
-
-  elements.outputDisplay.innerHTML = errorMessage;
-
-  // Smooth scroll to result section
-  setTimeout(() => {
-    elements.resultSection.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-    });
-  }, 100);
+  scrollToElement(elements.resultSection);
 }
 
 function showError(title, error) {
-  console.error(`[Renderer] ${title}:`, error);
-
   elements.resultSection.style.display = 'block';
   elements.resultSection.style.background = '#fee2e2';
   elements.resultSection.style.color = '#991b1b';
@@ -417,6 +496,23 @@ function hideResults() {
   elements.progressSection.style.display = 'none';
   elements.resultSection.style.display = 'none';
   state.currentPlan = null;
+}
+
+function getOrCreateStepElement(stepId, className) {
+  let stepElement = document.getElementById(stepId);
+  if (!stepElement) {
+    stepElement = document.createElement('div');
+    stepElement.id = stepId;
+    stepElement.className = className;
+    elements.progressSteps.appendChild(stepElement);
+  }
+  return stepElement;
+}
+
+function scrollToElement(element) {
+  setTimeout(() => {
+    element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 100);
 }
 
 initialize();

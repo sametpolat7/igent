@@ -1,8 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { planProcess, AGENT_TYPES } from './agent/planner.js';
-import { executeProcess } from './agent/executor.js';
+import { planProcess, AGENT_TYPES } from './agents/planner.js';
+import { executeProcess } from './agents/executor.js';
 import { loadServersConfig } from './config/loadConfig.js';
 import { logError } from './utils/logger.js';
 
@@ -28,7 +28,7 @@ function registerIPCHandlers() {
       return loadServersConfig();
     } catch (error) {
       logError('IPC', 'Failed to load servers', error);
-      throw new Error(`Configuration error: ${error.message}`);
+      throw new Error('Failed to load servers. Please check your settings.');
     }
   });
 
@@ -37,7 +37,9 @@ function registerIPCHandlers() {
       return planProcess(AGENT_TYPES.SERVER_UPDATE, payload);
     } catch (error) {
       logError('IPC', 'Planning failed', error);
-      throw new Error(`Planning error: ${error.message}`);
+      throw new Error(
+        'Planning failed. Please verify your server and branch configuration.'
+      );
     }
   });
 
@@ -52,8 +54,24 @@ function registerIPCHandlers() {
         progressCallback,
       });
     } catch (error) {
+      if (error.isConflict) {
+        return {
+          success: false,
+          isConflict: true,
+          conflictType: error.conflictType,
+          directory: error.directory,
+          branch: error.branch,
+          message: error.message,
+          totalSteps: error.totalSteps,
+          failedAtStep: error.failedAtStep,
+          totalDuration: error.totalDuration,
+        };
+      }
+
       logError('IPC', 'Execution failed', error);
-      throw new Error(`Execution error: ${error.message}`);
+      throw new Error(
+        'Deployment failed. Please try again or contact support if the problem persists.'
+      );
     }
   });
 }

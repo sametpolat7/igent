@@ -1,4 +1,4 @@
-import { executeServerUpdate } from './types/server-update/executor.js';
+import { executeServerUpdate } from './server-update/executor.js';
 import { AGENT_TYPES } from './planner.js';
 import { logDebug } from '../utils/logger.js';
 

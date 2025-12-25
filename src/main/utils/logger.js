@@ -87,7 +87,7 @@ export function logError(module, message, error) {
   }
 }
 
-export function logDebug(module, message) {
+export function logDebug(module, message, data) {
   const timestamp = `${COLORS.gray}${getTimestamp()}${COLORS.reset}`;
   const label = `${COLORS.gray}DEBUG${COLORS.reset}`;
   const moduleStr = formatModule(module);
@@ -95,6 +95,9 @@ export function logDebug(module, message) {
   console.log(
     `${timestamp} ${label} ${moduleStr} ${COLORS.dim}${message}${COLORS.reset}`
   );
+  if (data !== undefined) {
+    console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
+  }
 }
 
 export function logStart(module, operation, params) {

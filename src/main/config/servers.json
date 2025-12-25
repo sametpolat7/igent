@@ -15,27 +15,18 @@
   },
   "itest": {
     "sshHost": "itest",
-    "allowedDirectories": [
-      "itest",
-      "inewtest"
-    ]
+    "allowedDirectories": ["itest", "inewtest"]
   },
   "academy": {
     "sshHost": "academy",
-    "allowedDirectories": [
-      "academy"
-    ]
+    "allowedDirectories": ["academy"]
   },
   "messt": {
     "sshHost": "messt",
-    "allowedDirectories": [
-      "messt"
-    ]
+    "allowedDirectories": ["messt"]
   },
   "plus": {
     "sshHost": "plus",
-    "allowedDirectories": [
-      "iwallet_plus"
-    ]
+    "allowedDirectories": ["iwallet_plus"]
   }
 }
