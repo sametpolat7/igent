@@ -335,7 +335,7 @@ function createStepHTML(
       ${duration ? `<span class="progress-step-time">${duration}s</span>` : ''}
     </div>
     <div class="progress-step-command">${escapeHTML(command)}</div>
-    ${errorMsg ? `<div style="color: #e53e3e; font-size: 11px; margin-top: 4px;">Error: ${escapeHTML(errorMsg)}</div>` : ''}
+    ${errorMsg ? `<div style="color: var(--color-error); font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">Error: ${escapeHTML(errorMsg)}</div>` : ''}
   `;
 }
 
