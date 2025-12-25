@@ -522,7 +522,7 @@ body {
 @media (min-width: 640px) {
   .progress-step {
     padding: var(--space-md) var(--space-lg);
-    margin-bottom: 10px;
+    margin-bottom: var(--space-md);
   }
 }
 
