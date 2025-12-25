@@ -207,7 +207,7 @@ body {
 
 .form-control {
   width: 100%;
-  padding: 10px var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   border: 2px solid var(--gray-200);
   border-radius: var(--radius-sm);
   font-size: var(--font-base);
