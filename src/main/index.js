@@ -28,7 +28,7 @@ function registerIPCHandlers() {
       return loadServersConfig();
     } catch (error) {
       logError('IPC', 'Failed to load servers', error);
-      throw new Error(`Configuration error: ${error.message}`);
+      throw new Error('Failed to load servers. Please check your settings.');
     }
   });
 
@@ -37,7 +37,9 @@ function registerIPCHandlers() {
       return planProcess(AGENT_TYPES.SERVER_UPDATE, payload);
     } catch (error) {
       logError('IPC', 'Planning failed', error);
-      throw new Error(`Planning error: ${error.message}`);
+      throw new Error(
+        'Planning failed. Please verify your server and branch configuration.'
+      );
     }
   });
 
@@ -67,7 +69,9 @@ function registerIPCHandlers() {
       }
 
       logError('IPC', 'Execution failed', error);
-      throw new Error(`Execution error: ${error.message}`);
+      throw new Error(
+        'Deployment failed. Please try again or contact support if the problem persists.'
+      );
     }
   });
 }

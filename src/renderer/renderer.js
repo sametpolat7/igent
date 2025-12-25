@@ -409,14 +409,6 @@ function displayConflictHeader() {
   conflictHeader.style.display = 'flex';
 }
 
-function cleanErrorMessage(message) {
-  if (!message) return '';
-  return message
-    .replace(/^Error invoking remote method '[^']+': /, '')
-    .replace(/^Error: /, '')
-    .replace(/^Execution error: /, '');
-}
-
 function displayPlan(plan) {
   elements.commandsDisplay.innerHTML =
     `<strong>Server:</strong> ${plan.serverKey}\n` +
@@ -453,9 +445,7 @@ function displayError(error) {
     elements.resultSection.style.color = '#ffffff';
     elements.resultSection.style.borderColor = '#f59e0b';
 
-    let conflictMessage = cleanErrorMessage(error.message || error.error);
-
-    elements.outputDisplay.innerHTML = conflictMessage;
+    elements.outputDisplay.innerHTML = error.message;
     elements.outputDisplay.style.color = '#e5e7eb';
   } else {
     elements.resultSection.style.background = '#ef4444';
@@ -474,17 +464,16 @@ function displayError(error) {
       errorMessage += `Error Output:\n${error.stderr}\n\n`;
     }
 
-    if (error.error) {
-      errorMessage += `Message: ${cleanErrorMessage(error.error)}\n`;
+    if (error.failureReason) {
+      errorMessage += `Reason: ${error.failureReason}\n`;
     }
 
     if (error.exitCode) {
       errorMessage += `Exit Code: ${error.exitCode}\n`;
     }
 
-    if (!error.stderr && !error.error) {
-      errorMessage +=
-        cleanErrorMessage(error.message) || 'Unknown error occurred';
+    if (!error.stderr && !error.failureReason) {
+      errorMessage += error.message || 'Unknown error occurred';
     }
 
     elements.outputDisplay.innerHTML = errorMessage;

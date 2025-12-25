@@ -146,7 +146,7 @@ export async function executeServerUpdate({
           command,
           stdout: stepError.stdout?.trim() || '',
           stderr: stepError.stderr?.trim() || '',
-          error: stepError.message,
+          failureReason: stepError.message,
           exitCode: stepError.code,
         };
 
@@ -204,12 +204,12 @@ export async function executeServerUpdate({
       `Update failed at step ${failedStep?.step || progress.currentStep}`,
       {
         command: failedStep?.command || commands[progress.currentStep - 1],
-        error: failedStep?.error || error.message,
+        failureReason: failedStep?.failureReason || error.message,
         stderr: failedStep?.stderr || '',
       }
     );
 
-    const enhancedError = new Error('Command execution failed');
+    const enhancedError = new Error('Execution failed.');
     Object.assign(enhancedError, {
       success: false,
       commands,
@@ -219,7 +219,7 @@ export async function executeServerUpdate({
       failedCommand: failedStep?.command || commands[progress.currentStep - 1],
       stdout: failedStep?.stdout || '',
       stderr: failedStep?.stderr || '',
-      error: failedStep?.error || error.message,
+      failureReason: failedStep?.failureReason || error.message,
       exitCode: failedStep?.exitCode || error.code,
       totalDuration,
       executedAt: new Date().toISOString(),
