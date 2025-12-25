@@ -8,7 +8,6 @@ const state = {
 const elements = {
   navTabs: document.querySelectorAll('.nav-tab'),
   viewContainers: document.querySelectorAll('.view-container'),
-  clock: document.getElementById('clock'),
   serverSelect: document.getElementById('server'),
   directorySelect: document.getElementById('directory'),
   branchInput: document.getElementById('branch'),
@@ -26,68 +25,79 @@ const elements = {
   outputDisplay: document.getElementById('output'),
 };
 
+const PROGRESS_GRADIENTS = {
+  success: 'linear-gradient(90deg, #14b8a6 0%, #0d9488 100%)',
+  error: 'linear-gradient(90deg, #f43f5e 0%, #e11d48 100%)',
+};
+
+const RESULT_STYLES = {
+  success: { background: '#14b8a6', color: '#ffffff' },
+  conflict: { background: '#f59e0b', color: '#ffffff' },
+  error: { background: '#f43f5e', color: '#ffffff' },
+  warning: { background: '#fef3c7', color: '#92400e' },
+};
+
+const CONFLICT_LABELS = {
+  UNMERGED_INDEX: 'Repository has unmerged paths that block stashing',
+  STASH_CONFLICT: 'Stashed changes conflict with pulled updates',
+  MERGE_CONFLICT: 'Local and remote branches have conflicting changes',
+  UNMERGED_FILE: 'Index contains unmerged files after stash pop',
+};
+
+const STEP_STATUS_MAP = {
+  running: { class: 'running', text: 'Running' },
+  'step-complete': { class: 'success', text: 'Completed' },
+  'step-failed': { class: 'failed', text: 'Failed' },
+  'rollback-running': { class: 'rollback-running', text: 'Rolling back' },
+  'rollback-step-complete': { class: 'rollback-complete', text: 'Rolled back' },
+  'rollback-step-warning': {
+    class: 'rollback-warning',
+    text: 'Rolled back with warning',
+  },
+};
+
 async function initialize() {
   setupViewSwitching();
   await loadServers();
   attachEventListeners();
   setupProgressListener();
-  startClock();
-}
-
-function startClock() {
-  function updateClock() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    elements.clock.textContent = `${hours}:${minutes}:${seconds}`;
-  }
-  updateClock();
-  setInterval(updateClock, 1000);
 }
 
 function setupViewSwitching() {
   elements.navTabs.forEach((tab) => {
-    tab.addEventListener('click', (event) => {
-      const targetView = event.target.dataset.view;
-      switchView(targetView);
-    });
+    tab.addEventListener('click', (e) => switchView(e.target.dataset.view));
   });
 }
 
 function switchView(viewName) {
   state.currentView = viewName;
+  toggleActive(elements.navTabs, (tab) => tab.dataset.view === viewName);
+  toggleActive(
+    elements.viewContainers,
+    (container) => container.id === `view-${viewName}`
+  );
+}
 
-  elements.navTabs.forEach((tab) => {
-    if (tab.dataset.view === viewName) {
-      tab.classList.add('active');
-    } else {
-      tab.classList.remove('active');
-    }
-  });
-
-  elements.viewContainers.forEach((container) => {
-    if (container.id === `view-${viewName}`) {
-      container.classList.add('active');
-    } else {
-      container.classList.remove('active');
-    }
-  });
+function toggleActive(elements, matchFn) {
+  elements.forEach((el) => el.classList.toggle('active', matchFn(el)));
 }
 
 async function loadServers() {
   try {
     state.servers = await window.igent.getServers();
-
-    Object.keys(state.servers).forEach((serverKey) => {
-      const option = document.createElement('option');
-      option.value = serverKey;
-      option.textContent = serverKey;
-      elements.serverSelect.appendChild(option);
+    Object.keys(state.servers).forEach((key) => {
+      elements.serverSelect.appendChild(createOption(key, key));
     });
   } catch (error) {
     showError('Failed to load server configuration', error);
   }
+}
+
+function createOption(value, text) {
+  const option = document.createElement('option');
+  option.value = value;
+  option.textContent = text;
+  return option;
 }
 
 function attachEventListeners() {
@@ -99,55 +109,41 @@ function attachEventListeners() {
   elements.cancelButton.addEventListener('click', handleCancel);
 }
 
-function handleServerChange(event) {
-  const serverKey = event.target.value;
+function handleServerChange(e) {
+  const serverKey = e.target.value;
 
   elements.directorySelect.innerHTML =
     '<option value="">Select directory...</option>';
   elements.directorySelect.disabled = true;
   elements.planButton.disabled = true;
-
   hideResults();
 
   if (serverKey && state.servers[serverKey]) {
-    const directories = state.servers[serverKey].allowedDirectories;
-
-    directories.forEach((directory) => {
-      const option = document.createElement('option');
-      option.value = directory;
-      option.textContent = directory;
-      elements.directorySelect.appendChild(option);
+    state.servers[serverKey].allowedDirectories.forEach((dir) => {
+      elements.directorySelect.appendChild(createOption(dir, dir));
     });
-
     elements.directorySelect.disabled = false;
   }
 }
 
 function validateForm() {
-  const server = elements.serverSelect.value;
-  const directory = elements.directorySelect.value;
-  const branch = elements.branchInput.value.trim();
-
-  const isValid = server && directory && branch;
+  const isValid =
+    elements.serverSelect.value &&
+    elements.directorySelect.value &&
+    elements.branchInput.value.trim();
   elements.planButton.disabled = !isValid;
 }
 
 async function handleUpdate() {
-  const serverKey = elements.serverSelect.value;
-  const directory = elements.directorySelect.value;
-  const branch = elements.branchInput.value.trim();
-
   hideResults();
-
   elements.planButton.disabled = true;
 
   try {
     state.currentPlan = await window.igent.plan({
-      serverKey,
-      directory,
-      branch,
+      serverKey: elements.serverSelect.value,
+      directory: elements.directorySelect.value,
+      branch: elements.branchInput.value.trim(),
     });
-
     displayPlan(state.currentPlan);
   } catch (error) {
     showError('Planning failed', error);
@@ -165,34 +161,12 @@ async function handleExecute() {
     return;
   }
 
-  state.isExecuting = true;
-  elements.executeButton.disabled = true;
-  elements.cancelButton.disabled = true;
-  elements.planButton.disabled = true;
-
-  elements.statusSection.style.display = 'none';
-  elements.resultSection.style.display = 'none';
-  elements.progressSection.style.display = 'block';
-  elements.progressSteps.innerHTML = '';
-  elements.progressBar.style.width = '0%';
-  elements.progressPercentage.textContent = '0%';
-
-  elements.progressWrapper.style.display = 'flex';
-  const conflictHeader = document.getElementById('conflict-header');
-  if (conflictHeader) {
-    conflictHeader.style.display = 'none';
-  }
-
-  setTimeout(() => {
-    elements.progressSection.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-    });
-  }, 100);
+  setExecutionState(true);
+  resetProgress();
+  scrollToElement(elements.progressSection);
 
   try {
     const result = await window.igent.execute(state.currentPlan);
-
     if (result.success === false) {
       displayError(result);
     } else {
@@ -201,113 +175,97 @@ async function handleExecute() {
   } catch (error) {
     displayError(error);
   } finally {
-    state.isExecuting = false;
-    validateForm();
+    setExecutionState(false);
   }
+}
+
+function setExecutionState(isExecuting) {
+  state.isExecuting = isExecuting;
+  elements.executeButton.disabled = isExecuting;
+  elements.cancelButton.disabled = isExecuting;
+  elements.planButton.disabled = isExecuting;
+  if (!isExecuting) validateForm();
+}
+
+function resetProgress() {
+  hideSection(elements.statusSection);
+  hideSection(elements.resultSection);
+  showSection(elements.progressSection);
+
+  elements.progressSteps.innerHTML = '';
+  setProgressBar(0);
+  elements.progressWrapper.style.display = 'flex';
+
+  const conflictHeader = document.getElementById('conflict-header');
+  if (conflictHeader) conflictHeader.style.display = 'none';
+}
+
+function setProgressBar(percentage, gradient = null) {
+  elements.progressBar.style.width = `${percentage}%`;
+  elements.progressPercentage.textContent = `${percentage}%`;
+  if (gradient) elements.progressBar.style.background = gradient;
 }
 
 function handleCancel() {
   state.currentPlan = null;
-  elements.statusSection.style.display = 'none';
+  hideSection(elements.statusSection);
 }
 
 function setupProgressListener() {
-  window.igent.onProgress((progressData) => {
-    updateProgress(progressData);
-  });
+  window.igent.onProgress(updateProgress);
 }
 
 function updateProgress(data) {
   const { status, currentStep, totalSteps } = data;
 
   if (totalSteps > 0) {
-    let completedSteps = currentStep || 0;
-
-    if (status === 'running') {
-      completedSteps = Math.max(0, currentStep - 1);
-    }
-
-    const percentage = Math.round((completedSteps / totalSteps) * 100);
-    elements.progressBar.style.width = `${percentage}%`;
-    elements.progressPercentage.textContent = `${percentage}%`;
+    const completed =
+      status === 'running' ? Math.max(0, currentStep - 1) : currentStep || 0;
+    setProgressBar(Math.round((completed / totalSteps) * 100));
   }
 
-  switch (status) {
-    case 'started':
-      elements.progressSteps.innerHTML = '';
-      break;
-
-    case 'running':
-    case 'step-complete':
-    case 'step-failed':
-      updateStepDisplay(data);
-      break;
-
-    case 'conflict-detected':
+  const handlers = {
+    started: () => (elements.progressSteps.innerHTML = ''),
+    running: () => updateStepDisplay(data),
+    'step-complete': () => updateStepDisplay(data),
+    'step-failed': () => updateStepDisplay(data),
+    'conflict-detected': () => {
       displayConflictStep(data);
       elements.progressWrapper.style.display = 'none';
       displayConflictHeader();
-      break;
+    },
+    'rollback-running': () => displayRollbackStep(data),
+    'rollback-step-complete': () => displayRollbackStep(data),
+    'rollback-step-warning': () => displayRollbackStep(data),
+    'rollback-completed': () => displayRollbackComplete(),
+    completed: () => setProgressBar(100, PROGRESS_GRADIENTS.success),
+    failed: () =>
+      setProgressBar(
+        parseInt(elements.progressPercentage.textContent),
+        PROGRESS_GRADIENTS.error
+      ),
+  };
 
-    case 'rollback-running':
-    case 'rollback-step-complete':
-    case 'rollback-step-warning':
-      displayRollbackStep(data);
-      break;
-
-    case 'rollback-completed':
-      displayRollbackComplete(data);
-      break;
-
-    case 'completed':
-      elements.progressBar.style.width = '100%';
-      elements.progressPercentage.textContent = '100%';
-      elements.progressBar.style.background =
-        'linear-gradient(90deg, #10b981 0%, #059669 100%)';
-      break;
-
-    case 'failed':
-      elements.progressBar.style.background =
-        'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)';
-      break;
-  }
+  handlers[status]?.();
 }
 
 function updateStepDisplay(data) {
   const { currentStep, command, status, duration, error, stderr } = data;
-  const stepId = `step-${currentStep}`;
-  const stepElement = getOrCreateStepElement(stepId, 'progress-step');
+  const stepElement = getOrCreateStepElement(
+    `step-${currentStep}`,
+    'progress-step'
+  );
+  const statusInfo = STEP_STATUS_MAP[status] || { class: '', text: 'Running' };
 
-  let stepClass = 'progress-step';
-  let statusText = 'Running';
-
-  if (status === 'running') {
-    stepClass += ' running';
-    statusText = 'Running';
-  } else if (status === 'step-complete') {
-    stepClass += ' success';
-    statusText = 'Completed';
-  } else if (status === 'step-failed') {
-    stepClass += ' failed';
-    statusText = 'Failed';
-  }
-
-  stepElement.className = stepClass;
-
-  let content = `
-    <div class="progress-step-header">
-      <span><strong>${statusText}</strong> Step ${currentStep}</span>
-      ${duration ? `<span class="progress-step-time">${duration}s</span>` : ''}
-    </div>
-    <div class="progress-step-command">${command}</div>
-  `;
-
-  if (status === 'step-failed') {
-    content += `<div style="color: #e53e3e; font-size: 11px; margin-top: 4px;">Error: ${error || stderr}</div>`;
-  }
-
-  stepElement.innerHTML = content;
-  stepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  stepElement.className = `progress-step ${statusInfo.class}`;
+  stepElement.innerHTML = createStepHTML(
+    statusInfo.text,
+    currentStep,
+    command,
+    duration,
+    status === 'step-failed' ? error || stderr : null
+  );
+  scrollToElement(stepElement);
 }
 
 function displayConflictStep(data) {
@@ -316,50 +274,38 @@ function displayConflictStep(data) {
     'step-conflict',
     'progress-step conflict'
   );
-
-  const conflictLabel = getConflictLabel(conflictType);
+  const label =
+    CONFLICT_LABELS[conflictType] || `Git conflict: ${conflictType}`;
 
   stepElement.innerHTML = `
     <div class="progress-step-header">
       <span><strong>CONFLICT DETECTED</strong> at Step ${currentStep}/${totalSteps}</span>
     </div>
-    <div class="progress-step-command">${conflictLabel}</div>
+    <div class="progress-step-command">${escapeHTML(label)}</div>
     <div class="progress-step-info">Starting automatic rollback...</div>
   `;
-
-  stepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  scrollToElement(stepElement);
 }
 
 function displayRollbackStep(data) {
   const { rollbackStep, totalRollbackSteps, command, status, duration } = data;
-  const stepId = `rollback-step-${rollbackStep}`;
-  const stepElement = getOrCreateStepElement(stepId, 'progress-step rollback');
+  const stepElement = getOrCreateStepElement(
+    `rollback-step-${rollbackStep}`,
+    'progress-step rollback'
+  );
+  const statusInfo = STEP_STATUS_MAP[status] || {
+    class: '',
+    text: 'Rolling back',
+  };
 
-  let stepClass = 'progress-step rollback';
-  let statusText = 'Rolling back';
-
-  if (status === 'rollback-running') {
-    stepClass += ' rollback-running';
-    statusText = 'Rolling back';
-  } else if (status === 'rollback-step-complete') {
-    stepClass += ' rollback-complete';
-    statusText = 'Rolled back';
-  } else if (status === 'rollback-step-warning') {
-    stepClass += ' rollback-warning';
-    statusText = 'Rolled back with warning';
-  }
-
-  stepElement.className = stepClass;
-
-  stepElement.innerHTML = `
-    <div class="progress-step-header">
-      <span><strong>${statusText}</strong> Step ${rollbackStep}/${totalRollbackSteps}</span>
-      ${duration ? `<span class="progress-step-time">${duration}s</span>` : ''}
-    </div>
-    <div class="progress-step-command">${command}</div>
-  `;
-
-  stepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  stepElement.className = `progress-step rollback ${statusInfo.class}`;
+  stepElement.innerHTML = createStepHTML(
+    statusInfo.text,
+    `${rollbackStep}/${totalRollbackSteps}`,
+    command,
+    duration
+  );
+  scrollToElement(stepElement);
 }
 
 function displayRollbackComplete() {
@@ -367,152 +313,152 @@ function displayRollbackComplete() {
     'rollback-complete',
     'progress-step rollback-done'
   );
-
   stepElement.innerHTML = `
     <div class="progress-step-header">
       <span><strong>ROLLBACK COMPLETE</strong></span>
     </div>
     <div class="progress-step-command">Server restored to previous state</div>
   `;
-
-  stepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  scrollToElement(stepElement);
 }
 
-function getConflictLabel(conflictType) {
-  const labels = {
-    UNMERGED_INDEX: 'Repository has unmerged paths that block stashing',
-    STASH_CONFLICT: 'Stashed changes conflict with pulled updates',
-    MERGE_CONFLICT: 'Local and remote branches have conflicting changes',
-    UNMERGED_FILE: 'Index contains unmerged files after stash pop',
-  };
-  return labels[conflictType] || `Git conflict: ${conflictType}`;
+function createStepHTML(
+  statusText,
+  stepNum,
+  command,
+  duration,
+  errorMsg = null
+) {
+  return `
+    <div class="progress-step-header">
+      <span><strong>${escapeHTML(statusText)}</strong> Step ${stepNum}</span>
+      ${duration ? `<span class="progress-step-time">${duration}s</span>` : ''}
+    </div>
+    <div class="progress-step-command">${escapeHTML(command)}</div>
+    ${errorMsg ? `<div style="color: var(--color-error); font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">Error: ${escapeHTML(errorMsg)}</div>` : ''}
+  `;
 }
 
 function displayConflictHeader() {
-  let conflictHeader = document.getElementById('conflict-header');
+  let header = document.getElementById('conflict-header');
 
-  if (!conflictHeader) {
-    conflictHeader = document.createElement('div');
-    conflictHeader.id = 'conflict-header';
-    conflictHeader.className = 'conflict-header';
-
+  if (!header) {
+    header = document.createElement('div');
+    header.id = 'conflict-header';
+    header.className = 'conflict-header';
     elements.progressSection
       .querySelector('h3')
-      .insertAdjacentElement('afterend', conflictHeader);
+      .insertAdjacentElement('afterend', header);
   }
 
-  conflictHeader.innerHTML = `
-    <div class="conflict-title">CONFLICT!</div>
+  header.innerHTML = `
+    <div class="conflict-title">CONFLICT</div>
     <div class="conflict-subtitle">Rollback Started...</div>
   `;
-
-  conflictHeader.style.display = 'flex';
+  header.style.display = 'flex';
 }
 
 function displayPlan(plan) {
-  elements.commandsDisplay.innerHTML =
-    `<strong>Server:</strong> ${plan.serverKey}\n` +
-    `<strong>Directory:</strong> ${plan.directory}\n` +
-    `<strong>Branch:</strong> ${plan.branch}\n\n` +
-    `<strong>Commands:</strong>\n${plan.commands.map((cmd, i) => `${i + 1}. ${cmd}`).join('\n')}`;
+  const commands = plan.commands.map((cmd, i) => `${i + 1}. ${cmd}`).join('\n');
 
-  elements.statusSection.style.display = 'block';
+  elements.commandsDisplay.innerHTML =
+    `<div><span class="plan-label">Server:</span> ${escapeHTML(plan.serverKey)}</div>` +
+    `<div><span class="plan-label">Directory:</span> ${escapeHTML(plan.directory)}</div>` +
+    `<div><span class="plan-label">Branch:</span> ${escapeHTML(plan.branch)}</div>` +
+    `<div style="margin-top: 8px;"><span class="plan-label">Commands:</span></div>` +
+    `<div style="margin-top: 4px;">${escapeHTML(commands)}</div>`;
+
+  showSection(elements.statusSection);
   elements.executeButton.disabled = false;
   elements.cancelButton.disabled = false;
   scrollToElement(elements.statusSection);
 }
 
 function displaySuccess(result) {
-  elements.progressSection.style.display = 'none';
-  elements.statusSection.style.display = 'none';
-  elements.resultSection.style.display = 'block';
-  elements.resultSection.style.background = '#10b981';
-  elements.resultSection.style.color = '#ffffff';
-  elements.resultSection.style.borderColor = '#059669';
+  hideSection(elements.progressSection);
+  hideSection(elements.statusSection);
+  showResultSection(
+    'success',
+    `Completed ${result.totalSteps} steps in ${result.totalDuration}s`
+  );
+}
 
-  elements.outputDisplay.innerHTML = `Completed ${result.totalSteps} steps in ${result.totalDuration}s`;
+function displayError(error) {
+  hideSection(elements.progressSection);
+  hideSection(elements.statusSection);
+
+  if (error.isConflict) {
+    showResultSection('conflict', error.message);
+    return;
+  }
+
+  const parts = [
+    error.failedAtStep &&
+      error.failedCommand &&
+      `Failed at Step ${error.failedAtStep}/${error.totalSteps}\nCommand: ${error.failedCommand}\nDuration: ${error.totalDuration}s`,
+    error.stderr && `Error Output:\n${error.stderr}`,
+    error.failureReason && `Reason: ${error.failureReason}`,
+    error.exitCode && `Exit Code: ${error.exitCode}`,
+    !error.stderr &&
+      !error.failureReason &&
+      (error.message || 'Unknown error occurred'),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
+  showResultSection('error', parts);
+}
+
+function showError(title, error) {
+  showResultSection('warning', `${title}\n\n${error.message || error}`);
+}
+
+function showResultSection(type, message) {
+  const styles = RESULT_STYLES[type];
+  showSection(elements.resultSection);
+  Object.assign(elements.resultSection.style, styles);
+  elements.outputDisplay.textContent = message;
   elements.outputDisplay.style.color = '#e5e7eb';
   scrollToElement(elements.resultSection);
 }
 
-function displayError(error) {
-  elements.progressSection.style.display = 'none';
-  elements.statusSection.style.display = 'none';
-  elements.resultSection.style.display = 'block';
-
-  if (error.isConflict) {
-    elements.resultSection.style.background = '#fbbf24';
-    elements.resultSection.style.color = '#ffffff';
-    elements.resultSection.style.borderColor = '#f59e0b';
-
-    elements.outputDisplay.innerHTML = error.message;
-    elements.outputDisplay.style.color = '#e5e7eb';
-  } else {
-    elements.resultSection.style.background = '#ef4444';
-    elements.resultSection.style.color = '#ffffff';
-    elements.resultSection.style.borderColor = '#dc2626';
-
-    let errorMessage = '';
-
-    if (error.failedAtStep && error.failedCommand) {
-      errorMessage += `Failed at Step ${error.failedAtStep}/${error.totalSteps}\n`;
-      errorMessage += `Command: ${error.failedCommand}\n`;
-      errorMessage += `Duration: ${error.totalDuration}s\n\n`;
-    }
-
-    if (error.stderr) {
-      errorMessage += `Error Output:\n${error.stderr}\n\n`;
-    }
-
-    if (error.failureReason) {
-      errorMessage += `Reason: ${error.failureReason}\n`;
-    }
-
-    if (error.exitCode) {
-      errorMessage += `Exit Code: ${error.exitCode}\n`;
-    }
-
-    if (!error.stderr && !error.failureReason) {
-      errorMessage += error.message || 'Unknown error occurred';
-    }
-
-    elements.outputDisplay.innerHTML = errorMessage;
-    elements.outputDisplay.style.color = '#e5e7eb';
-  }
-
-  scrollToElement(elements.resultSection);
-}
-
-function showError(title, error) {
-  elements.resultSection.style.display = 'block';
-  elements.resultSection.style.background = '#fee2e2';
-  elements.resultSection.style.color = '#991b1b';
-
-  elements.outputDisplay.innerText = `${title}\n\n${error.message || error}`;
-}
-
 function hideResults() {
-  elements.statusSection.style.display = 'none';
-  elements.progressSection.style.display = 'none';
-  elements.resultSection.style.display = 'none';
+  hideSection(elements.statusSection);
+  hideSection(elements.progressSection);
+  hideSection(elements.resultSection);
   state.currentPlan = null;
 }
 
+function showSection(element) {
+  element.style.display = 'block';
+}
+
+function hideSection(element) {
+  element.style.display = 'none';
+}
+
 function getOrCreateStepElement(stepId, className) {
-  let stepElement = document.getElementById(stepId);
-  if (!stepElement) {
-    stepElement = document.createElement('div');
-    stepElement.id = stepId;
-    stepElement.className = className;
-    elements.progressSteps.appendChild(stepElement);
+  let element = document.getElementById(stepId);
+  if (!element) {
+    element = document.createElement('div');
+    element.id = stepId;
+    element.className = className;
+    elements.progressSteps.appendChild(element);
   }
-  return stepElement;
+  return element;
 }
 
 function scrollToElement(element) {
-  setTimeout(() => {
-    element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 100);
+  setTimeout(
+    () => element.scrollIntoView({ behavior: 'smooth', block: 'nearest' }),
+    100
+  );
+}
+
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 initialize();
