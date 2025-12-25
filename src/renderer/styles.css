@@ -269,7 +269,7 @@ body {
 
 @media (min-width: 480px) {
   .btn-success {
-    margin-right: 10px;
+    margin-right: var(--space-sm);
   }
 }
 
