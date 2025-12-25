@@ -52,6 +52,20 @@ function registerIPCHandlers() {
         progressCallback,
       });
     } catch (error) {
+      if (error.isConflict) {
+        return {
+          success: false,
+          isConflict: true,
+          conflictType: error.conflictType,
+          directory: error.directory,
+          branch: error.branch,
+          message: error.message,
+          totalSteps: error.totalSteps,
+          failedAtStep: error.failedAtStep,
+          totalDuration: error.totalDuration,
+        };
+      }
+
       logError('IPC', 'Execution failed', error);
       throw new Error(`Execution error: ${error.message}`);
     }

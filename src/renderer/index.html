@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
@@ -13,7 +13,11 @@
   <body>
     <div class="header">
       <div class="logo-container">
-        <img src="../../assets/logo/igent.png" alt="igent logo" class="logo">
+        <img
+          src="../../assets/logo/igent.png"
+          alt="igent logo"
+          class="logo"
+        >
       </div>
       <div class="header-center">
         <h1>igent</h1>
@@ -22,20 +26,14 @@
       <div class="clock" id="clock"></div>
     </div>
 
-    <!-- Navigation Tabs -->
     <nav class="nav-tabs">
       <button class="nav-tab active" data-view="server-update">
         Server Update
       </button>
-      <button class="nav-tab" data-view="file-edit">
-        File Edit
-      </button>
-      <button class="nav-tab" data-view="queue-control">
-        Queue Control
-      </button>
+      <button class="nav-tab" data-view="file-edit">File Edit</button>
+      <button class="nav-tab" data-view="queue-control">Queue Control</button>
     </nav>
 
-    <!-- View: Server Update -->
     <div id="view-server-update" class="view-container active">
       <div class="container">
         <h2>Deploy to Test Server</h2>
@@ -48,7 +46,9 @@
         </div>
 
         <div class="form-group">
-          <label for="directory" class="form-label">Application Directory</label>
+          <label for="directory" class="form-label">
+            Application Directory
+          </label>
           <select id="directory" class="form-control" disabled>
             <option value="">Select a directory...</option>
           </select>
@@ -65,17 +65,13 @@
           >
         </div>
 
-        <button id="plan" class="btn btn-primary" disabled>
-          Create Plan
-        </button>
+        <button id="plan" class="btn btn-primary" disabled>Create Plan</button>
 
         <div id="status" class="status-section">
           <h3>Process Plan</h3>
           <pre id="commands" class="commands-display"></pre>
           <div class="button-group">
-            <button id="execute" class="btn btn-success">
-              Execute
-            </button>
+            <button id="execute" class="btn btn-success">Execute</button>
             <button id="cancel" class="btn btn-secondary">Cancel</button>
           </div>
         </div>
@@ -98,7 +94,6 @@
       </div>
     </div>
 
-    <!-- View: File Edit -->
     <div id="view-file-edit" class="view-container">
       <div class="container">
         <div class="coming-soon">
@@ -109,7 +104,6 @@
       </div>
     </div>
 
-    <!-- View: Queue Control -->
     <div id="view-queue-control" class="view-container">
       <div class="container">
         <div class="coming-soon">

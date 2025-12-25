@@ -6,8 +6,19 @@ import {
   validateString,
   validateNonEmpty,
 } from '../../../utils/validators.js';
-import { logStart, logSuccess, logError } from '../../../utils/logger.js';
+import {
+  logStart,
+  logSuccess,
+  logError,
+  logWarn,
+  logDebug,
+} from '../../../utils/logger.js';
 import { ProgressTracker } from '../../../utils/progressTracker.js';
+import {
+  detectConflict,
+  executeConflictCleanup,
+  createConflictError,
+} from '../../../utils/conflictResolver.js';
 
 const execAsync = promisify(exec);
 const EXECUTION_TIMEOUT_MS = 300000;
@@ -16,9 +27,10 @@ const MAX_BUFFER_SIZE = 1024 * 1024 * 10;
 export async function executeServerUpdate({
   commands,
   sshHost,
+  directory,
+  branch,
   progressCallback,
 }) {
-  // Validate inputs
   validateArray(commands, 'Commands');
   validateArrayNotEmpty(commands, 'Commands');
   for (const cmd of commands) {
@@ -27,29 +39,46 @@ export async function executeServerUpdate({
   }
   validateString(sshHost, 'SSH host');
   validateNonEmpty(sshHost, 'SSH host');
+  validateString(directory, 'Directory');
+  validateNonEmpty(directory, 'Directory');
+  validateString(branch, 'Branch name');
+  validateNonEmpty(branch, 'Branch name');
 
-  // Initialize progress tracker
   const progress = new ProgressTracker(
     'serverUpdate',
     commands.length,
     progressCallback
   );
 
-  logStart('serverUpdate', 'Executing update', {
-    host: sshHost,
-    commands: commands.length,
-  });
+  logStart(
+    'serverUpdate',
+    `Executing update to ${sshHost} (${commands.length} steps)`
+  );
 
   progress.start(`Starting update to ${sshHost}`);
 
   const executedCommands = [];
   let failedStep = null;
+  let originalHead = null;
 
   try {
-    // Execute commands sequentially, chaining them to maintain SSH session state
+    const appPath = `/var/webs/${directory}`;
+    const getHeadCommand = `cd ${appPath} && git rev-parse HEAD`;
+    const sshCommand = buildSSHCommand(sshHost, getHeadCommand);
+    const { stdout } = await execAsync(sshCommand, {
+      timeout: EXECUTION_TIMEOUT_MS,
+      maxBuffer: MAX_BUFFER_SIZE,
+      killSignal: 'SIGTERM',
+    });
+    originalHead = stdout.trim();
+    logDebug('serverUpdate', `Captured original HEAD: ${originalHead}`);
+  } catch (error) {
+    logWarn('serverUpdate', 'Could not capture original HEAD', error);
+  }
+
+  try {
     for (const command of commands) {
       executedCommands.push(command);
-
       progress.stepStart(command);
 
       try {
@@ -62,8 +91,56 @@ export async function executeServerUpdate({
           killSignal: 'SIGTERM',
         });
 
+        const { hasConflict, conflictType } = detectConflict(stdout, stderr);
+
+        if (hasConflict) {
+          logWarn('serverUpdate', `Git conflict detected: ${conflictType}`);
+
+          await executeConflictCleanup({
+            sshHost,
+            directory,
+            conflictType,
+            originalHead,
+            progressCallback,
+            currentStep: progress.currentStep,
+            totalSteps: progress.totalSteps,
+            buildSSHCommand,
+          });
+
+          throw createConflictError(branch, directory, conflictType);
+        }
+
         progress.stepComplete(command, stdout, stderr);
       } catch (stepError) {
+        if (stepError.isConflict) {
+          throw stepError;
+        }
+
+        const { hasConflict, conflictType } = detectConflict(
+          stepError.stdout || '',
+          stepError.stderr || ''
+        );
+
+        if (hasConflict) {
+          logWarn(
+            'serverUpdate',
+            `Git conflict detected in failed command: ${conflictType}`
+          );
+
+          await executeConflictCleanup({
+            sshHost,
+            directory,
+            conflictType,
+            originalHead,
+            progressCallback,
+            currentStep: progress.currentStep,
+            totalSteps: progress.totalSteps,
+            buildSSHCommand,
+          });
+
+          throw createConflictError(branch, directory, conflictType);
+        }
+
         failedStep = {
           step: progress.currentStep,
           command,
@@ -85,11 +162,11 @@ export async function executeServerUpdate({
       }
     }
 
-    // Success
     const totalDuration = progress.getTotalDuration();
     progress.complete();
 
-    const result = {
+    logSuccess('serverUpdate', `Update completed in ${totalDuration}s`);
+    return {
       success: true,
       commands,
       sshHost,
@@ -97,15 +174,43 @@ export async function executeServerUpdate({
       totalDuration,
       executedAt: new Date().toISOString(),
     };
-
-    logSuccess('serverUpdate', `Update completed in ${totalDuration}s`);
-    return result;
   } catch (error) {
-    // Failure
     const totalDuration = progress.getTotalDuration();
+
+    if (error.isConflict) {
+      logWarn(
+        'serverUpdate',
+        `Update aborted at step ${progress.currentStep}/${commands.length} due to ${error.conflictType} | Total: ${totalDuration}s`
+      );
+
+      const conflictError = new Error(error.message);
+      Object.assign(conflictError, {
+        success: false,
+        isConflict: true,
+        conflictType: error.conflictType,
+        directory: error.directory,
+        branch: error.branch,
+        totalSteps: commands.length,
+        failedAtStep: progress.currentStep,
+        totalDuration,
+      });
+      throw conflictError;
+    }
+
     progress.failed();
 
-    const errorResult = {
+    logError(
+      'serverUpdate',
+      `Update failed at step ${failedStep?.step || progress.currentStep}`,
+      {
+        command: failedStep?.command || commands[progress.currentStep - 1],
+        error: failedStep?.error || error.message,
+        stderr: failedStep?.stderr || '',
+      }
+    );
+
+    const enhancedError = new Error('Command execution failed');
+    Object.assign(enhancedError, {
       success: false,
       commands,
       sshHost,
@@ -118,20 +223,7 @@ export async function executeServerUpdate({
       exitCode: failedStep?.exitCode || error.code,
       totalDuration,
       executedAt: new Date().toISOString(),
-    };
-
-    logError(
-      'serverUpdate',
-      `Update failed at step ${errorResult.failedAtStep}`,
-      {
-        command: errorResult.failedCommand,
-        error: errorResult.error,
-        stderr: errorResult.stderr,
-      }
-    );
-
-    const enhancedError = new Error('Command execution failed');
-    Object.assign(enhancedError, errorResult);
+    });
     throw enhancedError;
   }
 }

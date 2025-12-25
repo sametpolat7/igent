@@ -1,15 +1,3 @@
-/**
- * Application Styles
- * 
- * Design principles:
- * - Professional, modern interface
- * - Clear visual hierarchy
- * - High contrast terminal displays
- * - Smooth, responsive user experience
- */
-
-/* === Global Styles === */
-
 * {
   margin: 0;
   padding: 0;
@@ -21,8 +9,9 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
   font-size: 14px;
   line-height: 1.6;
   color: #1a202c;
@@ -30,8 +19,6 @@ body {
   padding: 20px;
   min-height: 100vh;
 }
-
-/* === Header === */
 
 .header {
   display: flex;
@@ -101,8 +88,6 @@ body {
   text-align: center;
 }
 
-/* === Navigation Tabs === */
-
 .nav-tabs {
   max-width: 700px;
   margin: 0 auto 20px;
@@ -141,8 +126,6 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* === View Containers === */
-
 .view-container {
   display: none;
 }
@@ -151,8 +134,6 @@ body {
   display: block;
   animation: fadeIn 0.3s ease-out;
 }
-
-/* === Main Container === */
 
 .container {
   max-width: 700px;
@@ -171,8 +152,6 @@ body {
   border-bottom: 2px solid #e2e8f0;
   padding-bottom: 12px;
 }
-
-/* === Form Styles === */
 
 .form-group {
   margin-bottom: 20px;
@@ -209,8 +188,6 @@ body {
   color: #a0aec0;
   cursor: not-allowed;
 }
-
-/* === Buttons === */
 
 .btn {
   padding: 12px 24px;
@@ -267,8 +244,6 @@ body {
   box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
 }
 
-/* === Status Section === */
-
 .status-section {
   margin-top: 24px;
   padding: 20px;
@@ -307,8 +282,6 @@ body {
   display: flex;
   gap: 10px;
 }
-
-/* === Progress Section === */
 
 .progress-section {
   margin-top: 24px;
@@ -362,39 +335,142 @@ body {
 }
 
 .progress-steps {
-  background: #0d1117;
+  background: #0f1419;
   border-radius: 8px;
-  padding: 12px;
+  padding: 14px;
   max-height: 300px;
   overflow-y: auto;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
-  border: 1px solid #30363d;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+  border: 1px solid #2d3748;
+}
+
+.conflict-header {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.conflict-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #78350f;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.conflict-subtitle {
+  font-size: 13px;
+  color: #92400e;
+  font-weight: 500;
 }
 
 .progress-step {
-  padding: 10px 14px;
-  margin-bottom: 8px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
   border-radius: 6px;
   font-family: 'SF Mono', Monaco, 'Courier New', monospace;
   font-size: 12px;
-  background: #161b22;
-  color: #e6edf3;
+  background: #1a2332;
+  color: #e2e8f0;
+  border-left: 3px solid transparent;
 }
 
 .progress-step.running {
-  background: #1c1814;
+  background: #1f2937;
+  border-left: 3px solid #fbbf24;
   animation: pulse 1.5s ease-in-out infinite;
   box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
 }
 
 .progress-step.success {
-  background: #0f1c17;
+  background: #14261c;
+  border-left: 3px solid #10b981;
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.1);
 }
 
 .progress-step.failed {
-  background: #1c1011;
+  background: #261418;
+  border-left: 3px solid #ef4444;
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.1);
+}
+
+.progress-step.conflict {
+  background: #292518;
+  border-left: 3px solid #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+.progress-step.conflict .progress-step-header strong {
+  color: #fcd34d;
+}
+
+.progress-step.conflict .progress-step-command {
+  color: #fef3c7;
+}
+
+.progress-step.conflict .progress-step-info {
+  color: #fde68a;
+  font-size: 11px;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.progress-step.rollback {
+  background: #241f14;
+  border-left: 3px solid #d97706;
+  margin-left: 16px;
+}
+
+.progress-step.rollback-running {
+  animation: pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(217, 119, 6, 0.25);
+}
+
+.progress-step.rollback .progress-step-header strong {
+  color: #fcd34d;
+}
+
+.progress-step.rollback .progress-step-command {
+  color: #fef3c7;
+}
+
+.progress-step.rollback-complete {
+  background: #1a2414;
+  border-left-color: #84cc16;
+}
+
+.progress-step.rollback-complete .progress-step-header strong {
+  color: #bef264;
+}
+
+.progress-step.rollback-warning {
+  background: #241f14;
+  border-left-color: #f59e0b;
+}
+
+.progress-step.rollback-warning .progress-step-header strong {
+  color: #fcd34d;
+}
+
+.progress-step.rollback-done {
+  background: #1a2414;
+  border-left: 3px solid #84cc16;
+  margin-top: 8px;
+  box-shadow: 0 0 12px rgba(132, 204, 22, 0.2);
+}
+
+.progress-step.rollback-done .progress-step-header strong {
+  color: #bef264;
+}
+
+.progress-step.rollback-done .progress-step-command {
+  color: #d9f99d;
 }
 
 .progress-step-header {
@@ -424,23 +500,24 @@ body {
 }
 
 .progress-step-command {
-  color: #c9d1d9;
+  color: #cbd5e1;
   margin-bottom: 4px;
   word-break: break-all;
+  line-height: 1.5;
 }
 
 .progress-step-time {
   font-size: 11px;
-  color: #718096;
+  color: #94a3b8;
+  font-weight: 500;
 }
-
-/* === Result Section === */
 
 .result-section {
   margin-top: 24px;
   padding: 20px;
   border-radius: 8px;
   display: none;
+  border: 2px solid transparent;
 }
 
 .result-section h3 {
@@ -452,23 +529,21 @@ body {
 }
 
 .output-display {
-  background: #0d1117;
-  padding: 16px;
+  background: #0f1419;
+  padding: 18px;
   border-radius: 6px;
   overflow-x: auto;
   font-family: 'SF Mono', Monaco, 'Courier New', monospace;
   font-size: 13px;
-  line-height: 1.8;
+  line-height: 1.9;
   white-space: pre-wrap;
   word-break: break-all;
   max-height: 400px;
   overflow-y: auto;
   font-weight: 500;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
-  border: 1px solid #30363d;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  border: 1px solid #2d3748;
 }
-
-/* === Coming Soon View === */
 
 .coming-soon {
   text-align: center;
@@ -500,8 +575,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
-
-/* === Scrollbar Styles === */
 
 .commands-display::-webkit-scrollbar {
   width: 10px;
@@ -547,8 +620,6 @@ body {
   background: #484f58;
 }
 
-/* === Animations === */
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -561,7 +632,8 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
