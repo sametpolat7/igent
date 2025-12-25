@@ -249,12 +249,12 @@ PLANNED (UI placeholders exist):
 TO ADD A NEW AGENT TYPE:
 
 1. Create Type Directory Structure
-   └── src/main/agent/types/new-type/
+   └── src/main/agents/new-type/
        ├── planner.js
        └── executor.js
 
 2. Implement Planner
-   └── src/main/agent/types/new-type/planner.js
+   └── src/main/agents/new-type/planner.js
        
        export function planNewType({ ...params }) {
          // Load config if needed
@@ -277,7 +277,7 @@ TO ADD A NEW AGENT TYPE:
        }
 
 3. Implement Executor
-   └── src/main/agent/types/new-type/executor.js
+   └── src/main/agents/new-type/executor.js
        
        export async function executeNewType({ commands, ...params }) {
          // Validate inputs
@@ -308,9 +308,9 @@ TO ADD A NEW AGENT TYPE:
        }
 
 4. Register in Router
-   └── src/main/agent/planner.js
+   └── src/main/agents/planner.js
        
-       import { planNewType } from './types/new-type/planner.js';
+       import { planNewType } from './new-type/planner.js';
        
        export const AGENT_TYPES = {
          SERVER_UPDATE: 'server-update',
@@ -325,9 +325,9 @@ TO ADD A NEW AGENT TYPE:
          }
        }
    
-   └── src/main/agent/executor.js
+   └── src/main/agents/executor.js
        
-       import { executeNewType } from './types/new-type/executor.js';
+       import { executeNewType } from './new-type/executor.js';
        
        export async function executeProcess(agentType, params) {
          switch (agentType) {

@@ -5,20 +5,20 @@ import {
   validateArrayNotEmpty,
   validateString,
   validateNonEmpty,
-} from '../../../utils/validators.js';
+} from '../../utils/validators.js';
 import {
   logStart,
   logSuccess,
   logError,
   logWarn,
   logDebug,
-} from '../../../utils/logger.js';
-import { ProgressTracker } from '../../../utils/progressTracker.js';
+} from '../../utils/logger.js';
+import { ProgressTracker } from '../../utils/progressTracker.js';
 import {
   detectConflict,
   executeConflictCleanup,
   createConflictError,
-} from '../../../utils/conflictResolver.js';
+} from '../../utils/conflictResolver.js';
 
 const execAsync = promisify(exec);
 const EXECUTION_TIMEOUT_MS = 300000;

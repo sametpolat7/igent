@@ -73,7 +73,7 @@ Multi-layer validation ensures security and reliability:
 
 **File Structure Conventions:**
 
-- Agent types: `src/main/agent/types/[type-name]/` with planner.js and executor.js
+- Agent types: `src/main/agents/[type-name]/` with planner.js and executor.js
 - Utilities: `src/main/utils/` for shared functionality (logging, validation, progress)
 - Configuration: `src/main/config/` with validation layer
 - Renderer: Single-page application in `src/renderer/` with view-based navigation
@@ -263,7 +263,7 @@ For stash conflicts:
 - Cleanup commands executed before returning error
 - Progress tracking includes rollback steps for transparency
 
-See `src/main/utils/conflictResolver.js` and `src/main/agent/types/server-update/executor.js` for complete implementation.
+See `src/main/utils/conflictResolver.js` and `src/main/agents/server-update/executor.js` for complete implementation.
 
 ## Development Workflows
 
@@ -290,7 +290,7 @@ npm run build:mac  # macOS universal
 
 ## File Organization Conventions
 
-- **Agent types**: Each gets own directory under `src/main/agent/types/[type-name]/`
+- **Agent types**: Each gets own directory under `src/main/agents/[type-name]/`
 - **Utils**: Shared utilities in `src/main/utils/` (logger, validators, progressTracker)
 - **Config**: All config files in `src/main/config/` with validation in loadConfig.js
 - **Renderer**: Single-page app structure in `src/renderer/` with view switching
@@ -323,8 +323,8 @@ Global `state` object pattern (see `src/renderer/renderer.js`):
 - `ARCHITECTURE.js` - Visual architecture diagrams and data flows
 - `README.md` - Feature overview and project structure
 - `src/main/index.js` - Entry point, IPC handlers, security setup
-- `src/main/agent/planner.js` - Type routing dispatcher
-- `src/main/agent/executor.js` - Execution routing dispatcher
+- `src/main/agents/planner.js` - Type routing dispatcher
+- `src/main/agents/executor.js` - Execution routing dispatcher
 - `src/main/config/servers.json` - Server whitelist configuration
 - `src/preload/index.cjs` - Security bridge (CommonJS)
 

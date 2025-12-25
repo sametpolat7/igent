@@ -1,4 +1,4 @@
-import { planServerUpdate } from './types/server-update/planner.js';
+import { planServerUpdate } from './server-update/planner.js';
 import { logDebug } from '../utils/logger.js';
 
 export const AGENT_TYPES = {

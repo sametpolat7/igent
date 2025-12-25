@@ -1,11 +1,11 @@
-import { loadServersConfig } from '../../../config/loadConfig.js';
+import { loadServersConfig } from '../../config/loadConfig.js';
 import {
   validateString,
   validateNonEmpty,
   validatePattern,
   validateIncludes,
-} from '../../../utils/validators.js';
-import { logSuccess } from '../../../utils/logger.js';
+} from '../../utils/validators.js';
+import { logSuccess } from '../../utils/logger.js';
 
 const BASE_DIRECTORY = '/var/webs';
 const DEFAULT_MAIN_BRANCH = 'main';

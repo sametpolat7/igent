@@ -299,16 +299,16 @@ The type-based architecture makes adding new operational workflows straightforwa
 **Step 1: Create Type Directory**
 
 ```bash
-mkdir -p src/main/agent/types/new-type
+mkdir -p src/main/agents/new-type
 ```
 
 **Step 2: Implement Planner**
 
-Create [src/main/agent/types/new-type/planner.js](src/main/agent/types/new-type/planner.js):
+Create [src/main/agents/new-type/planner.js](src/main/agents/new-type/planner.js):
 
 ```javascript
-import { loadServersConfig } from '../../../config/loadConfig.js';
-import { validateString, validateNonEmpty } from '../../../utils/validators.js';
+import { loadServersConfig } from '../../config/loadConfig.js';
+import { validateString, validateNonEmpty } from '../../utils/validators.js';
 
 export function planNewType({ param1, param2 }) {
   // Load and validate configuration
@@ -337,13 +337,13 @@ function generateCommands({ param1, param2 }) {
 
 **Step 3: Implement Executor**
 
-Create [src/main/agent/types/new-type/executor.js](src/main/agent/types/new-type/executor.js):
+Create [src/main/agents/new-type/executor.js](src/main/agents/new-type/executor.js):
 
 ```javascript
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
-import { ProgressTracker } from '../../../utils/progressTracker.js';
-import { validateArray } from '../../../utils/validators.js';
+import { ProgressTracker } from '../../utils/progressTracker.js';
+import { validateArray } from '../../utils/validators.js';
 
 const execAsync = promisify(exec);
 
@@ -381,10 +381,10 @@ export async function executeNewType({ commands, progressCallback }) {
 
 **Step 4: Register Agent Type**
 
-Update [src/main/agent/planner.js](src/main/agent/planner.js):
+Update [src/main/agents/planner.js](src/main/agents/planner.js):
 
 ```javascript
-import { planNewType } from './types/new-type/planner.js';
+import { planNewType } from './new-type/planner.js';
 
 export const AGENT_TYPES = {
   SERVER_UPDATE: 'server-update',
@@ -400,10 +400,10 @@ export function planProcess(agentType, params) {
 }
 ```
 
-Update [src/main/agent/executor.js](src/main/agent/executor.js):
+Update [src/main/agents/executor.js](src/main/agents/executor.js):
 
 ```javascript
-import { executeNewType } from './types/new-type/executor.js';
+import { executeNewType } from './new-type/executor.js';
 
 export async function executeProcess(agentType, params) {
   switch (agentType) {

@@ -1,8 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { planProcess, AGENT_TYPES } from './agent/planner.js';
-import { executeProcess } from './agent/executor.js';
+import { planProcess, AGENT_TYPES } from './agents/planner.js';
+import { executeProcess } from './agents/executor.js';
 import { loadServersConfig } from './config/loadConfig.js';
 import { logError } from './utils/logger.js';
 
