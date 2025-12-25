@@ -49,7 +49,7 @@ export function generateCleanupCommands(directory, conflictType, originalHead) {
 
 export function createConflictError(branch, directory, conflictType) {
   const error = new Error(
-    `A conflict was encountered while pulling the ${branch} development branch to the ${directory} server. Please contact the developer.`
+    `CONFLICT! Please contact the developer. A merge conflict occurred while pulling the ${branch} development branch to the ${directory} server.`
   );
   error.isConflict = true;
   error.conflictType = conflictType;
