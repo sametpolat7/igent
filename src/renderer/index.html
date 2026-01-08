@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
-    >
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>igent - Intelligent Operations Manager</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <nav class="nav-tabs">
@@ -47,7 +47,7 @@
             class="form-control"
             placeholder="e.g., main, develop, feature/new-feature"
             autocomplete="off"
-          >
+          />
         </div>
 
         <button id="plan" class="btn btn-primary" disabled>Create Plan</button>
@@ -91,10 +91,74 @@
 
     <div id="view-queue-control" class="view-container">
       <div class="container">
-        <div class="coming-soon">
-          <h2>Queue Control</h2>
-          <p>Monitor and manage task queues and job processing</p>
-          <span class="badge">Coming Soon</span>
+        <h2>Queue Control (Sidekiq)</h2>
+
+        <div class="form-group">
+          <label for="queue-server" class="form-label">Test Server</label>
+          <select id="queue-server" class="form-control">
+            <option value="">Select a server...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="queue-directory" class="form-label">
+            Application Directory
+          </label>
+          <select id="queue-directory" class="form-control" disabled>
+            <option value="">Select a directory...</option>
+          </select>
+        </div>
+
+        <div id="queue-status-section" class="queue-status-section">
+          <div class="queue-status-header">
+            <h3>Queue Status</h3>
+            <button id="queue-check" class="btn btn-check" disabled>
+              Check Status
+            </button>
+          </div>
+          <div id="queue-status-display" class="queue-status-display">
+            <div class="queue-status-indicator unknown">
+              <span class="status-dot"></span>
+              <span class="status-text">Select server and directory</span>
+            </div>
+          </div>
+          <div id="queue-process-info" class="queue-process-info"></div>
+        </div>
+
+        <div class="queue-actions">
+          <h3>Queue Actions</h3>
+          <div class="queue-action-buttons">
+            <button id="queue-start" class="btn btn-queue-start" disabled>
+              <span class="btn-icon">▶</span>
+              Start Queue
+            </button>
+            <button id="queue-stop" class="btn btn-queue-stop" disabled>
+              <span class="btn-icon">■</span>
+              Stop Queue
+            </button>
+            <button id="queue-restart" class="btn btn-queue-restart" disabled>
+              <span class="btn-icon">↻</span>
+              Restart Queue
+            </button>
+          </div>
+        </div>
+
+        <div id="queue-progress" class="progress-section">
+          <h3>Execution Progress</h3>
+          <div class="progress-wrapper">
+            <div class="progress-bar-container">
+              <div id="queue-progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="queue-progress-percentage" class="progress-percentage">
+              0%
+            </div>
+          </div>
+          <div id="queue-progress-steps" class="progress-steps"></div>
+        </div>
+
+        <div id="queue-result" class="result-section">
+          <h3>Result</h3>
+          <pre id="queue-output" class="output-display"></pre>
         </div>
       </div>
     </div>

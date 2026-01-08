@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { planProcess, AGENT_TYPES } from './agents/planner.js';
-import { executeProcess } from './agents/executor.js';
+import { executeProcess, checkQueueStatus } from './agents/executor.js';
 import { loadServersConfig } from './config/loadConfig.js';
 import { logError } from './utils/logger.js';
 
@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 600,
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.cjs'),
@@ -32,6 +32,7 @@ function registerIPCHandlers() {
     }
   });
 
+  // Server Update handlers
   ipcMain.handle('agent:plan', async (_event, payload) => {
     try {
       return planProcess(AGENT_TYPES.SERVER_UPDATE, payload);
@@ -72,6 +73,61 @@ function registerIPCHandlers() {
       throw new Error(
         'Deployment failed. Please try again or contact support if the problem persists.'
       );
+    }
+  });
+
+  // Queue Control handlers
+  ipcMain.handle('queue:check-status', async (_event, payload) => {
+    try {
+      const serversConfig = loadServersConfig();
+      const serverConfig = serversConfig[payload.serverKey];
+      if (!serverConfig) {
+        throw new Error(`Server "${payload.serverKey}" not found`);
+      }
+      return await checkQueueStatus({
+        sshHost: serverConfig.sshHost,
+        directory: payload.directory,
+      });
+    } catch (error) {
+      logError('IPC', 'Queue status check failed', error);
+      throw new Error('Failed to check queue status. Please try again.');
+    }
+  });
+
+  ipcMain.handle('queue:plan', async (_event, payload) => {
+    try {
+      return planProcess(AGENT_TYPES.QUEUE_CONTROL, payload);
+    } catch (error) {
+      logError('IPC', 'Queue planning failed', error);
+      throw new Error(
+        'Planning failed. Please verify your server and directory configuration.'
+      );
+    }
+  });
+
+  ipcMain.handle('queue:execute', async (event, payload) => {
+    try {
+      const progressCallback = (progressData) => {
+        event.sender.send('queue:progress', progressData);
+      };
+
+      return await executeProcess(AGENT_TYPES.QUEUE_CONTROL, {
+        ...payload,
+        progressCallback,
+      });
+    } catch (error) {
+      logError('IPC', 'Queue execution failed', error);
+      return {
+        success: false,
+        action: payload.action,
+        directory: payload.directory,
+        message: error.message || 'Queue operation failed',
+        failedAtStep: error.failedAtStep,
+        totalSteps: error.totalSteps,
+        stderr: error.stderr,
+        failureReason: error.failureReason,
+        totalDuration: error.totalDuration,
+      };
     }
   });
 }

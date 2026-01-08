@@ -3,6 +3,10 @@ const state = {
   currentPlan: null,
   isExecuting: false,
   currentView: 'server-update',
+  // Queue control state
+  queuePlan: null,
+  queueStatus: null,
+  isQueueExecuting: false,
 };
 
 const elements = {
@@ -23,6 +27,21 @@ const elements = {
   progressSteps: document.getElementById('progress-steps'),
   resultSection: document.getElementById('result'),
   outputDisplay: document.getElementById('output'),
+  // Queue control elements
+  queueServerSelect: document.getElementById('queue-server'),
+  queueDirectorySelect: document.getElementById('queue-directory'),
+  queueCheckButton: document.getElementById('queue-check'),
+  queueStatusDisplay: document.getElementById('queue-status-display'),
+  queueProcessInfo: document.getElementById('queue-process-info'),
+  queueStartButton: document.getElementById('queue-start'),
+  queueStopButton: document.getElementById('queue-stop'),
+  queueRestartButton: document.getElementById('queue-restart'),
+  queueProgressSection: document.getElementById('queue-progress'),
+  queueProgressBar: document.getElementById('queue-progress-bar'),
+  queueProgressPercentage: document.getElementById('queue-progress-percentage'),
+  queueProgressSteps: document.getElementById('queue-progress-steps'),
+  queueResultSection: document.getElementById('queue-result'),
+  queueOutputDisplay: document.getElementById('queue-output'),
 };
 
 const PROGRESS_GRADIENTS = {
@@ -61,6 +80,9 @@ async function initialize() {
   await loadServers();
   attachEventListeners();
   setupProgressListener();
+  // Queue control initialization
+  attachQueueEventListeners();
+  setupQueueProgressListener();
 }
 
 function setupViewSwitching() {
@@ -87,6 +109,7 @@ async function loadServers() {
     state.servers = await window.igent.getServers();
     Object.keys(state.servers).forEach((key) => {
       elements.serverSelect.appendChild(createOption(key, key));
+      elements.queueServerSelect.appendChild(createOption(key, key));
     });
   } catch (error) {
     showError('Failed to load server configuration', error);
@@ -459,6 +482,334 @@ function escapeHTML(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+// ============================================
+// QUEUE CONTROL FUNCTIONS
+// ============================================
+
+function attachQueueEventListeners() {
+  elements.queueServerSelect.addEventListener(
+    'change',
+    handleQueueServerChange
+  );
+  elements.queueDirectorySelect.addEventListener(
+    'change',
+    handleQueueDirectoryChange
+  );
+  elements.queueCheckButton.addEventListener('click', handleQueueCheck);
+  elements.queueStartButton.addEventListener('click', () =>
+    handleQueueAction('start')
+  );
+  elements.queueStopButton.addEventListener('click', () =>
+    handleQueueAction('stop')
+  );
+  elements.queueRestartButton.addEventListener('click', () =>
+    handleQueueAction('restart')
+  );
+}
+
+function handleQueueServerChange(e) {
+  const serverKey = e.target.value;
+
+  elements.queueDirectorySelect.innerHTML =
+    '<option value="">Select directory...</option>';
+  elements.queueDirectorySelect.disabled = true;
+  resetQueueStatus();
+  setQueueButtonsState(false);
+  hideQueueResults();
+
+  if (serverKey && state.servers[serverKey]) {
+    state.servers[serverKey].allowedDirectories.forEach((dir) => {
+      elements.queueDirectorySelect.appendChild(createOption(dir, dir));
+    });
+    elements.queueDirectorySelect.disabled = false;
+  }
+}
+
+function handleQueueDirectoryChange() {
+  const hasSelection =
+    elements.queueServerSelect.value && elements.queueDirectorySelect.value;
+  elements.queueCheckButton.disabled = !hasSelection;
+
+  if (hasSelection) {
+    updateQueueStatusDisplay(
+      'unknown',
+      'Click "Check Status" to fetch current state'
+    );
+    elements.queueProcessInfo.innerHTML = '';
+  } else {
+    resetQueueStatus();
+  }
+
+  setQueueButtonsState(false);
+  hideQueueResults();
+}
+
+async function handleQueueCheck() {
+  const serverKey = elements.queueServerSelect.value;
+  const directory = elements.queueDirectorySelect.value;
+
+  if (!serverKey || !directory) return;
+
+  elements.queueCheckButton.disabled = true;
+  updateQueueStatusDisplay('checking', 'Checking status...');
+
+  try {
+    const result = await window.igent.queue.checkStatus({
+      serverKey,
+      directory,
+    });
+    state.queueStatus = result;
+    displayQueueStatus(result);
+    updateQueueActionButtons(result);
+  } catch (error) {
+    updateQueueStatusDisplay(
+      'error',
+      `Failed to check status: ${error.message}`
+    );
+    setQueueButtonsState(false);
+  } finally {
+    elements.queueCheckButton.disabled = false;
+  }
+}
+
+function displayQueueStatus(status) {
+  if (status.isRunning) {
+    updateQueueStatusDisplay('running', 'Queue is OPEN (Sidekiq running)');
+
+    if (status.processInfo) {
+      const info = status.processInfo;
+      let infoHtml = `<div class="process-info-item"><strong>PID:</strong> ${status.pid || 'N/A'}</div>`;
+
+      if (info.busyWorkers !== undefined) {
+        infoHtml += `<div class="process-info-item"><strong>Workers:</strong> ${info.busyWorkers} of ${info.totalWorkers} busy</div>`;
+      }
+
+      if (info.fullLine) {
+        infoHtml += `<div class="process-info-detail">${escapeHTML(info.fullLine)}</div>`;
+      }
+
+      elements.queueProcessInfo.innerHTML = infoHtml;
+    }
+  } else {
+    updateQueueStatusDisplay('stopped', 'Queue is CLOSED (No Sidekiq process)');
+    elements.queueProcessInfo.innerHTML = '';
+  }
+}
+
+function updateQueueStatusDisplay(status, text) {
+  const indicator = elements.queueStatusDisplay.querySelector(
+    '.queue-status-indicator'
+  );
+  indicator.className = `queue-status-indicator ${status}`;
+  indicator.querySelector('.status-text').textContent = text;
+}
+
+function updateQueueActionButtons(status) {
+  if (state.isQueueExecuting) return;
+
+  const isRunning = status?.isRunning || false;
+
+  elements.queueStartButton.disabled = isRunning;
+  elements.queueStopButton.disabled = !isRunning;
+  elements.queueRestartButton.disabled = false;
+}
+
+function setQueueButtonsState(enabled) {
+  elements.queueStartButton.disabled = !enabled;
+  elements.queueStopButton.disabled = !enabled;
+  elements.queueRestartButton.disabled = !enabled;
+}
+
+function resetQueueStatus() {
+  state.queueStatus = null;
+  updateQueueStatusDisplay('unknown', 'Select server and directory');
+  elements.queueProcessInfo.innerHTML = '';
+  elements.queueCheckButton.disabled = true;
+}
+
+async function handleQueueAction(action) {
+  const serverKey = elements.queueServerSelect.value;
+  const directory = elements.queueDirectorySelect.value;
+
+  if (!serverKey || !directory) return;
+
+  setQueueExecutionState(true);
+  resetQueueProgress();
+
+  try {
+    const plan = await window.igent.queue.plan({
+      serverKey,
+      directory,
+      action,
+    });
+    state.queuePlan = plan;
+
+    const result = await window.igent.queue.execute(plan);
+
+    if (result.success === false) {
+      displayQueueError(result);
+    } else {
+      displayQueueSuccess(result);
+    }
+
+    state.lastQueueResult = result;
+  } catch (error) {
+    displayQueueError(error);
+    state.lastQueueResult = null;
+  } finally {
+    setQueueExecutionState(false);
+
+    // Update status and buttons after execution state reset
+    if (state.lastQueueResult?.queueStatus) {
+      state.queueStatus = state.lastQueueResult.queueStatus;
+      displayQueueStatus(state.lastQueueResult.queueStatus);
+      updateQueueActionButtons(state.lastQueueResult.queueStatus);
+    } else if (state.lastQueueResult) {
+      // Re-check status if not included in result
+      await handleQueueCheck();
+    }
+  }
+}
+
+function setQueueExecutionState(isExecuting) {
+  state.isQueueExecuting = isExecuting;
+  elements.queueCheckButton.disabled = isExecuting;
+  elements.queueStartButton.disabled = isExecuting;
+  elements.queueStopButton.disabled = isExecuting;
+  elements.queueRestartButton.disabled = isExecuting;
+  elements.queueServerSelect.disabled = isExecuting;
+  elements.queueDirectorySelect.disabled = isExecuting;
+}
+
+function resetQueueProgress() {
+  hideSection(elements.queueResultSection);
+  showSection(elements.queueProgressSection);
+
+  elements.queueProgressSteps.innerHTML = '';
+  setQueueProgressBar(0);
+}
+
+function setQueueProgressBar(percentage, gradient = null) {
+  elements.queueProgressBar.style.width = `${percentage}%`;
+  elements.queueProgressPercentage.textContent = `${percentage}%`;
+  if (gradient) elements.queueProgressBar.style.background = gradient;
+}
+
+function setupQueueProgressListener() {
+  window.igent.queue.onProgress(updateQueueProgress);
+}
+
+function updateQueueProgress(data) {
+  const { status, currentStep, totalSteps } = data;
+
+  if (totalSteps > 0) {
+    const completed =
+      status === 'running' ? Math.max(0, currentStep - 1) : currentStep || 0;
+    setQueueProgressBar(Math.round((completed / totalSteps) * 100));
+  }
+
+  const handlers = {
+    started: () => (elements.queueProgressSteps.innerHTML = ''),
+    running: () => updateQueueStepDisplay(data),
+    'step-complete': () => updateQueueStepDisplay(data),
+    'step-failed': () => updateQueueStepDisplay(data),
+    completed: () => setQueueProgressBar(100, PROGRESS_GRADIENTS.success),
+    failed: () =>
+      setQueueProgressBar(
+        parseInt(elements.queueProgressPercentage.textContent),
+        PROGRESS_GRADIENTS.error
+      ),
+  };
+
+  handlers[status]?.();
+}
+
+function updateQueueStepDisplay(data) {
+  const { currentStep, command, status, duration, error, stderr } = data;
+  const stepElement = getOrCreateQueueStepElement(
+    `queue-step-${currentStep}`,
+    'progress-step'
+  );
+  const statusInfo = STEP_STATUS_MAP[status] || { class: '', text: 'Running' };
+
+  stepElement.className = `progress-step ${statusInfo.class}`;
+  stepElement.innerHTML = createStepHTML(
+    statusInfo.text,
+    currentStep,
+    command,
+    duration,
+    status === 'step-failed' ? error || stderr : null
+  );
+  scrollToElement(stepElement);
+}
+
+function getOrCreateQueueStepElement(stepId, className) {
+  let element = document.getElementById(stepId);
+  if (!element) {
+    element = document.createElement('div');
+    element.id = stepId;
+    element.className = className;
+    elements.queueProgressSteps.appendChild(element);
+  }
+  return element;
+}
+
+function displayQueueSuccess(result) {
+  hideSection(elements.queueProgressSection);
+
+  let message = `Queue ${result.action} completed successfully in ${result.totalDuration}s`;
+
+  if (result.alreadyRunning) {
+    message = `Sidekiq is already running (PID: ${result.queueStatus?.pid || 'unknown'})`;
+  } else if (result.alreadyStopped) {
+    message = 'Sidekiq is not running, nothing to stop';
+  }
+
+  if (result.queueStatus) {
+    message +=
+      '\n\nCurrent Status: ' +
+      (result.queueStatus.isRunning ? 'RUNNING' : 'STOPPED');
+    if (result.queueStatus.pid) {
+      message += ` (PID: ${result.queueStatus.pid})`;
+    }
+  }
+
+  showQueueResultSection('success', message);
+}
+
+function displayQueueError(error) {
+  hideSection(elements.queueProgressSection);
+
+  const parts = [
+    error.failedAtStep &&
+      error.failedCommand &&
+      `Failed at Step ${error.failedAtStep}/${error.totalSteps}\nCommand: ${error.failedCommand}\nDuration: ${error.totalDuration}s`,
+    error.stderr && `Error Output:\n${error.stderr}`,
+    error.failureReason && `Reason: ${error.failureReason}`,
+    !error.stderr &&
+      !error.failureReason &&
+      (error.message || 'Unknown error occurred'),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
+  showQueueResultSection('error', parts);
+}
+
+function showQueueResultSection(type, message) {
+  const styles = RESULT_STYLES[type];
+  showSection(elements.queueResultSection);
+  Object.assign(elements.queueResultSection.style, styles);
+  elements.queueOutputDisplay.textContent = message;
+  elements.queueOutputDisplay.style.color = '#e5e7eb';
+  scrollToElement(elements.queueResultSection);
+}
+
+function hideQueueResults() {
+  hideSection(elements.queueProgressSection);
+  hideSection(elements.queueResultSection);
 }
 
 initialize();

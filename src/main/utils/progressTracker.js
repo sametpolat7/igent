@@ -96,6 +96,13 @@ export class ProgressTracker {
     });
   }
 
+  stepUpdate(command) {
+    return this.emit('running', {
+      command,
+      message: `Executing step ${this.currentStep}/${this.totalSteps}`,
+    });
+  }
+
   stepComplete(command, stdout = '', stderr = '') {
     const duration = this.getStepDuration();
     return this.emit('step-complete', {
