@@ -147,9 +147,21 @@
           <h3>Execution Progress</h3>
           <div class="progress-wrapper">
             <div class="progress-bar-container">
-              <div id="file-edit-progress-bar" class="progress-bar"></div>
+              <div
+                id="file-edit-progress-bar"
+                class="progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+              ></div>
             </div>
-            <div id="file-edit-progress-percentage" class="progress-percentage">
+            <div
+              id="file-edit-progress-percentage"
+              class="progress-percentage"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               0%
             </div>
           </div>
