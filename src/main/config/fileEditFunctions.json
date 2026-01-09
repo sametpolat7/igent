@@ -1,0 +1,15 @@
+{
+  "hash-data-update": {
+    "name": "Hash Data Update",
+    "targetFile": "app/controllers/api/v1/payments_controller.rb",
+    "inputs": [
+      {
+        "key": "newValue",
+        "label": "New Hash Data Value",
+        "placeholder": "e.g., hello",
+        "type": "text",
+        "required": true
+      }
+    ]
+  }
+}

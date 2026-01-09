@@ -265,6 +265,86 @@ For stash conflicts:
 
 See `src/main/utils/conflictResolver.js` and `src/main/agents/server-update/executor.js` for complete implementation.
 
+## File Editing Agent
+
+The file-editing agent provides a flexible system for remote file modifications via SSH with automatic service restart and restore capabilities.
+
+**Architecture:**
+
+- Function definitions stored in `src/main/config/fileEditFunctions.json`
+- Each function specifies: name, target file, and required inputs
+- Planner generates shell commands based on function type
+- Executor runs commands via SSH with progress tracking
+- Restore functionality reverts changes using `git restore` with service restart
+
+**Command Flow:**
+
+```
+Plan → cd → backup → transform → verify → restart service
+Restore → cd → git restore → restart service
+```
+
+**Current Functions:**
+
+### Hash Data Update
+
+Updates the `hash_data` method in Rails payments controller to return a static value:
+
+- **Target File:** `app/controllers/api/v1/payments_controller.rb`
+- **Behavior:** Comments out method body, adds new return value
+- **Use Case:** Testing payment integrations with predictable hash values
+
+**Configuration (fileEditFunctions.json):**
+
+```json
+{
+  "hash-data-update": {
+    "name": "Hash Data Update",
+    "targetFile": "app/controllers/api/v1/payments_controller.rb",
+    "inputs": [
+      {
+        "key": "newValue",
+        "label": "New Hash Data Value",
+        "placeholder": "e.g., hello",
+        "type": "text",
+        "required": true
+      }
+    ]
+  }
+}
+```
+
+**Adding New Functions:**
+
+1. Add function definition to `fileEditFunctions.json`
+2. Add function ID to `FILE_EDIT_FUNCTIONS` enum in planner.js
+3. Add case to `generateFileEditCommands()` switch statement
+4. Implement command generation function (return array of shell commands)
+5. UI automatically renders inputs based on `inputs` config
+
+**Restore Feature:**
+
+- Checks for uncommitted changes via `git diff --name-only`
+- Uses `planRestore()` to generate restore commands
+- Executes `git restore` followed by service restart
+- Shows step-by-step progress in UI
+- Disables Plan button during restore operation
+
+**Safety Features:**
+
+- Automatic file backup before modification (`.backup` extension)
+- Rollback to backup on execution failure
+- Backup cleanup on successful completion
+- Service restart after both edit and restore operations
+
+**Planner Functions:**
+
+- `planFileEdit()` - Creates edit plan with transformation commands
+- `planRestore()` - Creates restore plan with git restore + service restart
+- `generateRestoreCommands()` - Generates restore command array
+
+See `src/main/agents/file-editing/` for implementation.
+
 ## Development Workflows
 
 **Run development:**
@@ -326,6 +406,7 @@ Global `state` object pattern (see `src/renderer/renderer.js`):
 - `src/main/agents/planner.js` - Type routing dispatcher
 - `src/main/agents/executor.js` - Execution routing dispatcher
 - `src/main/config/servers.json` - Server whitelist configuration
+- `src/main/config/fileEditFunctions.json` - File editing function definitions
 - `src/preload/index.cjs` - Security bridge (CommonJS)
 
 ## What NOT to Do

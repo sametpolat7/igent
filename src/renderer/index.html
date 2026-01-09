@@ -81,10 +81,96 @@
 
     <div id="view-file-edit" class="view-container">
       <div class="container">
-        <div class="coming-soon">
-          <h2>File Editing</h2>
-          <p>Manage file editing tasks and operations</p>
-          <span class="badge">Coming Soon</span>
+        <h2>File Editing</h2>
+
+        <div class="form-group">
+          <label for="file-edit-server" class="form-label">Test Server</label>
+          <select id="file-edit-server" class="form-control">
+            <option value="">Select a server...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="file-edit-directory" class="form-label">
+            Application Directory
+          </label>
+          <select id="file-edit-directory" class="form-control" disabled>
+            <option value="">Select a directory...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="file-edit-function" class="form-label">
+            Edit Function
+          </label>
+          <select id="file-edit-function" class="form-control" disabled>
+            <option value="">Select a function...</option>
+          </select>
+        </div>
+
+        <div id="file-edit-restore-section" class="file-edit-restore-section">
+          <div class="restore-status">
+            <span id="file-edit-restore-status" class="restore-status-text">
+              Select a function to check for changes
+            </span>
+          </div>
+          <button
+            id="file-edit-restore"
+            class="btn btn-restore"
+            disabled
+            aria-label="Restore selected function file to original state"
+          >
+            Restore Original
+          </button>
+        </div>
+
+        <div id="file-edit-inputs" class="file-edit-inputs"></div>
+
+        <button id="file-edit-plan" class="btn btn-primary" disabled>
+          Create Plan
+        </button>
+
+        <div id="file-edit-status" class="status-section">
+          <h3>Process Plan</h3>
+          <pre id="file-edit-commands" class="commands-display"></pre>
+          <div class="button-group">
+            <button id="file-edit-execute" class="btn btn-success">
+              Execute
+            </button>
+            <button id="file-edit-cancel" class="btn btn-secondary">
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <div id="file-edit-progress" class="progress-section">
+          <h3>Execution Progress</h3>
+          <div class="progress-wrapper">
+            <div class="progress-bar-container">
+              <div
+                id="file-edit-progress-bar"
+                class="progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+              ></div>
+            </div>
+            <div
+              id="file-edit-progress-percentage"
+              class="progress-percentage"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              0%
+            </div>
+          </div>
+          <div id="file-edit-progress-steps" class="progress-steps"></div>
+        </div>
+
+        <div id="file-edit-result" class="result-section">
+          <h3>Result</h3>
+          <pre id="file-edit-output" class="output-display"></pre>
         </div>
       </div>
     </div>

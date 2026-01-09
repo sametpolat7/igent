@@ -7,6 +7,11 @@ const state = {
   queuePlan: null,
   queueStatus: null,
   isQueueExecuting: false,
+  // File editing state
+  fileEditFunctions: {},
+  fileEditPlan: null,
+  isFileEditExecuting: false,
+  fileEditHasChanges: false,
 };
 
 const elements = {
@@ -42,6 +47,27 @@ const elements = {
   queueProgressSteps: document.getElementById('queue-progress-steps'),
   queueResultSection: document.getElementById('queue-result'),
   queueOutputDisplay: document.getElementById('queue-output'),
+  // File editing elements
+  fileEditServerSelect: document.getElementById('file-edit-server'),
+  fileEditDirectorySelect: document.getElementById('file-edit-directory'),
+  fileEditFunctionSelect: document.getElementById('file-edit-function'),
+  fileEditRestoreSection: document.getElementById('file-edit-restore-section'),
+  fileEditRestoreStatus: document.getElementById('file-edit-restore-status'),
+  fileEditRestoreButton: document.getElementById('file-edit-restore'),
+  fileEditInputsContainer: document.getElementById('file-edit-inputs'),
+  fileEditPlanButton: document.getElementById('file-edit-plan'),
+  fileEditStatusSection: document.getElementById('file-edit-status'),
+  fileEditCommandsDisplay: document.getElementById('file-edit-commands'),
+  fileEditExecuteButton: document.getElementById('file-edit-execute'),
+  fileEditCancelButton: document.getElementById('file-edit-cancel'),
+  fileEditProgressSection: document.getElementById('file-edit-progress'),
+  fileEditProgressBar: document.getElementById('file-edit-progress-bar'),
+  fileEditProgressPercentage: document.getElementById(
+    'file-edit-progress-percentage'
+  ),
+  fileEditProgressSteps: document.getElementById('file-edit-progress-steps'),
+  fileEditResultSection: document.getElementById('file-edit-result'),
+  fileEditOutputDisplay: document.getElementById('file-edit-output'),
 };
 
 const PROGRESS_GRADIENTS = {
@@ -78,11 +104,15 @@ const STEP_STATUS_MAP = {
 async function initialize() {
   setupViewSwitching();
   await loadServers();
+  await loadFileEditFunctions();
   attachEventListeners();
   setupProgressListener();
   // Queue control initialization
   attachQueueEventListeners();
   setupQueueProgressListener();
+  // File editing initialization
+  attachFileEditEventListeners();
+  setupFileEditProgressListener();
 }
 
 function setupViewSwitching() {
@@ -110,9 +140,18 @@ async function loadServers() {
     Object.keys(state.servers).forEach((key) => {
       elements.serverSelect.appendChild(createOption(key, key));
       elements.queueServerSelect.appendChild(createOption(key, key));
+      elements.fileEditServerSelect.appendChild(createOption(key, key));
     });
   } catch (error) {
     showError('Failed to load server configuration', error);
+  }
+}
+
+async function loadFileEditFunctions() {
+  try {
+    state.fileEditFunctions = await window.igent.fileEdit.getFunctions();
+  } catch (error) {
+    showError('Failed to load file edit functions', error);
   }
 }
 
@@ -810,6 +849,572 @@ function showQueueResultSection(type, message) {
 function hideQueueResults() {
   hideSection(elements.queueProgressSection);
   hideSection(elements.queueResultSection);
+}
+
+// ============================================
+// FILE EDITING FUNCTIONS
+// ============================================
+
+function attachFileEditEventListeners() {
+  elements.fileEditServerSelect.addEventListener(
+    'change',
+    handleFileEditServerChange
+  );
+  elements.fileEditDirectorySelect.addEventListener(
+    'change',
+    handleFileEditDirectoryChange
+  );
+  elements.fileEditFunctionSelect.addEventListener(
+    'change',
+    handleFileEditFunctionChange
+  );
+  elements.fileEditPlanButton.addEventListener('click', handleFileEditPlan);
+  elements.fileEditExecuteButton.addEventListener(
+    'click',
+    handleFileEditExecute
+  );
+  elements.fileEditCancelButton.addEventListener('click', handleFileEditCancel);
+  elements.fileEditRestoreButton.addEventListener(
+    'click',
+    handleFileEditRestore
+  );
+}
+
+function handleFileEditServerChange(e) {
+  const serverKey = e.target.value;
+
+  elements.fileEditDirectorySelect.innerHTML =
+    '<option value="">Select directory...</option>';
+  elements.fileEditDirectorySelect.disabled = true;
+  elements.fileEditFunctionSelect.innerHTML =
+    '<option value="">Select a function...</option>';
+  elements.fileEditFunctionSelect.disabled = true;
+  elements.fileEditInputsContainer.innerHTML = '';
+  elements.fileEditPlanButton.disabled = true;
+  resetFileEditRestoreStatus();
+  hideFileEditResults();
+
+  if (serverKey && state.servers[serverKey]) {
+    state.servers[serverKey].allowedDirectories.forEach((dir) => {
+      elements.fileEditDirectorySelect.appendChild(createOption(dir, dir));
+    });
+    elements.fileEditDirectorySelect.disabled = false;
+  }
+}
+
+function handleFileEditDirectoryChange() {
+  const hasSelection =
+    elements.fileEditServerSelect.value &&
+    elements.fileEditDirectorySelect.value;
+
+  elements.fileEditFunctionSelect.innerHTML =
+    '<option value="">Select a function...</option>';
+  elements.fileEditFunctionSelect.disabled = true;
+  elements.fileEditInputsContainer.innerHTML = '';
+  elements.fileEditPlanButton.disabled = true;
+  resetFileEditRestoreStatus();
+  hideFileEditResults();
+
+  if (hasSelection) {
+    // Populate function select
+    Object.entries(state.fileEditFunctions).forEach(([id, func]) => {
+      elements.fileEditFunctionSelect.appendChild(createOption(id, func.name));
+    });
+    elements.fileEditFunctionSelect.disabled = false;
+  }
+}
+
+function handleFileEditFunctionChange() {
+  const functionId = elements.fileEditFunctionSelect.value;
+
+  elements.fileEditInputsContainer.innerHTML = '';
+  elements.fileEditPlanButton.disabled = true;
+  resetFileEditRestoreStatus();
+  hideFileEditResults();
+
+  if (functionId && state.fileEditFunctions[functionId]) {
+    const funcConfig = state.fileEditFunctions[functionId];
+    renderFileEditInputs(funcConfig);
+    validateFileEditForm();
+    // Check for uncommitted changes in the target file
+    checkFileEditChanges(funcConfig.targetFile);
+  }
+}
+
+function renderFileEditInputs(funcConfig) {
+  if (!funcConfig.inputs || funcConfig.inputs.length === 0) {
+    validateFileEditForm();
+    return;
+  }
+
+  // Show function info
+  const infoDiv = document.createElement('div');
+  infoDiv.className = 'file-edit-info';
+  infoDiv.innerHTML = `
+    <div class="file-edit-target">
+      <span class="label">Target File:</span>
+      <span class="value">${escapeHTML(funcConfig.targetFile)}</span>
+    </div>
+  `;
+  elements.fileEditInputsContainer.appendChild(infoDiv);
+
+  // Render input fields
+  for (const inputDef of funcConfig.inputs) {
+    const formGroup = document.createElement('div');
+    formGroup.className = 'form-group';
+
+    const label = document.createElement('label');
+    label.className = 'form-label';
+    label.htmlFor = `file-edit-input-${inputDef.key}`;
+    label.textContent = inputDef.label;
+
+    const input = document.createElement('input');
+    input.type = inputDef.type || 'text';
+    input.id = `file-edit-input-${inputDef.key}`;
+    input.className = 'form-control';
+    input.placeholder = inputDef.placeholder || '';
+    input.dataset.inputKey = inputDef.key;
+    input.autocomplete = 'off';
+
+    if (inputDef.required) input.required = true;
+
+    input.addEventListener('input', validateFileEditForm);
+
+    formGroup.appendChild(label);
+    formGroup.appendChild(input);
+    elements.fileEditInputsContainer.appendChild(formGroup);
+  }
+}
+
+function validateFileEditForm() {
+  const hasServer = elements.fileEditServerSelect.value;
+  const hasDirectory = elements.fileEditDirectorySelect.value;
+  const hasFunction = elements.fileEditFunctionSelect.value;
+
+  if (!hasServer || !hasDirectory || !hasFunction) {
+    elements.fileEditPlanButton.disabled = true;
+    return;
+  }
+
+  const funcConfig = state.fileEditFunctions[hasFunction];
+  if (!funcConfig) {
+    elements.fileEditPlanButton.disabled = true;
+    return;
+  }
+
+  // Check all required inputs have values
+  const inputs = elements.fileEditInputsContainer.querySelectorAll(
+    'input[data-input-key]'
+  );
+  let allValid = true;
+
+  inputs.forEach((input) => {
+    if (input.required && !input.value.trim()) {
+      allValid = false;
+    }
+  });
+
+  elements.fileEditPlanButton.disabled = !allValid;
+}
+
+function getFileEditInputValues() {
+  const inputs = elements.fileEditInputsContainer.querySelectorAll(
+    'input[data-input-key]'
+  );
+  const values = {};
+
+  inputs.forEach((input) => {
+    values[input.dataset.inputKey] = input.value.trim();
+  });
+
+  return values;
+}
+
+async function handleFileEditPlan() {
+  hideFileEditResults();
+  elements.fileEditPlanButton.disabled = true;
+
+  try {
+    state.fileEditPlan = await window.igent.fileEdit.plan({
+      serverKey: elements.fileEditServerSelect.value,
+      directory: elements.fileEditDirectorySelect.value,
+      functionId: elements.fileEditFunctionSelect.value,
+      inputs: getFileEditInputValues(),
+    });
+    displayFileEditPlan(state.fileEditPlan);
+  } catch (error) {
+    showFileEditError('Planning failed', error);
+  } finally {
+    validateFileEditForm();
+  }
+}
+
+function displayFileEditPlan(plan) {
+  const commands = plan.commands.map((cmd, i) => `${i + 1}. ${cmd}`).join('\n');
+  const inputs = Object.entries(plan.inputs || {})
+    .map(
+      ([key, value]) =>
+        `<div><span class="plan-label">${escapeHTML(key)}:</span> ${escapeHTML(value)}</div>`
+    )
+    .join('');
+
+  elements.fileEditCommandsDisplay.innerHTML =
+    `<div><span class="plan-label">Server:</span> ${escapeHTML(plan.serverKey)}</div>` +
+    `<div><span class="plan-label">Directory:</span> ${escapeHTML(plan.directory)}</div>` +
+    `<div><span class="plan-label">Function:</span> ${escapeHTML(plan.functionName)}</div>` +
+    `<div><span class="plan-label">Target File:</span> ${escapeHTML(plan.targetFile)}</div>` +
+    (inputs
+      ? `<div style="margin-top: 8px;"><span class="plan-label">Inputs:</span></div>${inputs}`
+      : '') +
+    `<div style="margin-top: 8px;"><span class="plan-label">Commands:</span></div>` +
+    `<div style="margin-top: 4px;">${escapeHTML(commands)}</div>`;
+
+  showSection(elements.fileEditStatusSection);
+  elements.fileEditExecuteButton.disabled = false;
+  elements.fileEditCancelButton.disabled = false;
+  scrollToElement(elements.fileEditStatusSection);
+}
+
+async function handleFileEditExecute() {
+  if (!state.fileEditPlan) {
+    showFileEditError(
+      'No plan available',
+      new Error('Please create a plan first')
+    );
+    return;
+  }
+
+  setFileEditExecutionState(true);
+  resetFileEditProgress();
+  scrollToElement(elements.fileEditProgressSection);
+
+  try {
+    const result = await window.igent.fileEdit.execute(state.fileEditPlan);
+    if (result.success === false) {
+      displayFileEditError(result);
+    } else {
+      displayFileEditSuccess(result);
+    }
+  } catch (error) {
+    displayFileEditError(error);
+  } finally {
+    setFileEditExecutionState(false);
+  }
+}
+
+function handleFileEditCancel() {
+  state.fileEditPlan = null;
+  hideSection(elements.fileEditStatusSection);
+}
+
+function setFileEditExecutionState(isExecuting) {
+  state.isFileEditExecuting = isExecuting;
+  elements.fileEditExecuteButton.disabled = isExecuting;
+  elements.fileEditCancelButton.disabled = isExecuting;
+  elements.fileEditPlanButton.disabled = isExecuting;
+  elements.fileEditServerSelect.disabled = isExecuting;
+  elements.fileEditDirectorySelect.disabled = isExecuting;
+  elements.fileEditFunctionSelect.disabled = isExecuting;
+
+  // Disable input fields
+  const inputs = elements.fileEditInputsContainer.querySelectorAll('input');
+  inputs.forEach((input) => (input.disabled = isExecuting));
+
+  if (!isExecuting) validateFileEditForm();
+}
+
+function resetFileEditProgress() {
+  hideSection(elements.fileEditStatusSection);
+  hideSection(elements.fileEditResultSection);
+  showSection(elements.fileEditProgressSection);
+
+  elements.fileEditProgressSteps.innerHTML = '';
+  setFileEditProgressBar(0);
+}
+
+function setFileEditProgressBar(percentage, gradient = null) {
+  elements.fileEditProgressBar.style.width = `${percentage}%`;
+  elements.fileEditProgressPercentage.textContent = `${percentage}%`;
+  if (gradient) elements.fileEditProgressBar.style.background = gradient;
+}
+
+function setupFileEditProgressListener() {
+  window.igent.fileEdit.onProgress(updateFileEditProgress);
+}
+
+function updateFileEditProgress(data) {
+  const { status, currentStep, totalSteps } = data;
+
+  if (totalSteps > 0) {
+    const completed =
+      status === 'running' ? Math.max(0, currentStep - 1) : currentStep || 0;
+    setFileEditProgressBar(Math.round((completed / totalSteps) * 100));
+  }
+
+  const handlers = {
+    started: () => (elements.fileEditProgressSteps.innerHTML = ''),
+    running: () => updateFileEditStepDisplay(data),
+    'step-complete': () => updateFileEditStepDisplay(data),
+    'step-failed': () => updateFileEditStepDisplay(data),
+    completed: () => setFileEditProgressBar(100, PROGRESS_GRADIENTS.success),
+    failed: () =>
+      setFileEditProgressBar(
+        parseInt(elements.fileEditProgressPercentage.textContent),
+        PROGRESS_GRADIENTS.error
+      ),
+  };
+
+  handlers[status]?.();
+}
+
+function updateFileEditStepDisplay(data) {
+  const { currentStep, command, status, duration, error, stderr } = data;
+  const stepElement = getOrCreateFileEditStepElement(
+    `file-edit-step-${currentStep}`,
+    'progress-step'
+  );
+  const statusInfo = STEP_STATUS_MAP[status] || { class: '', text: 'Running' };
+
+  stepElement.className = `progress-step ${statusInfo.class}`;
+  stepElement.innerHTML = createStepHTML(
+    statusInfo.text,
+    currentStep,
+    command,
+    duration,
+    status === 'step-failed' ? error || stderr : null
+  );
+  scrollToElement(stepElement);
+}
+
+function getOrCreateFileEditStepElement(stepId, className) {
+  let element = document.getElementById(stepId);
+  if (!element) {
+    element = document.createElement('div');
+    element.id = stepId;
+    element.className = className;
+    elements.fileEditProgressSteps.appendChild(element);
+  }
+  return element;
+}
+
+function displayFileEditSuccess(result) {
+  hideSection(elements.fileEditProgressSection);
+  hideSection(elements.fileEditStatusSection);
+
+  let message = `${result.functionName} completed successfully in ${result.totalDuration}s`;
+
+  if (result.output) {
+    message += `\n\nOutput:\n${result.output}`;
+  }
+
+  showFileEditResultSection('success', message);
+
+  // Refresh restore status to show the file now has changes
+  refreshFileEditRestoreStatus();
+}
+
+function displayFileEditError(error) {
+  hideSection(elements.fileEditProgressSection);
+  hideSection(elements.fileEditStatusSection);
+
+  const parts = [
+    error.failedAtStep &&
+      error.failedCommand &&
+      `Failed at Step ${error.failedAtStep}/${error.totalSteps}\nCommand: ${error.failedCommand}\nDuration: ${error.totalDuration}s`,
+    error.stderr && `Error Output:\n${error.stderr}`,
+    error.failureReason && `Reason: ${error.failureReason}`,
+    !error.stderr &&
+      !error.failureReason &&
+      (error.message || 'Unknown error occurred'),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
+  showFileEditResultSection('error', parts);
+}
+
+function showFileEditError(title, error) {
+  showFileEditResultSection('warning', `${title}\n\n${error.message || error}`);
+}
+
+function showFileEditResultSection(type, message) {
+  const styles = RESULT_STYLES[type];
+  showSection(elements.fileEditResultSection);
+  Object.assign(elements.fileEditResultSection.style, styles);
+  elements.fileEditOutputDisplay.textContent = message;
+  elements.fileEditOutputDisplay.style.color = '#e5e7eb';
+  scrollToElement(elements.fileEditResultSection);
+}
+
+function hideFileEditResults() {
+  hideSection(elements.fileEditStatusSection);
+  hideSection(elements.fileEditProgressSection);
+  hideSection(elements.fileEditResultSection);
+  state.fileEditPlan = null;
+}
+
+// ============================================
+// FILE EDITING - RESTORE FUNCTIONS
+// ============================================
+
+function resetFileEditRestoreStatus() {
+  state.fileEditHasChanges = false;
+  elements.fileEditRestoreButton.disabled = true;
+  elements.fileEditRestoreStatus.textContent =
+    'Select a function to check for changes';
+  elements.fileEditRestoreStatus.className = 'restore-status-text';
+  elements.fileEditRestoreSection.className = 'file-edit-restore-section';
+}
+
+async function checkFileEditChanges(targetFile) {
+  const serverKey = elements.fileEditServerSelect.value;
+  const directory = elements.fileEditDirectorySelect.value;
+
+  if (!serverKey || !directory || !targetFile) {
+    resetFileEditRestoreStatus();
+    return;
+  }
+
+  // Show checking status
+  elements.fileEditRestoreStatus.textContent = 'Checking for changes...';
+  elements.fileEditRestoreStatus.className = 'restore-status-text checking';
+  elements.fileEditRestoreButton.disabled = true;
+
+  try {
+    const result = await window.igent.fileEdit.checkChanges({
+      serverKey,
+      directory,
+      targetFile,
+    });
+
+    state.fileEditHasChanges = result.hasChanges;
+
+    if (result.hasChanges) {
+      elements.fileEditRestoreStatus.textContent =
+        'File has uncommitted changes';
+      elements.fileEditRestoreStatus.className =
+        'restore-status-text has-changes';
+      elements.fileEditRestoreSection.className =
+        'file-edit-restore-section has-changes';
+      elements.fileEditRestoreButton.disabled = false;
+    } else {
+      elements.fileEditRestoreStatus.textContent = 'No changes detected';
+      elements.fileEditRestoreStatus.className =
+        'restore-status-text no-changes';
+      elements.fileEditRestoreSection.className =
+        'file-edit-restore-section no-changes';
+      elements.fileEditRestoreButton.disabled = true;
+    }
+  } catch (error) {
+    elements.fileEditRestoreStatus.textContent =
+      'Could not check file status: ' + error.message;
+    elements.fileEditRestoreStatus.className = 'restore-status-text error';
+    elements.fileEditRestoreButton.disabled = true;
+  }
+}
+
+async function handleFileEditRestore() {
+  const functionId = elements.fileEditFunctionSelect.value;
+  const funcConfig = state.fileEditFunctions[functionId];
+
+  // Ensure we have a valid function configuration
+  if (!funcConfig) return;
+
+  const targetFile = funcConfig.targetFile;
+  if (!targetFile) return;
+
+  // Re-check for changes for the currently selected function/file
+  await checkFileEditChanges(targetFile);
+  if (!state.fileEditHasChanges) {
+    // Nothing to restore for the current selection
+    return;
+  }
+
+  const serverKey = elements.fileEditServerSelect.value;
+  const directory = elements.fileEditDirectorySelect.value;
+
+  // Disable buttons during operation
+  elements.fileEditRestoreButton.disabled = true;
+  elements.fileEditPlanButton.disabled = true;
+  elements.fileEditRestoreStatus.textContent = 'Restoring file...';
+  elements.fileEditRestoreStatus.className = 'restore-status-text checking';
+
+  // Show progress section and set up listener
+  resetFileEditProgress();
+  window.igent.fileEdit.onRestoreProgress(updateFileEditProgress);
+
+  try {
+    const result = await window.igent.fileEdit.restore({
+      serverKey,
+      directory,
+      targetFile,
+    });
+
+    window.igent.fileEdit.removeRestoreProgressListener();
+
+    if (result.success) {
+      state.fileEditHasChanges = false;
+      elements.fileEditRestoreStatus.textContent =
+        'File restored successfully!';
+      elements.fileEditRestoreStatus.className = 'restore-status-text restored';
+      elements.fileEditRestoreSection.className =
+        'file-edit-restore-section restored';
+
+      // Show success message
+      displayRestoreSuccess(result);
+
+      // Re-check after a short delay to update the UI
+      setTimeout(() => {
+        checkFileEditChanges(targetFile);
+      }, 1500);
+    } else {
+      displayRestoreError(result);
+      elements.fileEditRestoreStatus.textContent =
+        'Restore failed: ' + (result.message || 'Unknown error');
+      elements.fileEditRestoreStatus.className = 'restore-status-text error';
+      elements.fileEditRestoreButton.disabled = false;
+    }
+  } catch (error) {
+    window.igent.fileEdit.removeRestoreProgressListener();
+    displayRestoreError({ message: error.message });
+    elements.fileEditRestoreStatus.textContent =
+      'Restore failed: ' + error.message;
+    elements.fileEditRestoreStatus.className = 'restore-status-text error';
+    elements.fileEditRestoreButton.disabled = false;
+  }
+
+  // Re-enable plan button
+  validateFileEditForm();
+}
+
+function displayRestoreSuccess(result) {
+  hideSection(elements.fileEditProgressSection);
+  const message = `File restored and service restarted successfully!\n\nDuration: ${result.totalDuration}s\nTarget: ${result.targetFile}`;
+  showFileEditResultSection('success', message);
+}
+
+function displayRestoreError(error) {
+  hideSection(elements.fileEditProgressSection);
+  const parts = [
+    error.failedAtStep &&
+      `Failed at Step ${error.failedAtStep}/${error.totalSteps}`,
+    error.command && `Command: ${error.command}`,
+    error.stderr && `Error Output:\n${error.stderr}`,
+    error.message || 'Unknown error occurred',
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
+  showFileEditResultSection('error', parts);
+}
+
+// Refresh restore status after successful execution
+function refreshFileEditRestoreStatus() {
+  const functionId = elements.fileEditFunctionSelect.value;
+  if (functionId && state.fileEditFunctions[functionId]) {
+    const funcConfig = state.fileEditFunctions[functionId];
+    checkFileEditChanges(funcConfig.targetFile);
+  }
 }
 
 initialize();
