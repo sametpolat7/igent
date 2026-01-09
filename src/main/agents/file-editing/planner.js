@@ -124,9 +124,16 @@ function generateHashDataUpdateCommands(filePath, directory, newValue) {
 }
 
 function buildAwkTransformCommand(filePath, backupPath, rawValue) {
-  // Use single quotes in -v option to prevent shell expansion
-  // Single quotes prevent all variable expansion and special character interpretation
-  // Single quotes within the value are escaped using the pattern '\'' (end quote, escaped quote, start quote)
+  // Security: Use single quotes in -v option to prevent all shell expansion
+  // Single quotes in POSIX shell prevent variable expansion, command substitution,
+  // glob expansion, and interpretation of special characters like $, `, \, etc.
+  //
+  // To include a literal single quote within a single-quoted string, we use the
+  // pattern '\'' which:
+  //   1. Ends the current single-quoted string with '
+  //   2. Adds an escaped single quote \'
+  //   3. Starts a new single-quoted string with '
+  // This is the standard POSIX shell escaping technique and is secure against injection.
   const shellEscapedValue = rawValue.replace(/'/g, "'\\''");
   return `awk -v newval='${shellEscapedValue}' '
     /def hash_data/ { inside=1; print; next }
