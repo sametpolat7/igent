@@ -1317,11 +1317,21 @@ async function handleFileEditRestore() {
   const functionId = elements.fileEditFunctionSelect.value;
   const funcConfig = state.fileEditFunctions[functionId];
 
-  if (!funcConfig || !state.fileEditHasChanges) return;
+  // Ensure we have a valid function configuration
+  if (!funcConfig) return;
+
+  const targetFile = funcConfig.targetFile;
+  if (!targetFile) return;
+
+  // Re-check for changes for the currently selected function/file
+  await checkFileEditChanges(targetFile);
+  if (!state.fileEditHasChanges) {
+    // Nothing to restore for the current selection
+    return;
+  }
 
   const serverKey = elements.fileEditServerSelect.value;
   const directory = elements.fileEditDirectorySelect.value;
-  const targetFile = funcConfig.targetFile;
 
   // Disable buttons during operation
   elements.fileEditRestoreButton.disabled = true;
