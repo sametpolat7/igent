@@ -335,7 +335,6 @@ Updates the `hash_data` method in Rails payments controller to return a static v
 - Automatic file backup before modification (`.backup` extension)
 - Rollback to backup on execution failure
 - Backup cleanup on successful completion
-- Shell command escaping for user inputs
 - Service restart after both edit and restore operations
 
 **Planner Functions:**
