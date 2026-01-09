@@ -6,6 +6,7 @@ import {
   validateString,
   validateNonEmpty,
   validateIncludes,
+  validateNoNewlines,
 } from '../../utils/validators.js';
 import { logSuccess } from '../../utils/logger.js';
 
@@ -81,6 +82,7 @@ function validateFunctionInputs(functionConfig, inputs) {
     if (inputDef.required) {
       validateString(value, inputDef.label);
       validateNonEmpty(value, inputDef.label);
+      validateNoNewlines(value, inputDef.label);
     }
   }
 }
@@ -127,10 +129,10 @@ function generateHashDataUpdateCommands(filePath, directory, newValue) {
 }
 
 function buildAwkTransformCommand(filePath, backupPath, escapedValue) {
-  return `awk '
+  return `awk -v newval="${escapedValue}" '
     /def hash_data/ { inside=1; print; next }
     inside && /^[[:space:]]*end[[:space:]]*$/ { 
-      print "    \\"${escapedValue}\\""; 
+      print "    \\"" newval "\\""; 
       print; 
       inside=0; 
       next 

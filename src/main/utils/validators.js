@@ -47,3 +47,9 @@ export function validateProperty(obj, property, objectName) {
     throw new Error(`${objectName} must have "${property}" property`);
   }
 }
+
+export function validateNoNewlines(value, fieldName) {
+  if (/[\r\n]/.test(value)) {
+    throw new Error(`${fieldName} cannot contain newline characters`);
+  }
+}
