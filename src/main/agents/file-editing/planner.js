@@ -129,7 +129,10 @@ function generateHashDataUpdateCommands(filePath, directory, newValue) {
 }
 
 function buildAwkTransformCommand(filePath, backupPath, escapedValue) {
-  return `awk -v newval="${escapedValue}" '
+  // Use single quotes in -v option to prevent shell expansion
+  // Single quotes prevent all variable expansion and special character interpretation
+  const safeValue = escapedValue.replace(/'/g, "'\\''");
+  return `awk -v newval='${safeValue}' '
     /def hash_data/ { inside=1; print; next }
     inside && /^[[:space:]]*end[[:space:]]*$/ { 
       print "    \\"" newval "\\""; 
