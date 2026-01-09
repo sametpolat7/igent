@@ -110,29 +110,24 @@ function generateFileEditCommands({
 }
 
 function generateHashDataUpdateCommands(filePath, directory, newValue) {
-  const escapedValue = escapeForShell(newValue);
   const backupPath = `${filePath}.backup`;
   const serviceName = `${directory}.service`;
 
   // Command definitions
   const cdCommand = `cd $(dirname ${filePath})`;
   const backupCommand = `cp ${filePath} ${backupPath}`;
-  const awkCommand = buildAwkTransformCommand(
-    filePath,
-    backupPath,
-    escapedValue
-  );
+  const awkCommand = buildAwkTransformCommand(filePath, backupPath, newValue);
   const verifyCommand = `grep -A 10 "def hash_data" ${filePath}`;
   const restartCommand = `sudo systemctl restart ${serviceName}`;
 
   return [cdCommand, backupCommand, awkCommand, verifyCommand, restartCommand];
 }
 
-function buildAwkTransformCommand(filePath, backupPath, escapedValue) {
+function buildAwkTransformCommand(filePath, backupPath, rawValue) {
   // Use single quotes in -v option to prevent shell expansion
   // Single quotes prevent all variable expansion and special character interpretation
   // Single quotes within the value are escaped using the pattern '\'' (end quote, escaped quote, start quote)
-  const shellEscapedValue = escapedValue.replace(/'/g, "'\\''");
+  const shellEscapedValue = rawValue.replace(/'/g, "'\\''");
   return `awk -v newval='${shellEscapedValue}' '
     /def hash_data/ { inside=1; print; next }
     inside && /^[[:space:]]*end[[:space:]]*$/ { 
@@ -144,15 +139,6 @@ function buildAwkTransformCommand(filePath, backupPath, escapedValue) {
     inside { print "    # " substr($0, 5); next }
     { print }
   ' ${backupPath} > ${filePath}`;
-}
-
-function escapeForShell(str) {
-  return str
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/'/g, "'")
-    .replace(/`/g, '\\`')
-    .replace(/\$/g, '\\$');
 }
 
 export function getFileEditFunctions() {
