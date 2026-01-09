@@ -89,7 +89,12 @@ export function loadFileEditFunctions() {
       validateProperty(funcConfig, 'name', `Function "${functionId}"`);
       validateProperty(funcConfig, 'targetFile', `Function "${functionId}"`);
       validateString(funcConfig.name, `Function "${functionId}" name`);
+      validateNonEmpty(funcConfig.name, `Function "${functionId}" name`);
       validateString(
+        funcConfig.targetFile,
+        `Function "${functionId}" targetFile`
+      );
+      validateNonEmpty(
         funcConfig.targetFile,
         `Function "${functionId}" targetFile`
       );
