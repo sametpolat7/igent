@@ -13,6 +13,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CONFIG_FILE_PATH = path.join(__dirname, 'servers.json');
+const FILE_EDIT_FUNCTIONS_PATH = path.join(__dirname, 'fileEditFunctions.json');
 
 export function loadServersConfig() {
   try {
@@ -59,6 +60,47 @@ export function loadServersConfig() {
   } catch (error) {
     if (error instanceof SyntaxError) {
       throw new Error(`Invalid JSON in configuration file: ${error.message}`);
+    }
+    throw error;
+  }
+}
+
+export function loadFileEditFunctions() {
+  try {
+    if (!fs.existsSync(FILE_EDIT_FUNCTIONS_PATH)) {
+      throw new Error(
+        `File edit functions config not found at: ${FILE_EDIT_FUNCTIONS_PATH}`
+      );
+    }
+
+    const fileContent = fs.readFileSync(FILE_EDIT_FUNCTIONS_PATH, 'utf-8');
+    const config = JSON.parse(fileContent);
+
+    validateObject(config, 'File edit functions configuration');
+
+    const functionIds = Object.keys(config);
+    if (functionIds.length === 0) {
+      throw new Error('File edit functions must contain at least one function');
+    }
+
+    for (const functionId of functionIds) {
+      const funcConfig = config[functionId];
+      validateObject(funcConfig, `Function "${functionId}" configuration`);
+      validateProperty(funcConfig, 'name', `Function "${functionId}"`);
+      validateProperty(funcConfig, 'targetFile', `Function "${functionId}"`);
+      validateString(funcConfig.name, `Function "${functionId}" name`);
+      validateString(
+        funcConfig.targetFile,
+        `Function "${functionId}" targetFile`
+      );
+    }
+
+    return config;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(
+        `Invalid JSON in file edit functions config: ${error.message}`
+      );
     }
     throw error;
   }
