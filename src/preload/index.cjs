@@ -36,4 +36,51 @@ contextBridge.exposeInMainWorld('igent', {
       ipcRenderer.removeAllListeners('queue:progress');
     },
   },
+
+  // File Editing
+  fileEdit: {
+    getFunctions: () => ipcRenderer.invoke('file-edit:get-functions'),
+
+    plan: ({ serverKey, directory, functionId, inputs }) =>
+      ipcRenderer.invoke('file-edit:plan', {
+        serverKey,
+        directory,
+        functionId,
+        inputs,
+      }),
+
+    execute: (payload) => ipcRenderer.invoke('file-edit:execute', payload),
+
+    checkChanges: ({ serverKey, directory, targetFile }) =>
+      ipcRenderer.invoke('file-edit:check-changes', {
+        serverKey,
+        directory,
+        targetFile,
+      }),
+
+    restore: ({ serverKey, directory, targetFile }) =>
+      ipcRenderer.invoke('file-edit:restore', {
+        serverKey,
+        directory,
+        targetFile,
+      }),
+
+    onProgress: (callback) => {
+      ipcRenderer.on('file-edit:progress', (_event, data) => callback(data));
+    },
+
+    onRestoreProgress: (callback) => {
+      ipcRenderer.on('file-edit:restore-progress', (_event, data) =>
+        callback(data)
+      );
+    },
+
+    removeProgressListener: () => {
+      ipcRenderer.removeAllListeners('file-edit:progress');
+    },
+
+    removeRestoreProgressListener: () => {
+      ipcRenderer.removeAllListeners('file-edit:restore-progress');
+    },
+  },
 });

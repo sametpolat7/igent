@@ -1,8 +1,18 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { planProcess, AGENT_TYPES } from './agents/planner.js';
-import { executeProcess, checkQueueStatus } from './agents/executor.js';
+import {
+  planProcess,
+  planRestore,
+  AGENT_TYPES,
+  getFileEditFunctions,
+} from './agents/planner.js';
+import {
+  executeProcess,
+  checkQueueStatus,
+  checkFileChanges,
+  restoreFile,
+} from './agents/executor.js';
 import { loadServersConfig } from './config/loadConfig.js';
 import { logError } from './utils/logger.js';
 
@@ -128,6 +138,92 @@ function registerIPCHandlers() {
         failureReason: error.failureReason,
         totalDuration: error.totalDuration,
       };
+    }
+  });
+
+  // File Editing handlers
+  ipcMain.handle('file-edit:get-functions', async () => {
+    try {
+      return getFileEditFunctions();
+    } catch (error) {
+      logError('IPC', 'Failed to load file edit functions', error);
+      throw new Error('Failed to load file edit functions.');
+    }
+  });
+
+  ipcMain.handle('file-edit:plan', async (_event, payload) => {
+    try {
+      return planProcess(AGENT_TYPES.FILE_EDITING, payload);
+    } catch (error) {
+      logError('IPC', 'File edit planning failed', error);
+      throw new Error(
+        'Planning failed. Please verify your configuration and inputs.'
+      );
+    }
+  });
+
+  ipcMain.handle('file-edit:execute', async (event, payload) => {
+    try {
+      const progressCallback = (progressData) => {
+        event.sender.send('file-edit:progress', progressData);
+      };
+
+      return await executeProcess(AGENT_TYPES.FILE_EDITING, {
+        ...payload,
+        progressCallback,
+      });
+    } catch (error) {
+      logError('IPC', 'File edit execution failed', error);
+      return {
+        success: false,
+        functionId: payload.functionId,
+        functionName: payload.functionName,
+        directory: payload.directory,
+        message: error.message || 'File edit operation failed',
+        failedAtStep: error.failedAtStep,
+        totalSteps: error.totalSteps,
+        stderr: error.stderr,
+        failureReason: error.failureReason,
+        totalDuration: error.totalDuration,
+      };
+    }
+  });
+
+  ipcMain.handle('file-edit:check-changes', async (_event, payload) => {
+    try {
+      const serversConfig = loadServersConfig();
+      const serverConfig = serversConfig[payload.serverKey];
+      if (!serverConfig) {
+        throw new Error(`Server "${payload.serverKey}" not found`);
+      }
+      return await checkFileChanges({
+        sshHost: serverConfig.sshHost,
+        directory: payload.directory,
+        targetFile: payload.targetFile,
+      });
+    } catch (error) {
+      logError('IPC', 'File changes check failed', error);
+      throw new Error('Failed to check file changes. Please try again.');
+    }
+  });
+
+  ipcMain.handle('file-edit:restore', async (event, payload) => {
+    try {
+      const plan = planRestore({
+        serverKey: payload.serverKey,
+        directory: payload.directory,
+        targetFile: payload.targetFile,
+      });
+
+      return await restoreFile({
+        ...plan,
+        progressCallback: (progress) => {
+          event.sender.send('file-edit:restore-progress', progress);
+        },
+      });
+    } catch (error) {
+      logError('IPC', 'File restore failed', error);
+      throw new Error('Failed to restore file. Please try again.');
     }
   });
 }
