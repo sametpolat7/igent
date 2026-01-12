@@ -3,7 +3,7 @@ import {
   validateString,
   validateNonEmpty,
   validateIncludes,
-} from '../../utils/validators.js';
+} from '../../utils/validator.js';
 import { logSuccess } from '../../utils/logger.js';
 
 const BASE_DIRECTORY = '/var/webs';

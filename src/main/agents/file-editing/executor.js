@@ -5,7 +5,7 @@ import {
   validateArrayNotEmpty,
   validateString,
   validateNonEmpty,
-} from '../../utils/validators.js';
+} from '../../utils/validator.js';
 import {
   logStart,
   logSuccess,
@@ -15,6 +15,12 @@ import {
   logInfo,
 } from '../../utils/logger.js';
 import { ProgressTracker } from '../../utils/progressTracker.js';
+import {
+  SecurityContext,
+  validateOperationParams,
+  buildSafeSSHCommand,
+  validateAndNormalizePath,
+} from '../../utils/securityHandler.js';
 
 const execAsync = promisify(exec);
 const EXECUTION_TIMEOUT_MS = 120000;
@@ -39,6 +45,19 @@ export async function executeFileEdit({
     targetFile,
   });
 
+  const sanitized = validateOperationParams({
+    sshHost,
+    directory,
+    userInputs: inputs,
+  });
+
+  validateAndNormalizePath(BASE_DIRECTORY, sanitized.directory);
+
+  const securityContext = new SecurityContext(
+    'file-edit',
+    `${sanitized.sshHost}:${sanitized.directory}`
+  );
+
   const progress = new ProgressTracker(
     'fileEdit',
     commands.length,
@@ -46,40 +65,53 @@ export async function executeFileEdit({
   );
   const fullCommandChain = commands.join(' && ');
 
-  logStart('fileEdit', `Executing ${functionName} on ${sshHost}/${directory}`);
-  progress.start(`Starting ${functionName} on ${sshHost}/${directory}`);
+  logStart(
+    'fileEdit',
+    `Executing ${functionName} on ${sanitized.sshHost}/${sanitized.directory}`
+  );
+  progress.start(
+    `Starting ${functionName} on ${sanitized.sshHost}/${sanitized.directory}`
+  );
 
   try {
-    const result = await executeCommandChain({
-      commands,
-      fullCommandChain,
-      sshHost,
-      progress,
+    const result = await securityContext.execute(async () => {
+      return await executeCommandChain({
+        commands,
+        fullCommandChain,
+        sshHost: sanitized.sshHost,
+        progress,
+      });
     });
 
     if (!result.success) {
-      await attemptBackupRestore(sshHost, directory, targetFile);
+      await attemptBackupRestore(
+        sanitized.sshHost,
+        sanitized.directory,
+        targetFile
+      );
       progress.fail(result.command, result.failureReason);
+
       return buildFailureResult({
         functionId,
         functionName,
-        directory,
+        directory: sanitized.directory,
         targetFile,
         progress,
         ...result,
       });
     }
 
-    await cleanupBackup(sshHost, directory, targetFile);
+    await cleanupBackup(sanitized.sshHost, sanitized.directory, targetFile);
     progress.complete();
 
     logSuccess('fileEdit', `${functionName} completed successfully`);
+
     return buildSuccessResult({
       functionId,
       functionName,
-      directory,
+      directory: sanitized.directory,
       targetFile,
-      inputs,
+      inputs: sanitized.userInputs,
       progress,
       output: result.output,
     });
@@ -157,6 +189,7 @@ async function executeCommandChain({
         `Step ${progress.currentStep} failed: ${command}`,
         error
       );
+
       return {
         success: false,
         step: progress.currentStep,
@@ -225,8 +258,7 @@ function buildFailureResult({
 }
 
 function buildSSHCommand(host, command) {
-  const escapedCommand = command.replace(/'/g, "'\\''");
-  return `ssh ${host} '${escapedCommand}'`;
+  return buildSafeSSHCommand(host, command);
 }
 
 async function restoreBackup(sshHost, directory, targetFile) {
@@ -265,15 +297,24 @@ export async function checkFileChanges({ sshHost, directory, targetFile }) {
   validateString(targetFile, 'Target file');
   validateNonEmpty(targetFile, 'Target file');
 
-  logDebug('fileEdit', `Checking changes for ${targetFile} in ${directory}`);
+  const sanitized = validateOperationParams({ sshHost, directory });
+  validateAndNormalizePath(BASE_DIRECTORY, sanitized.directory);
+
+  logDebug(
+    'fileEdit',
+    `Checking changes for ${targetFile} in ${sanitized.directory}`
+  );
 
   try {
-    const appPath = `${BASE_DIRECTORY}/${directory}`;
+    const appPath = `${BASE_DIRECTORY}/${sanitized.directory}`;
     const diffCommand = `cd ${appPath} && git diff --name-only -- "${targetFile}"`;
-    const { stdout } = await execAsync(buildSSHCommand(sshHost, diffCommand), {
-      timeout: 30000,
-      maxBuffer: MAX_BUFFER_SIZE,
-    });
+    const { stdout } = await execAsync(
+      buildSSHCommand(sanitized.sshHost, diffCommand),
+      {
+        timeout: 30000,
+        maxBuffer: MAX_BUFFER_SIZE,
+      }
+    );
 
     const hasChanges = stdout.trim().length > 0;
     logInfo(
@@ -304,6 +345,9 @@ export async function restoreFile({
   validateString(targetFile, 'Target file');
   validateNonEmpty(targetFile, 'Target file');
 
+  const sanitized = validateOperationParams({ sshHost, directory });
+  validateAndNormalizePath(BASE_DIRECTORY, sanitized.directory);
+
   const progress = new ProgressTracker(
     'fileEdit',
     commands.length,
@@ -311,14 +355,14 @@ export async function restoreFile({
   );
   const fullCommandChain = commands.join(' && ');
 
-  logStart('fileEdit', `Restoring ${targetFile} in ${directory}`);
-  progress.start(`Restoring ${targetFile} in ${directory}`);
+  logStart('fileEdit', `Restoring ${targetFile} in ${sanitized.directory}`);
+  progress.start(`Restoring ${targetFile} in ${sanitized.directory}`);
 
   try {
     const result = await executeCommandChain({
       commands,
       fullCommandChain,
-      sshHost,
+      sshHost: sanitized.sshHost,
       progress,
     });
 
