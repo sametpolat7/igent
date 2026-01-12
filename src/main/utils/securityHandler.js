@@ -250,8 +250,8 @@ export function buildSafeSSHCommand(sshHost, remoteCommand) {
 }
 
 export function escapeAWKString(str) {
-  if (!str || typeof str !== 'string') {
-    return '';
+  if (typeof str !== 'string') {
+    throw new Error('AWK string must be a string');
   }
 
   return str
