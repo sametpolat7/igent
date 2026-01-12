@@ -82,183 +82,177 @@ export async function executeServerUpdate({
   let failedStep = null;
   let originalHead = null;
 
-  try {
-    // Security: Start rate-limited context
-    securityContext.start();
+  return securityContext.execute(async () => {
+    try {
+      const getHeadCommand = `cd ${appPath} && git rev-parse HEAD`;
+      const sshCommand = buildSSHCommand(sanitized.sshHost, getHeadCommand);
+      const { stdout } = await execAsync(sshCommand, {
+        timeout: EXECUTION_TIMEOUT_MS,
+        maxBuffer: MAX_BUFFER_SIZE,
+        killSignal: 'SIGTERM',
+      });
+      originalHead = stdout.trim();
+      logDebug('serverUpdate', `Captured original HEAD: ${originalHead}`);
+    } catch (error) {
+      logWarn('serverUpdate', 'Could not capture original HEAD', error);
+    }
 
-    const getHeadCommand = `cd ${appPath} && git rev-parse HEAD`;
-    const sshCommand = buildSSHCommand(sanitized.sshHost, getHeadCommand);
-    const { stdout } = await execAsync(sshCommand, {
-      timeout: EXECUTION_TIMEOUT_MS,
-      maxBuffer: MAX_BUFFER_SIZE,
-      killSignal: 'SIGTERM',
-    });
-    originalHead = stdout.trim();
-    logDebug('serverUpdate', `Captured original HEAD: ${originalHead}`);
-  } catch (error) {
-    logWarn('serverUpdate', 'Could not capture original HEAD', error);
-  }
+    try {
+      for (const command of commands) {
+        executedCommands.push(command);
+        progress.stepStart(command);
 
-  try {
-    for (const command of commands) {
-      executedCommands.push(command);
-      progress.stepStart(command);
+        try {
+          const commandChain = executedCommands.join(' && ');
+          const sshCommand = buildSSHCommand(sshHost, commandChain);
 
-      try {
-        const commandChain = executedCommands.join(' && ');
-        const sshCommand = buildSSHCommand(sshHost, commandChain);
-
-        const { stdout, stderr } = await execAsync(sshCommand, {
-          timeout: EXECUTION_TIMEOUT_MS,
-          maxBuffer: MAX_BUFFER_SIZE,
-          killSignal: 'SIGTERM',
-        });
-
-        const { hasConflict, conflictType } = detectConflict(stdout, stderr);
-
-        if (hasConflict) {
-          logWarn('serverUpdate', `Git conflict detected: ${conflictType}`);
-
-          await executeConflictCleanup({
-            sshHost,
-            directory,
-            conflictType,
-            originalHead,
-            progressCallback,
-            currentStep: progress.currentStep,
-            totalSteps: progress.totalSteps,
-            buildSSHCommand,
+          const { stdout, stderr } = await execAsync(sshCommand, {
+            timeout: EXECUTION_TIMEOUT_MS,
+            maxBuffer: MAX_BUFFER_SIZE,
+            killSignal: 'SIGTERM',
           });
 
-          throw createConflictError(branch, directory, conflictType);
-        }
+          const { hasConflict, conflictType } = detectConflict(stdout, stderr);
 
-        progress.stepComplete(command, stdout, stderr);
-      } catch (stepError) {
-        if (stepError.isConflict) {
+          if (hasConflict) {
+            logWarn('serverUpdate', `Git conflict detected: ${conflictType}`);
+
+            await executeConflictCleanup({
+              sshHost,
+              directory,
+              conflictType,
+              originalHead,
+              progressCallback,
+              currentStep: progress.currentStep,
+              totalSteps: progress.totalSteps,
+              buildSSHCommand,
+            });
+
+            throw createConflictError(branch, directory, conflictType);
+          }
+
+          progress.stepComplete(command, stdout, stderr);
+        } catch (stepError) {
+          if (stepError.isConflict) {
+            throw stepError;
+          }
+
+          const { hasConflict, conflictType } = detectConflict(
+            stepError.stdout || '',
+            stepError.stderr || ''
+          );
+
+          if (hasConflict) {
+            logWarn(
+              'serverUpdate',
+              `Git conflict detected in failed command: ${conflictType}`
+            );
+
+            await executeConflictCleanup({
+              sshHost: sanitized.sshHost,
+              directory: sanitized.directory,
+              conflictType,
+              originalHead,
+              progressCallback,
+              currentStep: progress.currentStep,
+              totalSteps: progress.totalSteps,
+              buildSSHCommand,
+            });
+
+            throw createConflictError(
+              sanitized.branch,
+              sanitized.directory,
+              conflictType
+            );
+          }
+
+          failedStep = {
+            step: progress.currentStep,
+            command,
+            stdout: stepError.stdout?.trim() || '',
+            stderr: stepError.stderr?.trim() || '',
+            failureReason: stepError.message,
+            exitCode: stepError.code,
+          };
+
+          progress.stepFailed(
+            command,
+            stepError.message,
+            stepError.stdout?.trim() || '',
+            stepError.stderr?.trim() || '',
+            stepError.code
+          );
+
           throw stepError;
         }
-
-        const { hasConflict, conflictType } = detectConflict(
-          stepError.stdout || '',
-          stepError.stderr || ''
-        );
-
-        if (hasConflict) {
-          logWarn(
-            'serverUpdate',
-            `Git conflict detected in failed command: ${conflictType}`
-          );
-
-          await executeConflictCleanup({
-            sshHost: sanitized.sshHost,
-            directory: sanitized.directory,
-            conflictType,
-            originalHead,
-            progressCallback,
-            currentStep: progress.currentStep,
-            totalSteps: progress.totalSteps,
-            buildSSHCommand,
-          });
-
-          throw createConflictError(
-            sanitized.branch,
-            sanitized.directory,
-            conflictType
-          );
-        }
-
-        failedStep = {
-          step: progress.currentStep,
-          command,
-          stdout: stepError.stdout?.trim() || '',
-          stderr: stepError.stderr?.trim() || '',
-          failureReason: stepError.message,
-          exitCode: stepError.code,
-        };
-
-        progress.stepFailed(
-          command,
-          stepError.message,
-          stepError.stdout?.trim() || '',
-          stepError.stderr?.trim() || '',
-          stepError.code
-        );
-
-        throw stepError;
       }
-    }
 
-    const totalDuration = progress.getTotalDuration();
-    progress.complete();
+      const totalDuration = progress.getTotalDuration();
+      progress.complete();
 
-    // Security: Release rate limit
-    securityContext.release();
+      logSuccess('serverUpdate', `Update completed in ${totalDuration}s`);
+      return {
+        success: true,
+        commands,
+        sshHost: sanitized.sshHost,
+        totalSteps: commands.length,
+        totalDuration,
+        executedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      const totalDuration = progress.getTotalDuration();
 
-    logSuccess('serverUpdate', `Update completed in ${totalDuration}s`);
-    return {
-      success: true,
-      commands,
-      sshHost: sanitized.sshHost,
-      totalSteps: commands.length,
-      totalDuration,
-      executedAt: new Date().toISOString(),
-    };
-  } catch (error) {
-    // Security: Always release rate limit
-    securityContext.release();
+      if (error.isConflict) {
+        logWarn(
+          'serverUpdate',
+          `Update aborted at step ${progress.currentStep}/${commands.length} due to ${error.conflictType} | Total: ${totalDuration}s`
+        );
 
-    const totalDuration = progress.getTotalDuration();
+        const conflictError = new Error(error.message);
+        Object.assign(conflictError, {
+          success: false,
+          isConflict: true,
+          conflictType: error.conflictType,
+          directory: error.directory,
+          branch: error.branch,
+          totalSteps: commands.length,
+          failedAtStep: progress.currentStep,
+          totalDuration,
+        });
+        throw conflictError;
+      }
 
-    if (error.isConflict) {
-      logWarn(
+      progress.failed();
+
+      logError(
         'serverUpdate',
-        `Update aborted at step ${progress.currentStep}/${commands.length} due to ${error.conflictType} | Total: ${totalDuration}s`
+        `Update failed at step ${failedStep?.step || progress.currentStep}`,
+        {
+          command: failedStep?.command || commands[progress.currentStep - 1],
+          failureReason: failedStep?.failureReason || error.message,
+          stderr: failedStep?.stderr || '',
+        }
       );
 
-      const conflictError = new Error(error.message);
-      Object.assign(conflictError, {
+      const enhancedError = new Error('Execution failed.');
+      Object.assign(enhancedError, {
         success: false,
-        isConflict: true,
-        conflictType: error.conflictType,
-        directory: error.directory,
-        branch: error.branch,
+        commands,
+        sshHost,
         totalSteps: commands.length,
-        failedAtStep: progress.currentStep,
-        totalDuration,
-      });
-      throw conflictError;
-    }
-
-    progress.failed();
-
-    logError(
-      'serverUpdate',
-      `Update failed at step ${failedStep?.step || progress.currentStep}`,
-      {
-        command: failedStep?.command || commands[progress.currentStep - 1],
-        failureReason: failedStep?.failureReason || error.message,
+        failedAtStep: failedStep?.step || progress.currentStep,
+        failedCommand:
+          failedStep?.command || commands[progress.currentStep - 1],
+        stdout: failedStep?.stdout || '',
         stderr: failedStep?.stderr || '',
-      }
-    );
-
-    const enhancedError = new Error('Execution failed.');
-    Object.assign(enhancedError, {
-      success: false,
-      commands,
-      sshHost,
-      totalSteps: commands.length,
-      failedAtStep: failedStep?.step || progress.currentStep,
-      failedCommand: failedStep?.command || commands[progress.currentStep - 1],
-      stdout: failedStep?.stdout || '',
-      stderr: failedStep?.stderr || '',
-      failureReason: failedStep?.failureReason || error.message,
-      exitCode: failedStep?.exitCode || error.code,
-      totalDuration,
-      executedAt: new Date().toISOString(),
-    });
-    throw enhancedError;
-  }
+        failureReason: failedStep?.failureReason || error.message,
+        exitCode: failedStep?.exitCode || error.code,
+        totalDuration,
+        executedAt: new Date().toISOString(),
+      });
+      throw enhancedError;
+    }
+  });
 }
 
 function buildSSHCommand(host, commandSequence) {

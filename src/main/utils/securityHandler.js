@@ -48,16 +48,17 @@ export function releaseRateLimit(operationType, identifier) {
   const entry = operationTracker.get(key);
   if (entry) {
     entry.active = false;
+    entry.timestamp = Date.now();
     operationTracker.set(key, entry);
   }
   logDebug('security', `Rate limit released for ${key}`);
 }
 
 const DANGEROUS_PATTERNS = [
-  { pattern: /[;&|`$()<>]/g, name: 'shell metacharacters' },
+  { pattern: /[;&|`$()<>"]/g, name: 'shell metacharacters' },
   { pattern: /\$\{/g, name: 'variable expansion' },
   { pattern: /\$\(/g, name: 'command substitution' },
-  { pattern: /\.\.\//g, name: 'path traversal' },
+  { pattern: /\.\./g, name: 'path traversal' },
   { pattern: /~\//g, name: 'home directory expansion' },
   { pattern: /\r|\n/g, name: 'newline characters' },
   // eslint-disable-next-line no-control-regex
