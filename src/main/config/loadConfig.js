@@ -8,7 +8,11 @@ import {
   validateArray,
   validateArrayNotEmpty,
   validateProperty,
-} from '../utils/validators.js';
+} from '../utils/validator.js';
+import {
+  sanitizeSSHHost,
+  sanitizeDirectoryName,
+} from '../utils/securityHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,6 +41,9 @@ export function loadServersConfig() {
       validateProperty(serverConfig, 'sshHost', `Server "${serverKey}"`);
       validateString(serverConfig.sshHost, `Server "${serverKey}" sshHost`);
       validateNonEmpty(serverConfig.sshHost, `Server "${serverKey}" sshHost`);
+
+      sanitizeSSHHost(serverConfig.sshHost);
+
       validateProperty(
         serverConfig,
         'allowedDirectories',
@@ -53,6 +60,8 @@ export function loadServersConfig() {
       for (const dir of serverConfig.allowedDirectories) {
         validateString(dir, `Server "${serverKey}" directory`);
         validateNonEmpty(dir, `Server "${serverKey}" directory`);
+
+        sanitizeDirectoryName(dir);
       }
     }
 
