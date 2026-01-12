@@ -5,7 +5,7 @@ import {
   validateArrayNotEmpty,
   validateString,
   validateNonEmpty,
-} from '../../utils/validators.js';
+} from '../../utils/validator.js';
 import {
   logStart,
   logSuccess,

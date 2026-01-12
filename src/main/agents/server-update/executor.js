@@ -5,7 +5,7 @@ import {
   validateArrayNotEmpty,
   validateString,
   validateNonEmpty,
-} from '../../utils/validators.js';
+} from '../../utils/validator.js';
 import {
   logStart,
   logSuccess,
@@ -19,6 +19,12 @@ import {
   executeConflictCleanup,
   createConflictError,
 } from '../../utils/conflictResolver.js';
+import {
+  SecurityContext,
+  validateOperationParams,
+  buildSafeSSHCommand,
+  validateAndNormalizePath,
+} from '../../utils/securityHandler.js';
 
 const execAsync = promisify(exec);
 const EXECUTION_TIMEOUT_MS = 300000;
@@ -44,6 +50,21 @@ export async function executeServerUpdate({
   validateString(branch, 'Branch name');
   validateNonEmpty(branch, 'Branch name');
 
+  // Security: Validate and sanitize all inputs
+  const sanitized = validateOperationParams({
+    sshHost,
+    directory,
+    branch,
+  });
+
+  // Security: Path validation
+  const appPath = validateAndNormalizePath('/var/webs', sanitized.directory);
+
+  const securityContext = new SecurityContext(
+    'server-update',
+    `${sanitized.sshHost}:${sanitized.directory}`
+  );
+
   const progress = new ProgressTracker(
     'serverUpdate',
     commands.length,
@@ -52,19 +73,21 @@ export async function executeServerUpdate({
 
   logStart(
     'serverUpdate',
-    `Executing update to ${sshHost} (${commands.length} steps)`
+    `Executing update to ${sanitized.sshHost} (${commands.length} steps)`
   );
 
-  progress.start(`Starting update to ${sshHost}`);
+  progress.start(`Starting update to ${sanitized.sshHost}`);
 
   const executedCommands = [];
   let failedStep = null;
   let originalHead = null;
 
   try {
-    const appPath = `/var/webs/${directory}`;
+    // Security: Start rate-limited context
+    securityContext.start();
+
     const getHeadCommand = `cd ${appPath} && git rev-parse HEAD`;
-    const sshCommand = buildSSHCommand(sshHost, getHeadCommand);
+    const sshCommand = buildSSHCommand(sanitized.sshHost, getHeadCommand);
     const { stdout } = await execAsync(sshCommand, {
       timeout: EXECUTION_TIMEOUT_MS,
       maxBuffer: MAX_BUFFER_SIZE,
@@ -128,8 +151,8 @@ export async function executeServerUpdate({
           );
 
           await executeConflictCleanup({
-            sshHost,
-            directory,
+            sshHost: sanitized.sshHost,
+            directory: sanitized.directory,
             conflictType,
             originalHead,
             progressCallback,
@@ -138,7 +161,11 @@ export async function executeServerUpdate({
             buildSSHCommand,
           });
 
-          throw createConflictError(branch, directory, conflictType);
+          throw createConflictError(
+            sanitized.branch,
+            sanitized.directory,
+            conflictType
+          );
         }
 
         failedStep = {
@@ -165,16 +192,22 @@ export async function executeServerUpdate({
     const totalDuration = progress.getTotalDuration();
     progress.complete();
 
+    // Security: Release rate limit
+    securityContext.release();
+
     logSuccess('serverUpdate', `Update completed in ${totalDuration}s`);
     return {
       success: true,
       commands,
-      sshHost,
+      sshHost: sanitized.sshHost,
       totalSteps: commands.length,
       totalDuration,
       executedAt: new Date().toISOString(),
     };
   } catch (error) {
+    // Security: Always release rate limit
+    securityContext.release();
+
     const totalDuration = progress.getTotalDuration();
 
     if (error.isConflict) {
@@ -229,6 +262,12 @@ export async function executeServerUpdate({
 }
 
 function buildSSHCommand(host, commandSequence) {
-  const escapedCommands = commandSequence.replace(/'/g, "'\\''");
-  return `ssh ${host} "bash -l -c '${escapedCommands}'"`;
+  // Security: Use safe SSH command builder with bash login shell
+  const bashCommand = `bash -l -c ${escapeShellArg(commandSequence)}`;
+  return buildSafeSSHCommand(host, bashCommand);
+}
+
+// Helper for nested shell escaping
+function escapeShellArg(arg) {
+  return `'${arg.replace(/'/g, "'\\''")}'`;
 }

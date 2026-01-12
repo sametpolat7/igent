@@ -6,8 +6,12 @@ import {
   validateString,
   validateNonEmpty,
   validateIncludes,
-} from '../../utils/validators.js';
+} from '../../utils/validator.js';
 import { logSuccess } from '../../utils/logger.js';
+import {
+  buildSafeFileEditCommand,
+  escapeShellArg,
+} from '../../utils/securityHandler.js';
 
 const BASE_DIRECTORY = '/var/webs';
 
@@ -108,45 +112,20 @@ function generateFileEditCommands({
 }
 
 function generateHashDataUpdateCommands(filePath, directory, newValue) {
-  const escapedValue = escapeForShell(newValue);
   const backupPath = `${filePath}.backup`;
   const serviceName = `${directory}.service`;
 
   // Command definitions
-  const cdCommand = `cd $(dirname ${filePath})`;
-  const backupCommand = `cp ${filePath} ${backupPath}`;
-  const awkCommand = buildAwkTransformCommand(
-    filePath,
-    backupPath,
-    escapedValue
-  );
-  const verifyCommand = `grep -A 10 "def hash_data" ${filePath}`;
-  const restartCommand = `sudo systemctl restart ${serviceName}`;
+  const cdCommand = `cd $(dirname ${escapeShellArg(filePath)})`;
+  const backupCommand = `cp ${escapeShellArg(filePath)} ${escapeShellArg(backupPath)}`;
+
+  // Security: Use safe file edit command builder with multi-level escaping
+  const awkCommand = buildSafeFileEditCommand(filePath, backupPath, newValue);
+
+  const verifyCommand = `grep -A 10 "def hash_data" ${escapeShellArg(filePath)}`;
+  const restartCommand = `sudo systemctl restart ${escapeShellArg(serviceName)}`;
 
   return [cdCommand, backupCommand, awkCommand, verifyCommand, restartCommand];
-}
-
-function buildAwkTransformCommand(filePath, backupPath, escapedValue) {
-  return `awk '
-    /def hash_data/ { inside=1; print; next }
-    inside && /^[[:space:]]*end[[:space:]]*$/ { 
-      print "    \\"${escapedValue}\\""; 
-      print; 
-      inside=0; 
-      next 
-    }
-    inside { print "    # " substr($0, 5); next }
-    { print }
-  ' ${backupPath} > ${filePath}`;
-}
-
-function escapeForShell(str) {
-  return str
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/'/g, "'")
-    .replace(/`/g, '\\`')
-    .replace(/\$/g, '\\$');
 }
 
 export function getFileEditFunctions() {
@@ -194,9 +173,9 @@ function generateRestoreCommands(directory, targetFile) {
   const appPath = `${BASE_DIRECTORY}/${directory}`;
   const serviceName = `${directory}.service`;
 
-  const cdCommand = `cd ${appPath}`;
-  const restoreCommand = `git restore -- "${targetFile}"`;
-  const restartCommand = `sudo systemctl restart ${serviceName}`;
+  const cdCommand = `cd ${escapeShellArg(appPath)}`;
+  const restoreCommand = `git restore -- ${escapeShellArg(targetFile)}`;
+  const restartCommand = `sudo systemctl restart ${escapeShellArg(serviceName)}`;
 
   return [cdCommand, restoreCommand, restartCommand];
 }
