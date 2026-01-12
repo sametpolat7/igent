@@ -262,12 +262,9 @@ export async function executeServerUpdate({
 }
 
 function buildSSHCommand(host, commandSequence) {
-  // Security: Use safe SSH command builder with bash login shell
-  const bashCommand = `bash -l -c ${escapeShellArg(commandSequence)}`;
+  // Security: Use safe SSH command builder with bash login shell.
+  // The command sequence is passed unescaped here; buildSafeSSHCommand
+  // is responsible for performing the necessary shell escaping.
+  const bashCommand = `bash -l -c "${commandSequence}"`;
   return buildSafeSSHCommand(host, bashCommand);
-}
-
-// Helper for nested shell escaping
-function escapeShellArg(arg) {
-  return `'${arg.replace(/'/g, "'\\''")}'`;
 }
