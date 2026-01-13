@@ -1,3 +1,10 @@
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const COLORS = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -11,12 +18,79 @@ const COLORS = {
   gray: '\x1b[90m',
 };
 
+const LOG_DIR = path.join(__dirname, '../../../logs');
+let currentLogFile = null;
+let logFileInitialized = false;
+
+function getDateString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function getTimestamp() {
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
+  const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+  return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+}
+
+function getFullTimestamp() {
+  return new Date().toISOString();
+}
+
+async function initializeLogFile() {
+  try {
+    await fs.mkdir(LOG_DIR, { recursive: true });
+    const dateStr = getDateString();
+    currentLogFile = path.join(LOG_DIR, `igent-${dateStr}.log`);
+    logFileInitialized = true;
+  } catch (error) {
+    console.error('Failed to initialize log file:', error);
+    logFileInitialized = false;
+  }
+}
+
+async function writeToFile(level, module, message, data = null) {
+  if (!logFileInitialized) {
+    await initializeLogFile();
+  }
+
+  if (!currentLogFile) return;
+
+  try {
+    const timestamp = getFullTimestamp();
+    let logEntry = `[${timestamp}] [${level}] [${module}] ${message}`;
+
+    if (data !== undefined && data !== null) {
+      if (data instanceof Error) {
+        logEntry += `\n  Error: ${data.message}`;
+        if (data.stack) {
+          logEntry += `\n  Stack: ${data.stack}`;
+        }
+      } else if (typeof data === 'object') {
+        logEntry += `\n  Data: ${JSON.stringify(data, null, 2)}`;
+      } else {
+        logEntry += `\n  Data: ${data}`;
+      }
+    }
+
+    logEntry += '\n';
+
+    const dateStr = getDateString();
+    const expectedLogFile = path.join(LOG_DIR, `igent-${dateStr}.log`);
+    if (currentLogFile !== expectedLogFile) {
+      currentLogFile = expectedLogFile;
+    }
+
+    await fs.appendFile(currentLogFile, logEntry, 'utf8');
+  } catch (error) {
+    console.error('Failed to write to log file:', error.message);
+  }
 }
 
 function formatModule(module) {
@@ -39,6 +113,8 @@ export function logInfo(module, message, data) {
   if (data !== undefined) {
     console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
   }
+
+  writeToFile('INFO', module, message, data).catch(() => {});
 }
 
 export function logSuccess(module, message, data) {
@@ -52,6 +128,8 @@ export function logSuccess(module, message, data) {
   if (data !== undefined) {
     console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
   }
+
+  writeToFile('SUCCESS', module, message, data).catch(() => {});
 }
 
 export function logWarn(module, message, data) {
@@ -65,6 +143,8 @@ export function logWarn(module, message, data) {
   if (data !== undefined) {
     console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
   }
+
+  writeToFile('WARN', module, message, data).catch(() => {});
 }
 
 export function logError(module, message, error) {
@@ -85,6 +165,8 @@ export function logError(module, message, error) {
       console.error(`${COLORS.dim}${formatData(error)}${COLORS.reset}`);
     }
   }
+
+  writeToFile('ERROR', module, message, error).catch(() => {});
 }
 
 export function logDebug(module, message, data) {
@@ -98,6 +180,8 @@ export function logDebug(module, message, data) {
   if (data !== undefined) {
     console.log(`${COLORS.dim}${formatData(data)}${COLORS.reset}`);
   }
+
+  writeToFile('DEBUG', module, message, data).catch(() => {});
 }
 
 export function logStart(module, operation, params) {
@@ -111,4 +195,6 @@ export function logStart(module, operation, params) {
   if (params && Object.keys(params).length > 0) {
     console.log(`${COLORS.dim}${formatData(params)}${COLORS.reset}`);
   }
+
+  writeToFile('START', module, operation, params).catch(() => {});
 }
