@@ -46,7 +46,7 @@
 │  │  ────────────────────────────────────────────────────────────────  │ │
 │  │  • App lifecycle management (ready, quit, activate)                 │ │
 │  │  • Window creation with security preload                            │ │
-│  │  • IPC handler registration (agent:get-servers, :plan, :execute)   │ │
+│  │  • IPC handler registration (server-update:get-servers, :plan, :execute)   │ │
 │  │  • Request routing to typed agent system                            │ │
 │  │  • Error boundary & logging                                         │ │
 │  └────────────────────────────────────────────────────────────────────┘ │
@@ -136,7 +136,7 @@
 3. VALIDATION & PLANNING
    ──────────────────────
    renderer.js → window.igent.plan({ serverKey, directory, branch })
-   preload.cjs → IPC channel: 'agent:plan'
+   preload.cjs → IPC channel: 'server-update:plan'
    index.js → IPC handler routes to planner.planProcess()
    planner.js → Routes to AGENT_TYPES.SERVER_UPDATE
    types/server-update/planner.js → planServerUpdate()
@@ -155,7 +155,7 @@
 5. EXECUTION WITH PROGRESS TRACKING
    ────────────────────────────────
    renderer.js → window.igent.execute(plan)
-   preload.cjs → IPC channel: 'agent:execute'
+   preload.cjs → IPC channel: 'server-update:execute'
    index.js → IPC handler routes to executor.executeProcess()
    executor.js → Routes to AGENT_TYPES.SERVER_UPDATE
    types/server-update/executor.js → executeServerUpdate()
