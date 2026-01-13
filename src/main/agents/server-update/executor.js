@@ -50,14 +50,12 @@ export async function executeServerUpdate({
   validateString(branch, 'Branch name');
   validateNonEmpty(branch, 'Branch name');
 
-  // Security: Validate and sanitize all inputs
   const sanitized = validateOperationParams({
     sshHost,
     directory,
     branch,
   });
 
-  // Security: Path validation
   const appPath = validateAndNormalizePath('/var/webs', sanitized.directory);
 
   const securityContext = new SecurityContext(
@@ -256,9 +254,6 @@ export async function executeServerUpdate({
 }
 
 function buildSSHCommand(host, commandSequence) {
-  // Security: Use safe SSH command builder with bash login shell.
-  // The command sequence is passed unescaped here; buildSafeSSHCommand
-  // is responsible for performing the necessary shell escaping.
   const bashCommand = `bash -l -c "${commandSequence}"`;
   return buildSafeSSHCommand(host, bashCommand);
 }

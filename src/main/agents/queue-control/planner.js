@@ -59,11 +59,9 @@ function generateQueueCommands(action, directory) {
   const cdCommand = `cd ${appPath}`;
   const startSidekiqCommand = `setsid nohup bundle exec sidekiq -e production -C config/sidekiq.yml > sidekiq.log 2>&1 < /dev/null &`;
 
-  // Graceful shutdown: TSTP pauses workers, TERM initiates shutdown
   const pauseQueueCommand = 'kill -TSTP {{PID}}';
   const stopQueueCommand = 'kill -TERM {{PID}}';
 
-  // Verification markers - executor will poll server to confirm state
   const verifyStoppedMarker = '{{VERIFY_STOPPED}}';
   const verifyStartedMarker = '{{VERIFY_STARTED}}';
 

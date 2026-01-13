@@ -23,29 +23,24 @@ export function planFileEdit({ serverKey, directory, functionId, inputs }) {
   const serversConfig = loadServersConfig();
   const functionsConfig = loadFileEditFunctions();
 
-  // Validate server
   validateString(serverKey, 'Server key');
   validateNonEmpty(serverKey, 'Server key');
   validateIncludes(serverKey, Object.keys(serversConfig), 'Server key');
 
   const serverConfig = serversConfig[serverKey];
 
-  // Validate directory
   validateString(directory, 'Directory');
   validateNonEmpty(directory, 'Directory');
   validateIncludes(directory, serverConfig.allowedDirectories, 'Directory');
 
-  // Validate function
   validateString(functionId, 'Function');
   validateNonEmpty(functionId, 'Function');
   validateIncludes(functionId, Object.keys(functionsConfig), 'Function');
 
   const functionConfig = functionsConfig[functionId];
 
-  // Validate required inputs
   validateFunctionInputs(functionConfig, inputs);
 
-  // Generate commands
   const commands = generateFileEditCommands({
     functionId,
     functionConfig,
@@ -115,11 +110,9 @@ function generateHashDataUpdateCommands(filePath, directory, newValue) {
   const backupPath = `${filePath}.backup`;
   const serviceName = `${directory}.service`;
 
-  // Command definitions
   const cdCommand = `cd $(dirname ${escapeShellArg(filePath)})`;
   const backupCommand = `cp ${escapeShellArg(filePath)} ${escapeShellArg(backupPath)}`;
 
-  // Security: Use safe file edit command builder with multi-level escaping
   const awkCommand = buildSafeFileEditCommand(filePath, backupPath, newValue);
 
   const verifyCommand = `grep -A 10 "def hash_data" ${escapeShellArg(filePath)}`;

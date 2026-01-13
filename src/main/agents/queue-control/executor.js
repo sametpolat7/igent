@@ -69,17 +69,13 @@ export async function executeQueueControl({
     for (let i = 0; i < commands.length; i++) {
       let command = commands[i];
 
-      // Substitute PID in kill commands
       if (command.includes('{{PID}}')) {
         command = command.replace('{{PID}}', sidekiqPid || '<PID>');
       }
 
-      // Handle verification marker commands BEFORE adding to chain
-      // These are not real commands - they trigger polling verification
       if (isVerifyStoppedCommand(command) || isVerifyStartedCommand(command)) {
         const expectedRunning = isVerifyStartedCommand(command);
 
-        // Skip verification if no PID was found during RESTART
         if (
           !sidekiqPid &&
           isVerifyStoppedCommand(command) &&
@@ -91,7 +87,6 @@ export async function executeQueueControl({
             'Skipped: No process was running',
             ''
           );
-          // Clear any pending chained commands
           chainedCommands = [];
           continue;
         }
@@ -108,14 +103,13 @@ export async function executeQueueControl({
         if (verifyResult.success) {
           queueStatus = verifyResult.status;
           if (!expectedRunning) {
-            sidekiqPid = null; // Clear PID after successful stop
+            sidekiqPid = null;
           }
           progress.stepComplete(
             'Server verification',
             verifyResult.message,
             ''
           );
-          // Clear chain after verification for clean state
           chainedCommands = [];
         } else {
           const actionName = expectedRunning ? 'start' : 'stop';
@@ -126,13 +120,11 @@ export async function executeQueueControl({
         continue;
       }
 
-      // Build command chain: cd commands chain with the next command
       chainedCommands.push(command);
       const commandToExecute = isCdCommand(command)
-        ? null // Don't execute cd alone, wait for next command
+        ? null
         : chainedCommands.join(' && ');
 
-      // Skip cd command execution - it will be chained with next command
       if (isCdCommand(command)) {
         progress.stepStart(command);
         progress.stepComplete(command, 'Chained with next command', '');
@@ -142,7 +134,6 @@ export async function executeQueueControl({
       progress.stepStart(command);
 
       try {
-        // Handle START action pre-check (first command)
         if (action === QUEUE_ACTIONS.START && i === 0) {
           const checkResult = await executeCheckCommand(sshHost, command);
           if (checkResult.isRunning) {
@@ -175,7 +166,6 @@ export async function executeQueueControl({
           continue;
         }
 
-        // Handle STOP/RESTART PID extraction (first check command)
         if (
           (action === QUEUE_ACTIONS.STOP || action === QUEUE_ACTIONS.RESTART) &&
           i === 0 &&
@@ -212,14 +202,12 @@ export async function executeQueueControl({
           continue;
         }
 
-        // Skip kill commands if no PID (for RESTART when not running)
         if (isKillCommand(command) && !sidekiqPid) {
           progress.stepComplete(command, 'Skipped: No running process', '');
           chainedCommands = [];
           continue;
         }
 
-        // Execute command (start commands use shorter timeout since they detach)
         const timeout = isStartCommand(command) ? 10000 : EXECUTION_TIMEOUT_MS;
         const { stdout, stderr } = await executeSSHCommand(
           sshHost,
@@ -227,7 +215,6 @@ export async function executeQueueControl({
           timeout
         );
 
-        // Update queue status on check commands
         if (isCheckCommand(command)) {
           const statusResult = parseSidekiqStatus(stdout);
           queueStatus = statusResult;
@@ -236,7 +223,6 @@ export async function executeQueueControl({
         progress.stepComplete(command, stdout, stderr);
         chainedCommands = [];
       } catch (stepError) {
-        // Allow failures for check commands (grep returns exit 1 when no match)
         if (isCheckCommand(command) && stepError.code === 1) {
           logDebug('queueControl', `Check command found no process`);
           queueStatus = { isRunning: false, pid: null, processInfo: null };
@@ -249,8 +235,6 @@ export async function executeQueueControl({
           continue;
         }
 
-        // Handle start command timeout - treat as initiated, not failure
-        // Background process may have started but SSH didn't fully detach
         if (isStartCommand(command) && stepError.killed) {
           logInfo(
             'queueControl',
@@ -354,7 +338,6 @@ async function executeCheckCommand(sshHost, command) {
     const { stdout } = await executeSSHCommand(sshHost, command);
     return parseSidekiqStatus(stdout);
   } catch (error) {
-    // grep returns exit code 1 when no matches found
     if (error.code === 1) {
       return { isRunning: false, pid: null, processInfo: null, stdout: '' };
     }
@@ -367,7 +350,6 @@ function parseSidekiqStatus(stdout) {
     .trim()
     .split('\n')
     .filter((line) => {
-      // Filter out the grep command itself and empty lines
       return line.trim() && !line.includes('grep') && line.includes('sidekiq');
     });
 
@@ -375,15 +357,11 @@ function parseSidekiqStatus(stdout) {
     return { isRunning: false, pid: null, processInfo: null, stdout };
   }
 
-  // Parse the first matching line
-  // Format: user PID ... sidekiq 7.3.1 app-name [x of y busy]
   const line = lines[0];
   const parts = line.trim().split(/\s+/);
 
-  // PID is typically the second field in ps aux output
   const pid = parts[1] ? parseInt(parts[1], 10) : null;
 
-  // Extract the sidekiq info (version, app, status)
   const sidekiqMatch = line.match(
     /sidekiq\s+[\d.]+\s+\S+\s+\[(\d+)\s+of\s+(\d+)\s+busy\]/
   );
@@ -409,12 +387,11 @@ function buildSSHCommand(host, commandSequence) {
   const escapedCommands = commandSequence.replace(/'/g, "'\\''");
   return `ssh ${host} "bash -l -c '${escapedCommands}'"`;
 }
-// Utility to wait for specified milliseconds
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Poll for expected queue status with progress updates
 async function pollForStatus({
   sshHost,
   directory,
@@ -441,7 +418,6 @@ async function pollForStatus({
     try {
       const status = await executeCheckCommand(sshHost, checkCommand);
 
-      // Check if we reached the expected state
       if (status.isRunning === expectedRunning) {
         const resultMsg = expectedRunning
           ? `Confirmed: Queue process is running on server (PID: ${status.pid})`
@@ -451,13 +427,11 @@ async function pollForStatus({
         return { success: true, status, message: resultMsg };
       }
 
-      // Not yet in expected state, continue polling
       logDebug(
         'queueControl',
         `Attempt ${attempt}/${MAX_POLL_ATTEMPTS}: still ${status.isRunning ? 'running' : 'stopped'}`
       );
     } catch (error) {
-      // For stop operations, grep exit code 1 means process not found (success)
       if (!expectedRunning && error.code === 1) {
         const resultMsg = 'Confirmed: Queue process has stopped on server';
         logSuccess('queueControl', resultMsg);
@@ -475,14 +449,12 @@ async function pollForStatus({
     }
   }
 
-  // Timeout - could not verify expected state
   const timeoutMsg = `Server did not confirm queue ${expectedState} within ${maxWaitSeconds}s. Please check manually.`;
   logWarn('queueControl', timeoutMsg);
 
   return { success: false, status: null, message: timeoutMsg };
 }
 
-// Direct status check without full plan execution
 export async function checkQueueStatus({ sshHost, directory }) {
   validateString(sshHost, 'SSH host');
   validateNonEmpty(sshHost, 'SSH host');

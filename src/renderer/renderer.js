@@ -3,11 +3,9 @@ const state = {
   currentPlan: null,
   isExecuting: false,
   currentView: 'server-update',
-  // Queue control state
   queuePlan: null,
   queueStatus: null,
   isQueueExecuting: false,
-  // File editing state
   fileEditFunctions: {},
   fileEditPlan: null,
   isFileEditExecuting: false,
@@ -32,7 +30,6 @@ const elements = {
   progressSteps: document.getElementById('progress-steps'),
   resultSection: document.getElementById('result'),
   outputDisplay: document.getElementById('output'),
-  // Queue control elements
   queueServerSelect: document.getElementById('queue-server'),
   queueDirectorySelect: document.getElementById('queue-directory'),
   queueCheckButton: document.getElementById('queue-check'),
@@ -47,7 +44,6 @@ const elements = {
   queueProgressSteps: document.getElementById('queue-progress-steps'),
   queueResultSection: document.getElementById('queue-result'),
   queueOutputDisplay: document.getElementById('queue-output'),
-  // File editing elements
   fileEditServerSelect: document.getElementById('file-edit-server'),
   fileEditDirectorySelect: document.getElementById('file-edit-directory'),
   fileEditFunctionSelect: document.getElementById('file-edit-function'),
@@ -107,10 +103,8 @@ async function initialize() {
   await loadFileEditFunctions();
   attachEventListeners();
   setupProgressListener();
-  // Queue control initialization
   attachQueueEventListeners();
   setupQueueProgressListener();
-  // File editing initialization
   attachFileEditEventListeners();
   setupFileEditProgressListener();
 }
@@ -523,10 +517,6 @@ function escapeHTML(str) {
   return div.innerHTML;
 }
 
-// ============================================
-// QUEUE CONTROL FUNCTIONS
-// ============================================
-
 function attachQueueEventListeners() {
   elements.queueServerSelect.addEventListener(
     'change',
@@ -700,13 +690,11 @@ async function handleQueueAction(action) {
   } finally {
     setQueueExecutionState(false);
 
-    // Update status and buttons after execution state reset
     if (state.lastQueueResult?.queueStatus) {
       state.queueStatus = state.lastQueueResult.queueStatus;
       displayQueueStatus(state.lastQueueResult.queueStatus);
       updateQueueActionButtons(state.lastQueueResult.queueStatus);
     } else if (state.lastQueueResult) {
-      // Re-check status if not included in result
       await handleQueueCheck();
     }
   }
@@ -851,10 +839,6 @@ function hideQueueResults() {
   hideSection(elements.queueResultSection);
 }
 
-// ============================================
-// FILE EDITING FUNCTIONS
-// ============================================
-
 function attachFileEditEventListeners() {
   elements.fileEditServerSelect.addEventListener(
     'change',
@@ -916,7 +900,6 @@ function handleFileEditDirectoryChange() {
   hideFileEditResults();
 
   if (hasSelection) {
-    // Populate function select
     Object.entries(state.fileEditFunctions).forEach(([id, func]) => {
       elements.fileEditFunctionSelect.appendChild(createOption(id, func.name));
     });
@@ -936,7 +919,6 @@ function handleFileEditFunctionChange() {
     const funcConfig = state.fileEditFunctions[functionId];
     renderFileEditInputs(funcConfig);
     validateFileEditForm();
-    // Check for uncommitted changes in the target file
     checkFileEditChanges(funcConfig.targetFile);
   }
 }
@@ -947,7 +929,6 @@ function renderFileEditInputs(funcConfig) {
     return;
   }
 
-  // Show function info
   const infoDiv = document.createElement('div');
   infoDiv.className = 'file-edit-info';
   infoDiv.innerHTML = `
@@ -958,7 +939,6 @@ function renderFileEditInputs(funcConfig) {
   `;
   elements.fileEditInputsContainer.appendChild(infoDiv);
 
-  // Render input fields
   for (const inputDef of funcConfig.inputs) {
     const formGroup = document.createElement('div');
     formGroup.className = 'form-group';
@@ -1002,7 +982,6 @@ function validateFileEditForm() {
     return;
   }
 
-  // Check all required inputs have values
   const inputs = elements.fileEditInputsContainer.querySelectorAll(
     'input[data-input-key]'
   );
@@ -1116,7 +1095,6 @@ function setFileEditExecutionState(isExecuting) {
   elements.fileEditDirectorySelect.disabled = isExecuting;
   elements.fileEditFunctionSelect.disabled = isExecuting;
 
-  // Disable input fields
   const inputs = elements.fileEditInputsContainer.querySelectorAll('input');
   inputs.forEach((input) => (input.disabled = isExecuting));
 
@@ -1209,7 +1187,6 @@ function displayFileEditSuccess(result) {
 
   showFileEditResultSection('success', message);
 
-  // Refresh restore status to show the file now has changes
   refreshFileEditRestoreStatus();
 }
 
@@ -1253,10 +1230,6 @@ function hideFileEditResults() {
   state.fileEditPlan = null;
 }
 
-// ============================================
-// FILE EDITING - RESTORE FUNCTIONS
-// ============================================
-
 function resetFileEditRestoreStatus() {
   state.fileEditHasChanges = false;
   elements.fileEditRestoreButton.disabled = true;
@@ -1275,7 +1248,6 @@ async function checkFileEditChanges(targetFile) {
     return;
   }
 
-  // Show checking status
   elements.fileEditRestoreStatus.textContent = 'Checking for changes...';
   elements.fileEditRestoreStatus.className = 'restore-status-text checking';
   elements.fileEditRestoreButton.disabled = true;
@@ -1317,29 +1289,24 @@ async function handleFileEditRestore() {
   const functionId = elements.fileEditFunctionSelect.value;
   const funcConfig = state.fileEditFunctions[functionId];
 
-  // Ensure we have a valid function configuration
   if (!funcConfig) return;
 
   const targetFile = funcConfig.targetFile;
   if (!targetFile) return;
 
-  // Re-check for changes for the currently selected function/file
   await checkFileEditChanges(targetFile);
   if (!state.fileEditHasChanges) {
-    // Nothing to restore for the current selection
     return;
   }
 
   const serverKey = elements.fileEditServerSelect.value;
   const directory = elements.fileEditDirectorySelect.value;
 
-  // Disable buttons during operation
   elements.fileEditRestoreButton.disabled = true;
   elements.fileEditPlanButton.disabled = true;
   elements.fileEditRestoreStatus.textContent = 'Restoring file...';
   elements.fileEditRestoreStatus.className = 'restore-status-text checking';
 
-  // Show progress section and set up listener
   resetFileEditProgress();
   window.igent.fileEdit.onRestoreProgress(updateFileEditProgress);
 
@@ -1360,10 +1327,8 @@ async function handleFileEditRestore() {
       elements.fileEditRestoreSection.className =
         'file-edit-restore-section restored';
 
-      // Show success message
       displayRestoreSuccess(result);
 
-      // Re-check after a short delay to update the UI
       setTimeout(() => {
         checkFileEditChanges(targetFile);
       }, 1500);
@@ -1383,7 +1348,6 @@ async function handleFileEditRestore() {
     elements.fileEditRestoreButton.disabled = false;
   }
 
-  // Re-enable plan button
   validateFileEditForm();
 }
 
@@ -1408,7 +1372,6 @@ function displayRestoreError(error) {
   showFileEditResultSection('error', parts);
 }
 
-// Refresh restore status after successful execution
 function refreshFileEditRestoreStatus() {
   const functionId = elements.fileEditFunctionSelect.value;
   if (functionId && state.fileEditFunctions[functionId]) {
