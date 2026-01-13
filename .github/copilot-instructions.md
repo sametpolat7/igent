@@ -271,7 +271,7 @@ The file-editing agent provides a flexible system for remote file modifications 
 
 **Architecture:**
 
-- Function definitions stored in `src/main/config/fileEditFunctions.json`
+- Function definitions stored in `src/main/config/fileEditConfigs.json`
 - Each function specifies: name, target file, and required inputs
 - Planner generates shell commands based on function type
 - Executor runs commands via SSH with progress tracking
@@ -294,7 +294,7 @@ Updates the `hash_data` method in Rails payments controller to return a static v
 - **Behavior:** Comments out method body, adds new return value
 - **Use Case:** Testing payment integrations with predictable hash values
 
-**Configuration (fileEditFunctions.json):**
+**Configuration (fileEditConfigs.json):**
 
 ```json
 {
@@ -316,7 +316,7 @@ Updates the `hash_data` method in Rails payments controller to return a static v
 
 **Adding New Functions:**
 
-1. Add function definition to `fileEditFunctions.json`
+1. Add function definition to `fileEditConfigs.json`
 2. Add function ID to `FILE_EDIT_FUNCTIONS` enum in planner.js
 3. Add case to `generateFileEditCommands()` switch statement
 4. Implement command generation function (return array of shell commands)
@@ -406,7 +406,7 @@ Global `state` object pattern (see `src/renderer/renderer.js`):
 - `src/main/agents/planner.js` - Type routing dispatcher
 - `src/main/agents/executor.js` - Execution routing dispatcher
 - `src/main/config/servers.json` - Server whitelist configuration
-- `src/main/config/fileEditFunctions.json` - File editing function definitions
+- `src/main/config/fileEditConfigs.json` - File editing function definitions
 - `src/preload/index.cjs` - Security bridge (CommonJS)
 
 ## What NOT to Do

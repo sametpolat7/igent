@@ -1,6 +1,6 @@
 import {
   loadServersConfig,
-  loadFileEditFunctions,
+  loadFileEditConfigs,
 } from '../../config/loadConfig.js';
 import {
   validateString,
@@ -21,7 +21,7 @@ export const FILE_EDIT_FUNCTIONS = {
 
 export function planFileEdit({ serverKey, directory, functionId, inputs }) {
   const serversConfig = loadServersConfig();
-  const functionsConfig = loadFileEditFunctions();
+  const functionsConfig = loadFileEditConfigs();
 
   validateString(serverKey, 'Server key');
   validateNonEmpty(serverKey, 'Server key');
@@ -122,7 +122,7 @@ function generateHashDataUpdateCommands(filePath, directory, newValue) {
 }
 
 export function getFileEditFunctions() {
-  return loadFileEditFunctions();
+  return loadFileEditConfigs();
 }
 
 export function planRestore({ serverKey, directory, targetFile }) {

@@ -68,7 +68,7 @@ function handleDirectoryChange() {
   hideResults();
 
   if (hasSelection) {
-    Object.entries(state.fileEditFunctions).forEach(([id, func]) => {
+    Object.entries(state.fileEditConfigs).forEach(([id, func]) => {
       elements.fileEditFunctionSelect.appendChild(createOption(id, func.name));
     });
     elements.fileEditFunctionSelect.disabled = false;
@@ -83,8 +83,8 @@ function handleFunctionChange() {
   resetRestoreStatus();
   hideResults();
 
-  if (functionId && state.fileEditFunctions[functionId]) {
-    const funcConfig = state.fileEditFunctions[functionId];
+  if (functionId && state.fileEditConfigs[functionId]) {
+    const funcConfig = state.fileEditConfigs[functionId];
     renderInputs(funcConfig);
     validateForm();
     checkChanges(funcConfig.targetFile);
@@ -144,7 +144,7 @@ function validateForm() {
     return;
   }
 
-  const funcConfig = state.fileEditFunctions[hasFunction];
+  const funcConfig = state.fileEditConfigs[hasFunction];
   if (!funcConfig) {
     elements.fileEditPlanButton.disabled = true;
     return;
@@ -448,7 +448,7 @@ async function checkChanges(targetFile) {
 
 async function handleRestore() {
   const functionId = elements.fileEditFunctionSelect.value;
-  const funcConfig = state.fileEditFunctions[functionId];
+  const funcConfig = state.fileEditConfigs[functionId];
 
   if (!funcConfig) return;
 
@@ -535,8 +535,8 @@ function displayRestoreError(error) {
 
 function refreshRestoreStatus() {
   const functionId = elements.fileEditFunctionSelect.value;
-  if (functionId && state.fileEditFunctions[functionId]) {
-    const funcConfig = state.fileEditFunctions[functionId];
+  if (functionId && state.fileEditConfigs[functionId]) {
+    const funcConfig = state.fileEditConfigs[functionId];
     checkChanges(funcConfig.targetFile);
   }
 }

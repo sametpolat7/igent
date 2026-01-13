@@ -146,8 +146,8 @@ function registerIPCHandlers() {
     try {
       return getFileEditFunctions();
     } catch (error) {
-      logError('IPC', 'Failed to load file edit functions', error);
-      throw new Error('Failed to load file edit functions.');
+      logError('IPC', 'Failed to load file edit configs', error);
+      throw new Error('Failed to load file edit configs.');
     }
   });
 

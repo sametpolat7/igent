@@ -23,7 +23,7 @@ export const state = {
   lastQueueResult: null,
 
   // File Editing Agent State
-  fileEditFunctions: {},
+  fileEditConfigs: {},
   fileEditPlan: null,
   isFileEditExecuting: false,
   fileEditHasChanges: false,
@@ -213,11 +213,11 @@ async function loadServers() {
 }
 
 // Load file editing functions
-async function loadFileEditFunctions() {
+async function loadFileEditConfigs() {
   try {
-    state.fileEditFunctions = await window.igent.fileEdit.getFunctions();
+    state.fileEditConfigs = await window.igent.fileEdit.getFunctions();
   } catch (error) {
-    console.error('Failed to load file edit functions:', error);
+    console.error('Failed to load file edit configs:', error);
   }
 }
 
@@ -225,7 +225,7 @@ async function initialize() {
   setupViewSwitching();
 
   await loadServers();
-  await loadFileEditFunctions();
+  await loadFileEditConfigs();
 
   ServerUpdateAgent.attachEventListeners();
   ServerUpdateAgent.setupProgressListener();
