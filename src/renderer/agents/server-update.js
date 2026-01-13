@@ -11,7 +11,7 @@ import {
   scrollToElement,
   escapeHTML,
   createStepHTML,
-} from '../renderer.js';
+} from '../index.js';
 
 export function attachEventListeners() {
   elements.serverSelect.addEventListener('change', handleServerChange);
