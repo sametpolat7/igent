@@ -89,7 +89,7 @@ export async function executeFileEdit({
         sanitized.directory,
         targetFile
       );
-      progress.fail(result.command, result.failureReason);
+      progress.failed();
 
       return buildFailureResult({
         functionId,
@@ -117,7 +117,7 @@ export async function executeFileEdit({
     });
   } catch (error) {
     logError('fileEdit', 'Unexpected error during execution', error);
-    progress.fail('Execution', error.message);
+    progress.failed();
     return buildFailureResult({
       functionId,
       functionName,
@@ -367,7 +367,7 @@ export async function restoreFile({
     });
 
     if (!result.success) {
-      progress.fail(result.command, result.failureReason);
+      progress.failed();
       return {
         success: false,
         directory,
@@ -395,7 +395,7 @@ export async function restoreFile({
     };
   } catch (error) {
     logError('fileEdit', 'Failed to restore file', error);
-    progress.fail('Restore', error.message);
+    progress.failed();
     return {
       success: false,
       directory,
