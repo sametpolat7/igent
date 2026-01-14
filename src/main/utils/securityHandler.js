@@ -5,14 +5,14 @@ const operationTracker = new Map();
 const MAX_CONCURRENT_OPERATIONS = 5;
 const OPERATION_COOLDOWN_MS = 1000;
 
-export class RateLimitError extends Error {
+class RateLimitError extends Error {
   constructor(message) {
     super(message);
     this.name = 'RateLimitError';
   }
 }
 
-export function checkRateLimit(operationType, identifier) {
+function checkRateLimit(operationType, identifier) {
   const key = `${operationType}:${identifier}`;
   const now = Date.now();
   const lastOperation = operationTracker.get(key);
@@ -43,7 +43,7 @@ export function checkRateLimit(operationType, identifier) {
   logDebug('security', `Rate limit check passed for ${key}`);
 }
 
-export function releaseRateLimit(operationType, identifier) {
+function releaseRateLimit(operationType, identifier) {
   const key = `${operationType}:${identifier}`;
   const entry = operationTracker.get(key);
   if (entry) {
@@ -74,7 +74,7 @@ const MAX_BRANCH_LENGTH = 255;
 const MAX_DIRECTORY_LENGTH = 255;
 const MAX_SSH_HOST_LENGTH = 253;
 
-export function sanitizeBranchName(branchName) {
+function sanitizeBranchName(branchName) {
   if (!branchName || typeof branchName !== 'string') {
     throw new Error('Branch name must be a non-empty string');
   }
@@ -184,7 +184,7 @@ export function sanitizeSSHHost(sshHost) {
   return trimmed;
 }
 
-export function sanitizeUserInput(input, context = 'user input') {
+function sanitizeUserInput(input, context = 'user input') {
   if (!input || typeof input !== 'string') {
     throw new Error(`${context} must be a non-empty string`);
   }
@@ -249,7 +249,7 @@ export function buildSafeSSHCommand(sshHost, remoteCommand) {
   return sshCommand;
 }
 
-export function escapeAWKString(str) {
+function escapeAWKString(str) {
   if (typeof str !== 'string') {
     throw new Error('AWK string must be a string');
   }

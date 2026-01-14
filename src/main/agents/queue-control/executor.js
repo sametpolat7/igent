@@ -15,6 +15,7 @@ import {
   logInfo,
 } from '../../utils/logger.js';
 import { ProgressTracker } from '../../utils/progressTracker.js';
+import { buildSafeSSHCommand } from '../../utils/securityHandler.js';
 import { QUEUE_ACTIONS } from './planner.js';
 
 const execAsync = promisify(exec);
@@ -384,8 +385,8 @@ function parseSidekiqStatus(stdout) {
 }
 
 function buildSSHCommand(host, commandSequence) {
-  const escapedCommands = commandSequence.replace(/'/g, "'\\''");
-  return `ssh ${host} "bash -l -c '${escapedCommands}'"`;
+  const bashCommand = `bash -l -c '${commandSequence}'`;
+  return buildSafeSSHCommand(host, bashCommand);
 }
 
 function sleep(ms) {
