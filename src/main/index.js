@@ -81,7 +81,7 @@ function registerIPCHandlers() {
 
       logError('IPC', 'Execution failed', error);
       throw new Error(
-        'Deployment failed. Please try again or contact support if the problem persists.'
+        'Process failed. Please try again or contact support if the problem persists.'
       );
     }
   });

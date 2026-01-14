@@ -66,10 +66,14 @@ function generateServerUpdateCommands({ directory, branch }) {
   return [
     `cd ${appPath}`,
     `git fetch origin`,
-    `git stash`,
+    `git stash -u`,
     `git checkout ${DEFAULT_MAIN_BRANCH}`,
     `git pull origin ${DEFAULT_MAIN_BRANCH}`,
     `git pull origin ${branch}`,
     `git stash pop || true`,
+    `rails db:migrate RAILS_ENV=production`,
+    `rails assets:clobber RAILS_ENV=production`,
+    `rails assets:precompile RAILS_ENV=production`,
+    `sudo systemctl restart ${directory}.service`,
   ];
 }

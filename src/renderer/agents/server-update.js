@@ -92,10 +92,7 @@ function handleCancel() {
 
 async function handleExecute() {
   if (!state.currentPlan) {
-    showError(
-      'No deployment plan available',
-      new Error('Please create a deployment plan first')
-    );
+    showError('No plan available', new Error('Please create a plan first'));
     return;
   }
 

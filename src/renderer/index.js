@@ -98,10 +98,22 @@ export const PROGRESS_GRADIENTS = {
 };
 
 export const RESULT_STYLES = {
-  success: { background: '#75ffef', color: '#ffffff' },
-  conflict: { background: '#ffcb70', color: '#ffffff' },
-  error: { background: '#ff7f95', color: '#ffffff' },
-  warning: { background: '#fef3c7', color: '#92400e' },
+  success: {
+    background: '#34d399',
+    color: '#ffffff',
+  },
+  conflict: {
+    background: '#fdb230',
+    color: '#ffffff',
+  },
+  error: {
+    background: '#ef4444',
+    color: '#ffffff',
+  },
+  warning: {
+    background: '#fde68a',
+    color: '#78350f',
+  },
 };
 
 export const CONFLICT_LABELS = {
