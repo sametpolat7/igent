@@ -33,7 +33,7 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
 }
 function registerIPCHandlers() {
-  ipcMain.handle('agent:get-servers', async () => {
+  ipcMain.handle('server-update:get-servers', async () => {
     try {
       return loadServersConfig();
     } catch (error) {
@@ -43,7 +43,7 @@ function registerIPCHandlers() {
   });
 
   // Server Update handlers
-  ipcMain.handle('agent:plan', async (_event, payload) => {
+  ipcMain.handle('server-update:plan', async (_event, payload) => {
     try {
       return planProcess(AGENT_TYPES.SERVER_UPDATE, payload);
     } catch (error) {
@@ -54,10 +54,10 @@ function registerIPCHandlers() {
     }
   });
 
-  ipcMain.handle('agent:execute', async (event, payload) => {
+  ipcMain.handle('server-update:execute', async (event, payload) => {
     try {
       const progressCallback = (progressData) => {
-        event.sender.send('agent:progress', progressData);
+        event.sender.send('server-update:progress', progressData);
       };
 
       return await executeProcess(AGENT_TYPES.SERVER_UPDATE, {
@@ -146,8 +146,8 @@ function registerIPCHandlers() {
     try {
       return getFileEditFunctions();
     } catch (error) {
-      logError('IPC', 'Failed to load file edit functions', error);
-      throw new Error('Failed to load file edit functions.');
+      logError('IPC', 'Failed to load file edit configs', error);
+      throw new Error('Failed to load file edit configs.');
     }
   });
 

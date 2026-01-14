@@ -17,7 +17,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CONFIG_FILE_PATH = path.join(__dirname, 'servers.json');
-const FILE_EDIT_FUNCTIONS_PATH = path.join(__dirname, 'fileEditFunctions.json');
+const FILE_EDIT_CONFIGS_PATH = path.join(__dirname, 'fileEditConfigs.json');
 
 export function loadServersConfig() {
   try {
@@ -74,22 +74,22 @@ export function loadServersConfig() {
   }
 }
 
-export function loadFileEditFunctions() {
+export function loadFileEditConfigs() {
   try {
-    if (!fs.existsSync(FILE_EDIT_FUNCTIONS_PATH)) {
+    if (!fs.existsSync(FILE_EDIT_CONFIGS_PATH)) {
       throw new Error(
-        `File edit functions config not found at: ${FILE_EDIT_FUNCTIONS_PATH}`
+        `File edit configs not found at: ${FILE_EDIT_CONFIGS_PATH}`
       );
     }
 
-    const fileContent = fs.readFileSync(FILE_EDIT_FUNCTIONS_PATH, 'utf-8');
+    const fileContent = fs.readFileSync(FILE_EDIT_CONFIGS_PATH, 'utf-8');
     const config = JSON.parse(fileContent);
 
-    validateObject(config, 'File edit functions configuration');
+    validateObject(config, 'File edit configs');
 
     const functionIds = Object.keys(config);
     if (functionIds.length === 0) {
-      throw new Error('File edit functions must contain at least one function');
+      throw new Error('File edit configs must contain at least one function');
     }
 
     for (const functionId of functionIds) {

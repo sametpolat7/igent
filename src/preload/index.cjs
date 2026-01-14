@@ -2,20 +2,20 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('igent', {
   // Shared
-  getServers: () => ipcRenderer.invoke('agent:get-servers'),
+  getServers: () => ipcRenderer.invoke('server-update:get-servers'),
 
   // Server Update
   plan: ({ serverKey, directory, branch }) =>
-    ipcRenderer.invoke('agent:plan', { serverKey, directory, branch }),
+    ipcRenderer.invoke('server-update:plan', { serverKey, directory, branch }),
 
-  execute: (payload) => ipcRenderer.invoke('agent:execute', payload),
+  execute: (payload) => ipcRenderer.invoke('server-update:execute', payload),
 
   onProgress: (callback) => {
-    ipcRenderer.on('agent:progress', (_event, data) => callback(data));
+    ipcRenderer.on('server-update:progress', (_event, data) => callback(data));
   },
 
   removeProgressListener: () => {
-    ipcRenderer.removeAllListeners('agent:progress');
+    ipcRenderer.removeAllListeners('server-update:progress');
   },
 
   // Queue Control
