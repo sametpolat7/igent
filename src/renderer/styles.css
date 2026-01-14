@@ -77,11 +77,9 @@ body {
   font-size: var(--font-base);
   line-height: 1.6;
   color: var(--gray-900);
-  background: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    var(--primary-dark) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--primary) 0%,
+      var(--primary-dark) 100%);
   padding: var(--space-md);
   min-height: 100vh;
 }
@@ -252,11 +250,9 @@ body {
 
 .btn-primary {
   width: 100%;
-  background: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    var(--primary-dark) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--primary) 0%,
+      var(--primary-dark) 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
@@ -325,6 +321,7 @@ body {
 }
 
 @media (min-width: 640px) {
+
   .status-section,
   .result-section {
     margin-top: var(--space-2xl);
@@ -358,6 +355,7 @@ body {
 }
 
 @media (min-width: 640px) {
+
   .status-section h3,
   .result-section h3,
   .progress-section h3 {
@@ -379,7 +377,7 @@ body {
   border-radius: var(--radius-sm);
   border: 1px solid #e9d5ff;
   overflow: auto;
-  font: 500 var(--font-xs) var(--font-mono);
+  font: 500 var(--font-base) var(--font-mono);
   line-height: 1.6;
   color: #581c87;
   white-space: pre-wrap;
@@ -394,10 +392,11 @@ body {
 }
 
 @media (min-width: 640px) {
+
   .commands-display,
   .output-display {
     padding: var(--space-lg);
-    font-size: var(--font-sm);
+    font-size: var(--font-lg);
     line-height: 1.8;
     max-height: 400px;
   }
@@ -454,11 +453,9 @@ body {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--success) 0%,
-    var(--success-dark) 100%
-  );
+  background: linear-gradient(90deg,
+      var(--success) 0%,
+      var(--success-dark) 100%);
   transition: width var(--transition-slow) ease;
   width: 0%;
   border-radius: 10px;
@@ -494,11 +491,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    var(--warning) 0%,
-    var(--warning-dark) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--warning) 0%,
+      var(--warning-dark) 100%);
   border-radius: var(--radius-md);
   padding: var(--space-md);
   margin-bottom: var(--space-md);
@@ -783,6 +778,7 @@ body {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
@@ -981,11 +977,9 @@ body {
 }
 
 .btn-queue-start {
-  background: linear-gradient(
-    135deg,
-    var(--success) 0%,
-    var(--success-dark) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--success) 0%,
+      var(--success-dark) 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
@@ -1007,11 +1001,9 @@ body {
 }
 
 .btn-queue-restart {
-  background: linear-gradient(
-    135deg,
-    var(--warning) 0%,
-    var(--warning-dark) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--warning) 0%,
+      var(--warning-dark) 100%);
   color: #78350f;
   box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
 }

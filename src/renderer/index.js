@@ -98,9 +98,9 @@ export const PROGRESS_GRADIENTS = {
 };
 
 export const RESULT_STYLES = {
-  success: { background: '#14b8a6', color: '#ffffff' },
-  conflict: { background: '#f59e0b', color: '#ffffff' },
-  error: { background: '#f43f5e', color: '#ffffff' },
+  success: { background: '#75ffef', color: '#ffffff' },
+  conflict: { background: '#ffcb70', color: '#ffffff' },
+  error: { background: '#ff7f95', color: '#ffffff' },
   warning: { background: '#fef3c7', color: '#92400e' },
 };
 
