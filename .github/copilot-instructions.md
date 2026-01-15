@@ -367,7 +367,7 @@ For stash conflicts:
 - Cleanup commands executed before returning error
 - Progress tracking includes rollback steps for transparency
 
-See `src/main/utils/conflictResolver.js` and `src/main/agents/server-update/executor.js` for complete implementation.
+See `src/main/utils/conflictHandler.js` and `src/main/agents/server-update/executor.js` for complete implementation.
 
 ## Queue Control Agent
 
@@ -609,7 +609,7 @@ Modular agent-based structure with central coordination:
 - `src/main/utils/validator.js` - Input validation functions
 - `src/main/utils/progressTracker.js` - Progress tracking utility class
 - `src/main/utils/securityHandler.js` - Rate limiting, shell escaping, path sanitization
-- `src/main/utils/conflictResolver.js` - Git conflict detection and rollback
+- `src/main/utils/conflictHandler.js` - Git conflict detection and rollback
 
 **Security Bridge:**
 

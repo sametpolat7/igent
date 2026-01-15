@@ -79,7 +79,7 @@ export async function executeConflictCleanup({
   const rollbackStartTime = Date.now();
 
   logWarn(
-    'conflictResolver',
+    'conflictHandler',
     `Starting rollback for ${conflictType} (${totalRollbackSteps} steps)`
   );
 
@@ -100,7 +100,7 @@ export async function executeConflictCleanup({
     const stepStartTime = Date.now();
 
     logInfo(
-      'conflictResolver',
+      'conflictHandler',
       `[${rollbackStepNumber}/${totalRollbackSteps}] Running: ${rollbackCommand}`
     );
 
@@ -129,7 +129,7 @@ export async function executeConflictCleanup({
       const duration = ((Date.now() - stepStartTime) / 1000).toFixed(2);
 
       logInfo(
-        'conflictResolver',
+        'conflictHandler',
         `[${rollbackStepNumber}/${totalRollbackSteps}] Completed in ${duration}s`
       );
 
@@ -147,7 +147,7 @@ export async function executeConflictCleanup({
       const duration = ((Date.now() - stepStartTime) / 1000).toFixed(2);
 
       logWarn(
-        'conflictResolver',
+        'conflictHandler',
         `[${rollbackStepNumber}/${totalRollbackSteps}] Warning after ${duration}s (non-critical)`
       );
 
@@ -170,7 +170,7 @@ export async function executeConflictCleanup({
   ).toFixed(2);
 
   logSuccess(
-    'conflictResolver',
+    'conflictHandler',
     `Rollback completed in ${totalRollbackDuration}s - server restored to previous state`
   );
 

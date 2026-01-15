@@ -122,7 +122,7 @@
 │  │  │                       │           │  • Shell escaping        │   ││
 │  │  │                       │           │  • Path validation       │   ││
 │  │  │                       │           │                          │   ││
-│  │  │                       │           │  conflictResolver.js     │   ││
+│  │  │                       │           │  conflictHandler.js      │   ││
 │  │  │                       │           │  ──────────────────      │   ││
 │  │  │                       │           │  • Git conflict detect   │   ││
 │  │  │                       │           │  • Auto rollback logic   │   ││
@@ -564,7 +564,7 @@ Security Handler (securityHandler.js):
   • Maximum 5 concurrent operations
   • 1-second cooldown between operations
 
-Conflict Resolver (conflictResolver.js):
+Conflict Handler (conflictHandler.js):
   • detectConflict(stdout, stderr, exitCode)
   • resolveConflict(conflictType, sshHost, directory, originalHead)
   • CONFLICT_TYPES enum (UNMERGED_INDEX, MERGE_CONFLICT, etc.)

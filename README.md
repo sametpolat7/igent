@@ -228,7 +228,7 @@ igent/
 │   │       ├── logger.js              # Structured logging
 │   │       ├── progressTracker.js     # Progress tracking
 │   │       ├── validator.js           # Input validation
-│   │       ├── conflictResolver.js    # Git conflict handling
+│   │       ├── conflictHandler.js     # Git conflict handling
 │   │       └── securityHandler.js     # Shell escaping
 │   ├── preload/
 │   │   └── index.cjs                  # IPC security bridge (CommonJS)
