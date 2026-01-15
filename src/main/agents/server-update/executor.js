@@ -18,7 +18,7 @@ import {
   detectConflict,
   executeConflictCleanup,
   createConflictError,
-} from '../../utils/conflictResolver.js';
+} from '../../utils/conflictHandler.js';
 import {
   SecurityContext,
   validateOperationParams,
