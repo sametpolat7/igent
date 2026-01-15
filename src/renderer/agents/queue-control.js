@@ -8,7 +8,6 @@ import {
   showSection,
   hideSection,
   scrollToElement,
-  escapeHTML,
   createStepHTML,
 } from '../index.js';
 
@@ -102,17 +101,37 @@ function displayStatus(status) {
 
     if (status.processInfo) {
       const info = status.processInfo;
-      let infoHtml = `<div class="process-info-item"><strong>PID:</strong> ${status.pid || 'N/A'}</div>`;
+
+      elements.queueProcessInfo.innerHTML = '';
+
+      const pidDiv = document.createElement('div');
+      pidDiv.className = 'process-info-item';
+      const pidLabel = document.createElement('strong');
+      pidLabel.textContent = 'PID:';
+      pidDiv.appendChild(pidLabel);
+      pidDiv.appendChild(document.createTextNode(' ' + (status.pid || 'N/A')));
+      elements.queueProcessInfo.appendChild(pidDiv);
 
       if (info.busyWorkers !== undefined) {
-        infoHtml += `<div class="process-info-item"><strong>Workers:</strong> ${info.busyWorkers} of ${info.totalWorkers} busy</div>`;
+        const workersDiv = document.createElement('div');
+        workersDiv.className = 'process-info-item';
+        const workersLabel = document.createElement('strong');
+        workersLabel.textContent = 'Workers:';
+        workersDiv.appendChild(workersLabel);
+        workersDiv.appendChild(
+          document.createTextNode(
+            ` ${info.busyWorkers} of ${info.totalWorkers} busy`
+          )
+        );
+        elements.queueProcessInfo.appendChild(workersDiv);
       }
 
       if (info.fullLine) {
-        infoHtml += `<div class="process-info-detail">${escapeHTML(info.fullLine)}</div>`;
+        const detailDiv = document.createElement('div');
+        detailDiv.className = 'process-info-detail';
+        detailDiv.textContent = info.fullLine;
+        elements.queueProcessInfo.appendChild(detailDiv);
       }
-
-      elements.queueProcessInfo.innerHTML = infoHtml;
     }
   } else {
     updateStatusDisplay('stopped', 'Queue is CLOSED (No Sidekiq process)');
