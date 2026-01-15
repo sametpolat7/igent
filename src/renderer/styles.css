@@ -160,6 +160,12 @@ body {
   animation: fadeIn var(--transition-base) ease-out;
 }
 
+.shared-sections {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+}
+
 .container {
   max-width: 900px;
   width: 100%;

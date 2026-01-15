@@ -18,8 +18,11 @@ export function attachEventListeners() {
   elements.directorySelect.addEventListener('change', validateForm);
   elements.branchInput.addEventListener('input', validateForm);
   elements.planButton.addEventListener('click', handlePlan);
-  elements.executeButton.addEventListener('click', handleExecute);
-  elements.cancelButton.addEventListener('click', handleCancel);
+}
+
+export function attachExecuteHandlers() {
+  elements.executeButton.onclick = handleExecute;
+  elements.cancelButton.onclick = handleCancel;
 }
 
 export function setupProgressListener() {
@@ -79,6 +82,7 @@ function displayPlan(plan) {
     `<div style="margin-top: 8px;"><span class="plan-label">Commands:</span></div>` +
     `<div style="margin-top: 4px;">${escapeHTML(commands)}</div>`;
 
+  attachExecuteHandlers();
   showSection(elements.statusSection);
   elements.executeButton.disabled = false;
   elements.cancelButton.disabled = false;
