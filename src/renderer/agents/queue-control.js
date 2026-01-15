@@ -204,17 +204,17 @@ function setExecutionState(isExecuting) {
 }
 
 function resetProgress() {
-  hideSection(elements.queueResultSection);
-  showSection(elements.queueProgressSection);
+  hideSection(elements.resultSection);
+  showSection(elements.progressSection);
 
-  elements.queueProgressSteps.innerHTML = '';
+  elements.progressSteps.innerHTML = '';
   setProgressBar(0);
 }
 
 function setProgressBar(percentage, gradient = null) {
-  elements.queueProgressBar.style.width = `${percentage}%`;
-  elements.queueProgressPercentage.textContent = `${percentage}%`;
-  if (gradient) elements.queueProgressBar.style.background = gradient;
+  elements.progressBar.style.width = `${percentage}%`;
+  elements.progressPercentage.textContent = `${percentage}%`;
+  if (gradient) elements.progressBar.style.background = gradient;
 }
 
 function updateProgress(data) {
@@ -227,14 +227,14 @@ function updateProgress(data) {
   }
 
   const handlers = {
-    started: () => (elements.queueProgressSteps.innerHTML = ''),
+    started: () => (elements.progressSteps.innerHTML = ''),
     running: () => updateStepDisplay(data),
     'step-complete': () => updateStepDisplay(data),
     'step-failed': () => updateStepDisplay(data),
     completed: () => setProgressBar(100, PROGRESS_GRADIENTS.success),
     failed: () =>
       setProgressBar(
-        parseInt(elements.queueProgressPercentage.textContent),
+        parseInt(elements.progressPercentage.textContent),
         PROGRESS_GRADIENTS.error
       ),
   };
@@ -267,13 +267,13 @@ function getOrCreateStepElement(stepId, className) {
     element = document.createElement('div');
     element.id = stepId;
     element.className = className;
-    elements.queueProgressSteps.appendChild(element);
+    elements.progressSteps.appendChild(element);
   }
   return element;
 }
 
 function displaySuccess(result) {
-  hideSection(elements.queueProgressSection);
+  hideSection(elements.progressSection);
 
   let message = `Queue ${result.action} completed successfully in ${result.totalDuration}s`;
 
@@ -296,7 +296,7 @@ function displaySuccess(result) {
 }
 
 function displayError(error) {
-  hideSection(elements.queueProgressSection);
+  hideSection(elements.progressSection);
 
   const parts = [
     error.failedAtStep &&
@@ -316,14 +316,14 @@ function displayError(error) {
 
 function showResultSection(type, message) {
   const styles = RESULT_STYLES[type];
-  showSection(elements.queueResultSection);
-  Object.assign(elements.queueResultSection.style, styles);
-  elements.queueOutputDisplay.textContent = message;
-  elements.queueOutputDisplay.style.color = '#e5e7eb';
-  scrollToElement(elements.queueResultSection);
+  showSection(elements.resultSection);
+  Object.assign(elements.resultSection.style, styles);
+  elements.outputDisplay.textContent = message;
+  elements.outputDisplay.style.color = '#e5e7eb';
+  scrollToElement(elements.resultSection);
 }
 
 function hideResults() {
-  hideSection(elements.queueProgressSection);
-  hideSection(elements.queueResultSection);
+  hideSection(elements.progressSection);
+  hideSection(elements.resultSection);
 }

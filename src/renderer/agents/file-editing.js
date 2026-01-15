@@ -23,9 +23,12 @@ export function attachEventListeners() {
     handleFunctionChange
   );
   elements.fileEditPlanButton.addEventListener('click', handlePlan);
-  elements.fileEditExecuteButton.addEventListener('click', handleExecute);
-  elements.fileEditCancelButton.addEventListener('click', handleCancel);
   elements.fileEditRestoreButton.addEventListener('click', handleRestore);
+}
+
+export function attachExecuteHandlers() {
+  elements.executeButton.onclick = handleExecute;
+  elements.cancelButton.onclick = handleCancel;
 }
 
 export function setupProgressListener() {
@@ -205,7 +208,7 @@ function displayPlan(plan) {
     )
     .join('');
 
-  elements.fileEditCommandsDisplay.innerHTML =
+  elements.commandsDisplay.innerHTML =
     `<div><span class="plan-label">Server:</span> ${escapeHTML(plan.serverKey)}</div>` +
     `<div><span class="plan-label">Directory:</span> ${escapeHTML(plan.directory)}</div>` +
     `<div><span class="plan-label">Function:</span> ${escapeHTML(plan.functionName)}</div>` +
@@ -216,15 +219,16 @@ function displayPlan(plan) {
     `<div style="margin-top: 8px;"><span class="plan-label">Commands:</span></div>` +
     `<div style="margin-top: 4px;">${escapeHTML(commands)}</div>`;
 
-  showSection(elements.fileEditStatusSection);
-  elements.fileEditExecuteButton.disabled = false;
-  elements.fileEditCancelButton.disabled = false;
-  scrollToElement(elements.fileEditStatusSection);
+  attachExecuteHandlers();
+  showSection(elements.statusSection);
+  elements.executeButton.disabled = false;
+  elements.cancelButton.disabled = false;
+  scrollToElement(elements.statusSection);
 }
 
 function handleCancel() {
   state.fileEditPlan = null;
-  hideSection(elements.fileEditStatusSection);
+  hideSection(elements.statusSection);
 }
 
 async function handleExecute() {
@@ -235,7 +239,7 @@ async function handleExecute() {
 
   setExecutionState(true);
   resetProgress();
-  scrollToElement(elements.fileEditProgressSection);
+  scrollToElement(elements.progressSection);
 
   try {
     const result = await window.igent.fileEdit.execute(state.fileEditPlan);
@@ -253,8 +257,8 @@ async function handleExecute() {
 
 function setExecutionState(isExecuting) {
   state.isFileEditExecuting = isExecuting;
-  elements.fileEditExecuteButton.disabled = isExecuting;
-  elements.fileEditCancelButton.disabled = isExecuting;
+  elements.executeButton.disabled = isExecuting;
+  elements.cancelButton.disabled = isExecuting;
   elements.fileEditPlanButton.disabled = isExecuting;
   elements.fileEditServerSelect.disabled = isExecuting;
   elements.fileEditDirectorySelect.disabled = isExecuting;
@@ -267,18 +271,18 @@ function setExecutionState(isExecuting) {
 }
 
 function resetProgress() {
-  hideSection(elements.fileEditStatusSection);
-  hideSection(elements.fileEditResultSection);
-  showSection(elements.fileEditProgressSection);
+  hideSection(elements.statusSection);
+  hideSection(elements.resultSection);
+  showSection(elements.progressSection);
 
-  elements.fileEditProgressSteps.innerHTML = '';
+  elements.progressSteps.innerHTML = '';
   setProgressBar(0);
 }
 
 function setProgressBar(percentage, gradient = null) {
-  elements.fileEditProgressBar.style.width = `${percentage}%`;
-  elements.fileEditProgressPercentage.textContent = `${percentage}%`;
-  if (gradient) elements.fileEditProgressBar.style.background = gradient;
+  elements.progressBar.style.width = `${percentage}%`;
+  elements.progressPercentage.textContent = `${percentage}%`;
+  if (gradient) elements.progressBar.style.background = gradient;
 }
 
 function updateProgress(data) {
@@ -291,14 +295,14 @@ function updateProgress(data) {
   }
 
   const handlers = {
-    started: () => (elements.fileEditProgressSteps.innerHTML = ''),
+    started: () => (elements.progressSteps.innerHTML = ''),
     running: () => updateStepDisplay(data),
     'step-complete': () => updateStepDisplay(data),
     'step-failed': () => updateStepDisplay(data),
     completed: () => setProgressBar(100, PROGRESS_GRADIENTS.success),
     failed: () =>
       setProgressBar(
-        parseInt(elements.fileEditProgressPercentage.textContent),
+        parseInt(elements.progressPercentage.textContent),
         PROGRESS_GRADIENTS.error
       ),
   };
@@ -331,14 +335,14 @@ function getOrCreateStepElement(stepId, className) {
     element = document.createElement('div');
     element.id = stepId;
     element.className = className;
-    elements.fileEditProgressSteps.appendChild(element);
+    elements.progressSteps.appendChild(element);
   }
   return element;
 }
 
 function displaySuccess(result) {
-  hideSection(elements.fileEditProgressSection);
-  hideSection(elements.fileEditStatusSection);
+  hideSection(elements.progressSection);
+  hideSection(elements.statusSection);
 
   let message = `${result.functionName} completed successfully in ${result.totalDuration}s`;
 
@@ -352,8 +356,8 @@ function displaySuccess(result) {
 }
 
 function displayError(error) {
-  hideSection(elements.fileEditProgressSection);
-  hideSection(elements.fileEditStatusSection);
+  hideSection(elements.progressSection);
+  hideSection(elements.statusSection);
 
   const parts = [
     error.failedAtStep &&
@@ -377,17 +381,17 @@ function showError(title, error) {
 
 function showResultSection(type, message) {
   const styles = RESULT_STYLES[type];
-  showSection(elements.fileEditResultSection);
-  Object.assign(elements.fileEditResultSection.style, styles);
-  elements.fileEditOutputDisplay.textContent = message;
-  elements.fileEditOutputDisplay.style.color = '#e5e7eb';
-  scrollToElement(elements.fileEditResultSection);
+  showSection(elements.resultSection);
+  Object.assign(elements.resultSection.style, styles);
+  elements.outputDisplay.textContent = message;
+  elements.outputDisplay.style.color = '#e5e7eb';
+  scrollToElement(elements.resultSection);
 }
 
 function hideResults() {
-  hideSection(elements.fileEditStatusSection);
-  hideSection(elements.fileEditProgressSection);
-  hideSection(elements.fileEditResultSection);
+  hideSection(elements.statusSection);
+  hideSection(elements.progressSection);
+  hideSection(elements.resultSection);
   state.fileEditPlan = null;
 }
 
@@ -513,13 +517,13 @@ async function handleRestore() {
 }
 
 function displayRestoreSuccess(result) {
-  hideSection(elements.fileEditProgressSection);
+  hideSection(elements.progressSection);
   const message = `File restored and service restarted successfully!\n\nDuration: ${result.totalDuration}s\nTarget: ${result.targetFile}`;
   showResultSection('success', message);
 }
 
 function displayRestoreError(error) {
-  hideSection(elements.fileEditProgressSection);
+  hideSection(elements.progressSection);
   const parts = [
     error.failedAtStep &&
       `Failed at Step ${error.failedAtStep}/${error.totalSteps}`,

@@ -35,11 +35,7 @@ export const elements = {
   navTabs: document.querySelectorAll('.nav-tab'),
   viewContainers: document.querySelectorAll('.view-container'),
 
-  // Server Update View Elements
-  serverSelect: document.getElementById('server'),
-  directorySelect: document.getElementById('directory'),
-  branchInput: document.getElementById('branch'),
-  planButton: document.getElementById('plan'),
+  // Shared Sections
   statusSection: document.getElementById('status'),
   commandsDisplay: document.getElementById('commands'),
   executeButton: document.getElementById('execute'),
@@ -52,6 +48,12 @@ export const elements = {
   resultSection: document.getElementById('result'),
   outputDisplay: document.getElementById('output'),
 
+  // Server Update View Elements
+  serverSelect: document.getElementById('server'),
+  directorySelect: document.getElementById('directory'),
+  branchInput: document.getElementById('branch'),
+  planButton: document.getElementById('plan'),
+
   // Queue Control View Elements
   queueServerSelect: document.getElementById('queue-server'),
   queueDirectorySelect: document.getElementById('queue-directory'),
@@ -61,12 +63,6 @@ export const elements = {
   queueStartButton: document.getElementById('queue-start'),
   queueStopButton: document.getElementById('queue-stop'),
   queueRestartButton: document.getElementById('queue-restart'),
-  queueProgressSection: document.getElementById('queue-progress'),
-  queueProgressBar: document.getElementById('queue-progress-bar'),
-  queueProgressPercentage: document.getElementById('queue-progress-percentage'),
-  queueProgressSteps: document.getElementById('queue-progress-steps'),
-  queueResultSection: document.getElementById('queue-result'),
-  queueOutputDisplay: document.getElementById('queue-output'),
 
   // File Edit View Elements
   fileEditServerSelect: document.getElementById('file-edit-server'),
@@ -77,31 +73,30 @@ export const elements = {
   fileEditRestoreButton: document.getElementById('file-edit-restore'),
   fileEditInputsContainer: document.getElementById('file-edit-inputs'),
   fileEditPlanButton: document.getElementById('file-edit-plan'),
-  fileEditStatusSection: document.getElementById('file-edit-status'),
-  fileEditCommandsDisplay: document.getElementById('file-edit-commands'),
-  fileEditExecuteButton: document.getElementById('file-edit-execute'),
-  fileEditCancelButton: document.getElementById('file-edit-cancel'),
-  fileEditProgressSection: document.getElementById('file-edit-progress'),
-  fileEditProgressBar: document.getElementById('file-edit-progress-bar'),
-  fileEditProgressPercentage: document.getElementById(
-    'file-edit-progress-percentage'
-  ),
-  fileEditProgressSteps: document.getElementById('file-edit-progress-steps'),
-  fileEditResultSection: document.getElementById('file-edit-result'),
-  fileEditOutputDisplay: document.getElementById('file-edit-output'),
 };
 
-// Shared Constants
 export const PROGRESS_GRADIENTS = {
   success: 'linear-gradient(90deg, #14b8a6 0%, #0d9488 100%)',
   error: 'linear-gradient(90deg, #f43f5e 0%, #e11d48 100%)',
 };
 
 export const RESULT_STYLES = {
-  success: { background: '#14b8a6', color: '#ffffff' },
-  conflict: { background: '#f59e0b', color: '#ffffff' },
-  error: { background: '#f43f5e', color: '#ffffff' },
-  warning: { background: '#fef3c7', color: '#92400e' },
+  success: {
+    background: '#34d399',
+    color: '#ffffff',
+  },
+  conflict: {
+    background: '#fdb230',
+    color: '#ffffff',
+  },
+  error: {
+    background: '#ef4444',
+    color: '#ffffff',
+  },
+  warning: {
+    background: '#fde68a',
+    color: '#78350f',
+  },
 };
 
 export const CONFLICT_LABELS = {
@@ -122,8 +117,6 @@ export const STEP_STATUS_MAP = {
     text: 'Rolled back with warning',
   },
 };
-
-// Shared Utility Functions
 
 // Create an option element for select dropdowns
 export function createOption(value, text) {
@@ -196,6 +189,10 @@ function switchView(viewName) {
     elements.viewContainers,
     (container) => container.id === `view-${viewName}`
   );
+
+  hideSection(elements.statusSection);
+  hideSection(elements.progressSection);
+  hideSection(elements.resultSection);
 }
 
 // Data Loading

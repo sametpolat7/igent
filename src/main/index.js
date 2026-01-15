@@ -21,8 +21,10 @@ const __dirname = path.dirname(__filename);
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 600,
-    height: 800,
+    width: 1000,
+    height: 900,
+    minWidth: 600,
+    minHeight: 700,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.cjs'),
       nodeIntegration: false,
@@ -81,7 +83,7 @@ function registerIPCHandlers() {
 
       logError('IPC', 'Execution failed', error);
       throw new Error(
-        'Deployment failed. Please try again or contact support if the problem persists.'
+        'Process failed. Please check the data and try again. If the problem persists, contact the support team and ask them to review the log files.'
       );
     }
   });
@@ -203,7 +205,9 @@ function registerIPCHandlers() {
       });
     } catch (error) {
       logError('IPC', 'File changes check failed', error);
-      throw new Error('Failed to check file changes. Please try again.');
+      throw new Error(
+        'Process failed. Please check the data and try again. If the problem persists, contact the support team and ask them to review the log files.'
+      );
     }
   });
 

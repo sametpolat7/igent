@@ -106,7 +106,6 @@ function sanitizeBranchName(branchName) {
     throw new Error('Branch name cannot start with a hyphen');
   }
 
-  logDebug('security', `Branch name validated: ${trimmed}`);
   return trimmed;
 }
 
@@ -142,7 +141,6 @@ export function sanitizeDirectoryName(directory) {
     throw new Error('Directory name cannot start with a hyphen');
   }
 
-  logDebug('security', `Directory name validated: ${trimmed}`);
   return trimmed;
 }
 
@@ -180,7 +178,6 @@ export function sanitizeSSHHost(sshHost) {
     throw new Error('SSH host cannot contain consecutive dots');
   }
 
-  logDebug('security', `SSH host validated: ${trimmed}`);
   return trimmed;
 }
 
@@ -207,7 +204,6 @@ function sanitizeUserInput(input, context = 'user input') {
     }
   }
 
-  logDebug('security', `User input validated for ${context}`);
   return trimmed;
 }
 
@@ -225,7 +221,6 @@ export function validateAndNormalizePath(basePath, userDirectory) {
     throw new Error('Path traversal detected: directory escapes base path');
   }
 
-  logDebug('security', `Path validated: ${resolvedPath}`);
   return resolvedPath;
 }
 
@@ -245,7 +240,6 @@ export function buildSafeSSHCommand(sshHost, remoteCommand) {
 
   const sshCommand = `ssh ${sanitizedHost} ${escapedCommand}`;
 
-  logDebug('security', `Safe SSH command built for host: ${sanitizedHost}`);
   return sshCommand;
 }
 
@@ -319,7 +313,6 @@ export function validateOperationParams({
     }
   }
 
-  logDebug('security', 'Operation parameters validated successfully');
   return validated;
 }
 

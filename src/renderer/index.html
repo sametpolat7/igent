@@ -51,31 +51,6 @@
         </div>
 
         <button id="plan" class="btn btn-primary" disabled>Create Plan</button>
-
-        <div id="status" class="status-section">
-          <h3>Process Plan</h3>
-          <pre id="commands" class="commands-display"></pre>
-          <div class="button-group">
-            <button id="execute" class="btn btn-success">Execute</button>
-            <button id="cancel" class="btn btn-secondary">Cancel</button>
-          </div>
-        </div>
-
-        <div id="progress" class="progress-section">
-          <h3>Execution Progress</h3>
-          <div class="progress-wrapper">
-            <div class="progress-bar-container">
-              <div id="progress-bar" class="progress-bar"></div>
-            </div>
-            <div id="progress-percentage" class="progress-percentage">0%</div>
-          </div>
-          <div id="progress-steps" class="progress-steps"></div>
-        </div>
-
-        <div id="result" class="result-section">
-          <h3>Result</h3>
-          <pre id="output" class="output-display"></pre>
-        </div>
       </div>
     </div>
 
@@ -129,49 +104,6 @@
         <button id="file-edit-plan" class="btn btn-primary" disabled>
           Create Plan
         </button>
-
-        <div id="file-edit-status" class="status-section">
-          <h3>Process Plan</h3>
-          <pre id="file-edit-commands" class="commands-display"></pre>
-          <div class="button-group">
-            <button id="file-edit-execute" class="btn btn-success">
-              Execute
-            </button>
-            <button id="file-edit-cancel" class="btn btn-secondary">
-              Cancel
-            </button>
-          </div>
-        </div>
-
-        <div id="file-edit-progress" class="progress-section">
-          <h3>Execution Progress</h3>
-          <div class="progress-wrapper">
-            <div class="progress-bar-container">
-              <div
-                id="file-edit-progress-bar"
-                class="progress-bar"
-                role="progressbar"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="0"
-              ></div>
-            </div>
-            <div
-              id="file-edit-progress-percentage"
-              class="progress-percentage"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              0%
-            </div>
-          </div>
-          <div id="file-edit-progress-steps" class="progress-steps"></div>
-        </div>
-
-        <div id="file-edit-result" class="result-section">
-          <h3>Result</h3>
-          <pre id="file-edit-output" class="output-display"></pre>
-        </div>
       </div>
     </div>
 
@@ -228,24 +160,47 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div id="queue-progress" class="progress-section">
-          <h3>Execution Progress</h3>
-          <div class="progress-wrapper">
-            <div class="progress-bar-container">
-              <div id="queue-progress-bar" class="progress-bar"></div>
-            </div>
-            <div id="queue-progress-percentage" class="progress-percentage">
-              0%
-            </div>
+    <div class="shared-sections">
+      <div id="status" class="status-section">
+        <h3>Process Plan</h3>
+        <pre id="commands" class="commands-display"></pre>
+        <div class="button-group">
+          <button id="execute" class="btn btn-success">Execute</button>
+          <button id="cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+
+      <div id="progress" class="progress-section">
+        <h3>Execution Progress</h3>
+        <div class="progress-wrapper">
+          <div class="progress-bar-container">
+            <div
+              id="progress-bar"
+              class="progress-bar"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            ></div>
           </div>
-          <div id="queue-progress-steps" class="progress-steps"></div>
+          <div
+            id="progress-percentage"
+            class="progress-percentage"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            0%
+          </div>
         </div>
+        <div id="progress-steps" class="progress-steps"></div>
+      </div>
 
-        <div id="queue-result" class="result-section">
-          <h3>Result</h3>
-          <pre id="queue-output" class="output-display"></pre>
-        </div>
+      <div id="result" class="result-section">
+        <h3>Result</h3>
+        <pre id="output" class="output-display"></pre>
       </div>
     </div>
 
