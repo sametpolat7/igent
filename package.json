@@ -29,12 +29,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/igent.git"
+    "url": "https://github.com/sametpolat7/igent.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/igent/issues"
+    "url": "https://github.com/sametpolat7/igent/issues"
   },
-  "homepage": "https://github.com/yourusername/igent#readme",
+  "homepage": "https://github.com/sametpolat7/igent#readme",
   "build": {
     "appId": "com.igent.app",
     "productName": "igent",
