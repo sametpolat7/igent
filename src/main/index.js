@@ -21,8 +21,10 @@ const __dirname = path.dirname(__filename);
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 600,
-    height: 800,
+    width: 1000,
+    height: 900,
+    minWidth: 600,
+    minHeight: 700,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.cjs'),
       nodeIntegration: false,
