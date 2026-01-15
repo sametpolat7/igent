@@ -63,3 +63,5 @@ jobs:
           prerelease: false
           generate_release_notes: false
           body_path: CHANGELOG.md
+          fail_on_unmatched_files: true
+          make_latest: true
