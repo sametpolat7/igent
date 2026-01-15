@@ -50,10 +50,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Delete existing release
+      - name: Delete existing release if exists
         continue-on-error: true
         run: |
-          gh release delete ${{ github.ref_name }} --yes --cleanup-tag
+          if gh release view ${{ github.ref_name }} &>/dev/null; then
+            echo "Release exists, deleting..."
+            gh release delete ${{ github.ref_name }} --yes
+            sleep 2
+          else
+            echo "No existing release found"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -61,6 +67,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist-all
+
+      - name: Display downloaded files
+        run: |
+          echo "Files to be uploaded:"
+          find dist-all -type f
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
