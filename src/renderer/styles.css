@@ -396,7 +396,7 @@ body {
   .commands-display,
   .output-display {
     padding: var(--space-lg);
-    font-size: var(--font-lg);
+    font-size: var(--font-base);
     line-height: 1.8;
     max-height: 400px;
   }
