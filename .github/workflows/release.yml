@@ -50,6 +50,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Delete existing release
+        continue-on-error: true
+        run: |
+          gh release delete ${{ github.ref_name }} --yes --cleanup-tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -62,6 +69,6 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: false
-          body_path: CHANGELOG.md
+          body_path: .github/RELEASE_NOTES.md
           fail_on_unmatched_files: true
           make_latest: true
