@@ -17,7 +17,10 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
-      - run: npm run build:mac
+      - name: Build macOS
+        run: npx electron-builder --mac --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
           name: macos-builds
@@ -34,7 +37,10 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
-      - run: npm run build:win
+      - name: Build Windows
+        run: npx electron-builder --win --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
           name: windows-builds
@@ -50,7 +56,10 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
-      - run: npm run build:linux
+      - name: Build Linux
+        run: npx electron-builder --linux --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
           name: linux-builds
@@ -61,6 +70,7 @@ jobs:
 
   release:
     needs: [build-macos, build-windows, build-linux]
+    if: success()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
