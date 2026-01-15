@@ -9,14 +9,16 @@ import {
 } from '../../utils/validator.js';
 import { logSuccess } from '../../utils/logger.js';
 import {
-  buildSafeFileEditCommand,
   escapeShellArg,
+  buildSafeFileEditCommand,
 } from '../../utils/securityHandler.js';
 
 const BASE_DIRECTORY = '/var/webs';
 
-export const FILE_EDIT_FUNCTIONS = {
-  HASH_DATA_UPDATE: 'hash-data-update',
+const commandGenerators = {
+  'hash-data-update': generateHashDataUpdateCommands,
+  // Add new generators here, e.g.:
+  // 'env-update': generateEnvUpdateCommands,
 };
 
 export function planFileEdit({ serverKey, directory, functionId, inputs }) {
@@ -90,31 +92,30 @@ function generateFileEditCommands({
   directory,
   inputs,
 }) {
-  const appPath = `${BASE_DIRECTORY}/${directory}`;
-  const filePath = `${appPath}/${functionConfig.targetFile}`;
+  const generator = commandGenerators[functionId];
 
-  switch (functionId) {
-    case FILE_EDIT_FUNCTIONS.HASH_DATA_UPDATE:
-      return generateHashDataUpdateCommands(
-        filePath,
-        directory,
-        inputs.newValue
-      );
-
-    default:
-      throw new Error(`Unknown file edit function: ${functionId}`);
+  if (!generator) {
+    throw new Error(
+      `No command generator found for function: ${functionId}. Please contact support.`
+    );
   }
+
+  return generator(functionConfig, directory, inputs);
 }
 
-function generateHashDataUpdateCommands(filePath, directory, newValue) {
+function generateHashDataUpdateCommands(functionConfig, directory, inputs) {
+  const appPath = `${BASE_DIRECTORY}/${directory}`;
+  const filePath = `${appPath}/${functionConfig.targetFile}`;
   const backupPath = `${filePath}.backup`;
   const serviceName = `${directory}.service`;
 
   const cdCommand = `cd $(dirname ${escapeShellArg(filePath)})`;
   const backupCommand = `cp ${escapeShellArg(filePath)} ${escapeShellArg(backupPath)}`;
-
-  const awkCommand = buildSafeFileEditCommand(filePath, backupPath, newValue);
-
+  const awkCommand = buildSafeFileEditCommand(
+    filePath,
+    backupPath,
+    inputs.newValue
+  );
   const verifyCommand = `grep -A 10 "def hash_data" ${escapeShellArg(filePath)}`;
   const restartCommand = `sudo systemctl restart ${escapeShellArg(serviceName)}`;
 
