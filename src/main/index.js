@@ -83,7 +83,7 @@ function registerIPCHandlers() {
 
       logError('IPC', 'Execution failed', error);
       throw new Error(
-        'Process failed. Please try again or contact support if the problem persists.'
+        'Process failed. Please check the data and try again. If the problem persists, contact the support team and ask them to review the log files.'
       );
     }
   });
@@ -205,7 +205,9 @@ function registerIPCHandlers() {
       });
     } catch (error) {
       logError('IPC', 'File changes check failed', error);
-      throw new Error('Failed to check file changes. Please try again.');
+      throw new Error(
+        'Process failed. Please check the data and try again. If the problem persists, contact the support team and ask them to review the log files.'
+      );
     }
   });
 
