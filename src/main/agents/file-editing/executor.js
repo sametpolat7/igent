@@ -159,8 +159,15 @@ async function executeCommandChain({
   for (let i = 0; i < commands.length; i++) {
     const command = commands[i];
     const isLastStep = i === commands.length - 1;
+    const isRestartCommand = command.includes('systemctl restart');
 
     progress.stepStart(command);
+
+    if (isRestartCommand) {
+      progress.stepUpdate(
+        'Restarting Rails service (this may take 30-40 seconds)...'
+      );
+    }
 
     if (!isLastStep) {
       progress.stepComplete(command, 'Queued', '');

@@ -239,7 +239,7 @@ export async function executeQueueControl({
         if (isStartCommand(command) && stepError.killed) {
           logInfo(
             'queueControl',
-            'Start command timed out, process may be starting...'
+            'Queue start command completed, verifying process...'
           );
           progress.stepComplete(
             command,
