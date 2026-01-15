@@ -8,7 +8,6 @@ import {
   showSection,
   hideSection,
   scrollToElement,
-  escapeHTML,
   createStepHTML,
 } from '../index.js';
 
@@ -102,12 +101,21 @@ function renderInputs(funcConfig) {
 
   const infoDiv = document.createElement('div');
   infoDiv.className = 'file-edit-info';
-  infoDiv.innerHTML = `
-    <div class="file-edit-target">
-      <span class="label">Target File:</span>
-      <span class="value">${escapeHTML(funcConfig.targetFile)}</span>
-    </div>
-  `;
+
+  const targetDiv = document.createElement('div');
+  targetDiv.className = 'file-edit-target';
+
+  const labelSpan = document.createElement('span');
+  labelSpan.className = 'label';
+  labelSpan.textContent = 'Target File:';
+
+  const valueSpan = document.createElement('span');
+  valueSpan.className = 'value';
+  valueSpan.textContent = funcConfig.targetFile;
+
+  targetDiv.appendChild(labelSpan);
+  targetDiv.appendChild(valueSpan);
+  infoDiv.appendChild(targetDiv);
   elements.fileEditInputsContainer.appendChild(infoDiv);
 
   for (const inputDef of funcConfig.inputs) {
@@ -200,24 +208,60 @@ async function handlePlan() {
 }
 
 function displayPlan(plan) {
-  const commands = plan.commands.map((cmd, i) => `${i + 1}. ${cmd}`).join('\n');
-  const inputs = Object.entries(plan.inputs || {})
-    .map(
-      ([key, value]) =>
-        `<div><span class="plan-label">${escapeHTML(key)}:</span> ${escapeHTML(value)}</div>`
-    )
-    .join('');
+  elements.commandsDisplay.innerHTML = '';
 
-  elements.commandsDisplay.innerHTML =
-    `<div><span class="plan-label">Server:</span> ${escapeHTML(plan.serverKey)}</div>` +
-    `<div><span class="plan-label">Directory:</span> ${escapeHTML(plan.directory)}</div>` +
-    `<div><span class="plan-label">Function:</span> ${escapeHTML(plan.functionName)}</div>` +
-    `<div><span class="plan-label">Target File:</span> ${escapeHTML(plan.targetFile)}</div>` +
-    (inputs
-      ? `<div style="margin-top: 8px;"><span class="plan-label">Inputs:</span></div>${inputs}`
-      : '') +
-    `<div style="margin-top: 8px;"><span class="plan-label">Commands:</span></div>` +
-    `<div style="margin-top: 4px;">${escapeHTML(commands)}</div>`;
+  const createLabeledDiv = (label, value) => {
+    const div = document.createElement('div');
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'plan-label';
+    labelSpan.textContent = label + ':';
+    div.appendChild(labelSpan);
+    div.appendChild(document.createTextNode(' ' + value));
+    return div;
+  };
+
+  elements.commandsDisplay.appendChild(
+    createLabeledDiv('Server', plan.serverKey)
+  );
+  elements.commandsDisplay.appendChild(
+    createLabeledDiv('Directory', plan.directory)
+  );
+  elements.commandsDisplay.appendChild(
+    createLabeledDiv('Function', plan.functionName)
+  );
+  elements.commandsDisplay.appendChild(
+    createLabeledDiv('Target File', plan.targetFile)
+  );
+
+  if (plan.inputs && Object.keys(plan.inputs).length > 0) {
+    const inputsHeader = document.createElement('div');
+    inputsHeader.style.marginTop = '8px';
+    const inputsLabel = document.createElement('span');
+    inputsLabel.className = 'plan-label';
+    inputsLabel.textContent = 'Inputs:';
+    inputsHeader.appendChild(inputsLabel);
+    elements.commandsDisplay.appendChild(inputsHeader);
+
+    Object.entries(plan.inputs).forEach(([key, value]) => {
+      elements.commandsDisplay.appendChild(createLabeledDiv(key, value));
+    });
+  }
+
+  const commandsHeader = document.createElement('div');
+  commandsHeader.style.marginTop = '8px';
+  const commandsLabel = document.createElement('span');
+  commandsLabel.className = 'plan-label';
+  commandsLabel.textContent = 'Commands:';
+  commandsHeader.appendChild(commandsLabel);
+  elements.commandsDisplay.appendChild(commandsHeader);
+
+  const commandsDiv = document.createElement('div');
+  commandsDiv.style.marginTop = '4px';
+  commandsDiv.style.whiteSpace = 'pre-line';
+  commandsDiv.textContent = plan.commands
+    .map((cmd, i) => `${i + 1}. ${cmd}`)
+    .join('\n');
+  elements.commandsDisplay.appendChild(commandsDiv);
 
   attachExecuteHandlers();
   showSection(elements.statusSection);
