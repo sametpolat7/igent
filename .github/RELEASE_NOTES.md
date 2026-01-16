@@ -1,65 +1,95 @@
-# Changelog
+# Release Notes - v1.0.1
 
-All notable changes to igent will be documented in this file.
+**Release Date:** January 16, 2026
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## Summary
 
-## [1.0.0] - 2026-01-15
+Patch release addressing cross-platform build and runtime issues discovered after the initial 1.0.0 release. This update focuses on Linux compatibility fixes and documents Windows SmartScreen behavior.
 
-### Added
+---
 
-#### Core Features
+## 🐛 Bug Fixes
 
-- **Server Update Agent**: Automated Git-based server updates with intelligent conflict detection
-  - Git operations (stash, checkout, pull, stash pop)
-  - Rails database migrations with automatic rollback
-  - Asset precompilation and cache clearing
-  - Service restart automation
-  - Automatic conflict detection and cleanup (merge, stash, unmerged index)
-- **File Editing Agent**: Template-based remote file transformations
-  - Configuration-driven file editing functions
-  - Automatic backup and restore capabilities
-  - Git-based change detection and restoration
-  - Service restart after modifications
-- **Queue Control Agent**: Sidekiq process management
-  - Real-time process status monitoring with PID tracking
-  - Start/stop/restart operations with verification
-  - Worker statistics and process information display
+### Linux AppImage Sandbox Fix
 
-#### Security
+- **Issue:** On modern Linux distributions (Ubuntu 22.04+, Fedora 38+), the AppImage crashed immediately with a SIGTRAP signal
+- **Cause:** Electron's bundled `chrome-sandbox` binary requires SUID root permissions (owner root, mode 4755), which cannot be satisfied inside an AppImage
+- **Fix:** Disabled Electron sandbox at build time for Linux AppImage targets via `"sandbox": false` in electron-builder config
+- **Impact:** AppImage now launches correctly without requiring manual `--no-sandbox` flag
 
-- Multi-layer input validation (UI, IPC, business logic, execution)
-- Directory whitelisting per server configuration
-- SSH key-based authentication (no credential storage)
-- Shell injection prevention with argument escaping
-- Context isolation with sandboxed renderer process
-- Rate limiting (max 5 concurrent operations, 1s cooldown)
-- XSS protection with secure DOM manipulation
+---
 
-#### Developer Experience
+## 📋 Known Issues & Workarounds
 
-- Real-time step-by-step progress tracking with duration metrics
-- Structured logging with file output and color-coded console
-- Comprehensive error messages with context
-- Multi-view navigation UI
-- Cross-platform build support (macOS, Windows, Linux)
+### Windows SmartScreen Warning
 
-### Technical Details
+Windows displays an "Unknown Publisher" warning when running the installer or portable executable.
 
-- **Architecture**: Three-process Electron security model with strict process isolation
-- **Communication**: IPC-based with explicit channel whitelisting via contextBridge
-- **Module System**: ES Modules (main/renderer), CommonJS (preload security bridge)
-- **Logging**: Timestamped dual output (console + daily log files)
-- **Build Targets**:
-  - macOS: Universal DMG/ZIP with hardened runtime
-  - Windows: NSIS installer and portable executable
-  - Linux: AppImage and Debian package
+**Why this happens:**
 
-### Infrastructure
+- The executable is not signed with a code-signing certificate
+- SmartScreen cannot verify publisher identity or establish reputation
 
-- ESLint + Prettier code quality enforcement
-- Automated build pipeline with electron-builder
-- MIT License
+**Workaround:**
 
-[1.0.0]: https://github.com/sametpolat7/igent/releases/tag/v1.0.0
+1. Click "More info" on the SmartScreen dialog
+2. Click "Run anyway"
+
+**Permanent solution:** Obtain and configure a code-signing certificate (EV or OV) for Windows builds. This will be addressed in a future release.
+
+### Linux FUSE v2 Dependency
+
+Ubuntu 24.04 and newer distributions do not include FUSE v2 by default, which is required for AppImage.
+
+**Install FUSE v2:**
+
+```bash
+sudo apt install libfuse2t64
+```
+
+For other distributions:
+
+```bash
+# Fedora
+sudo dnf install fuse-libs
+
+# Arch Linux
+sudo pacman -S fuse2
+```
+
+### macOS Gatekeeper Warning
+
+macOS may display "app is from an unidentified developer" on first launch.
+
+**Workaround:**
+
+1. Right-click the app and select "Open"
+2. Click "Open" in the confirmation dialog
+3. Alternatively: System Preferences → Security & Privacy → "Open Anyway"
+
+---
+
+## 📦 Installation
+
+### macOS
+
+- Download `igent-1.0.1-universal.dmg` or `igent-1.0.1-universal-mac.zip`
+- Drag to Applications folder
+
+### Windows
+
+- **Installer:** Download and run `igent-Setup-1.0.1.exe`
+- **Portable:** Download `igent-1.0.1.exe` (no installation required)
+
+### Linux
+
+- **AppImage:** Download `igent-1.0.1.AppImage`, make executable (`chmod +x`), and run
+- **Debian/Ubuntu:** Download and install `igent_1.0.1_amd64.deb`
+
+---
+
+## 🔗 Links
+
+- [Full Changelog](../CHANGELOG.md)
+- [Documentation](../README.md)
+- [Report Issues](https://github.com/sametpolat7/igent/issues)

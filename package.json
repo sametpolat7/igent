@@ -1,6 +1,6 @@
 {
   "name": "igent",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Intelligent Operations Manager - Electron application for automated server update and operations management",
   "main": "src/main/index.js",
   "scripts": {
@@ -98,7 +98,8 @@
           "arch": ["x64"]
         }
       ],
-      "maintainer": "igent developers"
+      "sandbox": false,
+      "maintainer": "Samet Polat"
     },
     "dmg": {
       "contents": [

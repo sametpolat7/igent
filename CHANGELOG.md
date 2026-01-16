@@ -5,6 +5,17 @@ All notable changes to igent will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-01-16
+
+### Fixed
+
+- **Linux**: Disabled Electron sandbox for AppImage builds to resolve SUID sandbox crash (SIGTRAP) on modern distributions
+
+### Notes
+
+- **Windows**: SmartScreen warning persists for unsigned executables. Code signing with a trusted certificate is required for permanent resolution
+- **Linux**: Ubuntu 24.04+ users must install FUSE v2 (`sudo apt install libfuse2t64`) before running the AppImage
+
 ## [1.0.0] - 2026-01-15
 
 ### Added
@@ -62,4 +73,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automated build pipeline with electron-builder
 - MIT License
 
+[1.0.1]: https://github.com/sametpolat7/igent/releases/tag/v1.0.1
 [1.0.0]: https://github.com/sametpolat7/igent/releases/tag/v1.0.0
