@@ -93,7 +93,33 @@ Each type operates independently with dedicated planner/executor modules.
 - **SSH Key Authentication**: Password-less SSH access to target servers
 - **Platform**: macOS, Windows, or Linux
 
-## Installation
+## Releases
+
+Pre-built binaries are available on the [GitHub Releases page](https://github.com/sametpolat7/igent/releases).
+
+### Installation by Platform
+
+**macOS:**
+
+- Download `igent-1.0.1-universal.dmg`
+- Open the DMG file and drag igent to Applications
+- Universal binary supports both Intel and Apple Silicon
+
+**Windows:**
+
+- Download `igent-Setup-1.0.1.exe`
+- Run the installer and follow the setup wizard
+- Application will be added to Start Menu
+
+**Linux:**
+
+- **AppImage**: Download `igent-1.0.1.AppImage`
+  - Make executable: `chmod +x igent-1.0.1.AppImage`
+  - Run directly: `./igent-1.0.1.AppImage`
+- **Debian/Ubuntu**: Download `igent_1.0.1_amd64.deb`
+  - Install: `sudo dpkg -i igent_1.0.1_amd64.deb`
+
+## Installation (Development)
 
 ```bash
 # Clone repository
