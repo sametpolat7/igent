@@ -10,12 +10,12 @@ Patch release addressing cross-platform build and runtime issues discovered afte
 
 ## 🐛 Bug Fixes
 
-### Linux AppImage Sandbox Fix
+### Linux AppImage/Deb Sandbox Fix
 
-- **Issue:** On modern Linux distributions (Ubuntu 22.04+, Fedora 38+), the AppImage crashed immediately with a SIGTRAP signal
-- **Cause:** Electron's bundled `chrome-sandbox` binary requires SUID root permissions (owner root, mode 4755), which cannot be satisfied inside an AppImage
-- **Fix:** Disabled Electron sandbox at runtime for Linux platform via `app.commandLine.appendSwitch('no-sandbox')` in main process
-- **Impact:** AppImage now launches correctly on all Linux distributions without manual flags
+- **Issue:** On Linux distributions, the application crashed immediately with a SIGTRAP signal due to Chromium SUID sandbox requirements
+- **Cause:** Electron's `chrome-sandbox` binary requires root ownership and SUID permissions (mode 4755), which are stripped during download/extraction - this is a fundamental Linux portability limitation
+- **Fix:** Added `--no-sandbox` via electron-builder's `executableArgs` configuration for Linux builds
+- **Impact:** AppImage and deb packages now launch correctly on all Linux distributions without any manual configuration
 
 ---
 

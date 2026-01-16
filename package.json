@@ -88,6 +88,7 @@
     "linux": {
       "icon": "assets/icons/igent.png",
       "category": "Development",
+      "executableArgs": ["--no-sandbox"],
       "target": [
         {
           "target": "AppImage",

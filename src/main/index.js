@@ -19,11 +19,6 @@ import { logError } from './utils/logger.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-if (process.platform === 'linux') {
-  app.disableHardwareAcceleration();
-  app.commandLine.appendSwitch('no-sandbox');
-}
-
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1000,
