@@ -29,15 +29,6 @@ igent implements Electron's recommended security architecture with strict proces
 - **Preload Script**: Security bridge using `contextBridge` with explicit API whitelisting
 - **Renderer Process**: Sandboxed environment with zero Node.js access, communicates only via IPC
 
-### Type-Based Agent System
-
-Operations are organized into agent types with dedicated planning and execution logic:
-
-```
-User Input → IPC → Type Router → Type-Specific Planner → Validation → Plan
-Execution → Type Router → Type-Specific Executor → SSH → Progress Tracking → Result
-```
-
 **Agent Types:**
 
 - `server-update`: Git pull, branch switching, Rails migrations, asset compilation, service restart
@@ -117,45 +108,72 @@ npm install
 
 ### Server Configuration
 
-Create or modify `src/main/config/servers.json`:
+Define servers in `src/main/config/servers.json`:
 
 ```json
 {
-  "server-key": {
-    "sshHost": "hostname-from-ssh-config",
-    "allowedDirectories": ["dir1", "dir2"]
+  "stest": {
+    "sshHost": "stest",
+    "allowedDirectories": ["test-tc", "test-cy"]
   }
 }
 ```
 
-**Rules:**
+- **sshHost**: Must match an entry in `~/.ssh/config`
+- **allowedDirectories**: Whitelist of directories under `/var/webs/`
+- All operations are constrained to whitelisted directories
+- Configuration changes require application restart
 
-- `sshHost` must match an entry in `~/.ssh/config`
-- All directories must be explicitly whitelisted
-- Directory paths are resolved as `/var/webs/{directory}`
-- Changes require application restart
+### SSH Access Requirements
 
-### File Edit Functions
+igent requires **passwordless SSH access** to target servers. Each server must be configured with:
 
-Define custom file transformations in `src/main/config/fileEditConfigs.json`:
+#### 1. Public Key Authentication
 
-```json
-{
-  "function-id": {
-    "name": "Display Name",
-    "targetFile": "relative/path/to/file.rb",
-    "inputs": [
-      {
-        "key": "inputKey",
-        "label": "Input Label",
-        "placeholder": "Example value",
-        "type": "text",
-        "required": true
-      }
-    ]
-  }
-}
+Add your SSH public key to the server's authorized keys:
+
+```bash
+# On your local machine
+cat ~/.ssh/id_ed25519.pub
+
+# On the server (as iwallet user)
+vim ~/.ssh/authorized_keys
+# Paste: ssh-ed25519 AAAAC3NzaC1l...gVp9kvpb0yS6X3NTh5H name.surname@iwallet.com.tr
+
+chmod 600 ~/.ssh/authorized_keys
 ```
+
+#### 2. SSH Agent Forwarding (for Git operations)
+
+Enable agent forwarding in `~/.ssh/config`:
+
+```
+Host stest
+  HostName 192.168.1.100
+  User iwallet
+  ForwardAgent yes
+```
+
+Start SSH agent on your local machine:
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
+This allows Git operations on the server without password prompts.
+
+#### 3. Passwordless sudo for systemctl
+
+Add a scoped sudo rule on the server for test service restarts:
+
+```bash
+# On server, run: sudo visudo
+# Add this line:
+iwallet ALL=(root) NOPASSWD: /bin/systemctl restart test-*.service
+```
+
+This allows igent to restart test services without password prompts while maintaining security.
 
 ## Usage
 
@@ -311,14 +329,6 @@ tracker.complete();
 - **Shell injection prevention** — Use `escapeShellArg()` for all user-provided strings
 - **IPC channel whitelisting** — Only whitelisted channels can communicate between processes
 - **Context isolation** — Renderer process has zero Node.js/Electron API access
-
-### Best Practices
-
-- Keep `servers.json` out of version control if it contains sensitive hostnames
-- Rotate SSH keys regularly and use key-based authentication
-- Review generated commands in plan phase before execution
-- Monitor logs for unusual activity
-- Run with minimum required privileges
 
 ## Contributing
 
