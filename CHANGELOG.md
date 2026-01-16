@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Linux**: Disabled Electron sandbox for AppImage builds to resolve SUID sandbox crash (SIGTRAP) on modern distributions
+- **Linux**: Disabled Electron sandbox at runtime for Linux to resolve SUID sandbox crash (SIGTRAP) on AppImage distributions
 
 ### Notes
 
