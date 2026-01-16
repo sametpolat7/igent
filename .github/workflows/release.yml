@@ -96,11 +96,16 @@ jobs:
       - name: List release assets
         run: ls -la release-assets/
 
+      - name: Extract release notes from CHANGELOG
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' > release-notes.md
+
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: 'release-assets/*'
-          bodyFile: '.github/RELEASE_NOTES.md'
+          bodyFile: 'release-notes.md'
           allowUpdates: true
           replacesArtifacts: true
           removeArtifacts: true
