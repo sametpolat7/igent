@@ -93,23 +93,23 @@ Pre-built binaries are available on the [GitHub Releases page](https://github.co
 
 **macOS:**
 
-- Download `igent-1.0.1-universal.dmg`
+- Download `igent-{VERSION}-universal.dmg`
 - Open the DMG file and drag igent to Applications
 - Universal binary supports both Intel and Apple Silicon
 
 **Windows:**
 
-- Download `igent-Setup-1.0.1.exe`
+- Download `igent-Setup-{VERSION}.exe`
 - Run the installer and follow the setup wizard
 - Application will be added to Start Menu
 
 **Linux:**
 
-- **AppImage**: Download `igent-1.0.1.AppImage`
-  - Make executable: `chmod +x igent-1.0.1.AppImage`
-  - Run directly: `./igent-1.0.1.AppImage`
-- **Debian/Ubuntu**: Download `igent_1.0.1_amd64.deb`
-  - Install: `sudo dpkg -i igent_1.0.1_amd64.deb`
+- **AppImage**: Download `igent-{VERSION}.AppImage`
+  - Make executable: `chmod +x igent-{VERSION}.AppImage`
+  - Run directly: `./igent-{VERSION}.AppImage`
+- **Debian/Ubuntu**: Download `igent_{VERSION}_amd64.deb`
+  - Install: `sudo dpkg -i igent_{VERSION}_amd64.deb`
 
 ## Installation (Development)
 
