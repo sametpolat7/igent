@@ -1,6 +1,6 @@
 # igent
 
-Electron desktop application for automated remote server operations via SSH.
+Application for automated remote server operations via SSH.
 
 ## Overview
 
@@ -77,14 +77,6 @@ Each type operates independently with dedicated planner/executor modules.
 - Context isolation enforced at Electron level
 - Command injection prevention via shell escaping
 
-### Developer Experience
-
-- Real-time step-by-step progress tracking
-- Structured logging with timestamps and color coding
-- Duration tracking per operation and step
-- Detailed error messages with context
-- Multi-view UI with navigation
-
 ## Prerequisites
 
 - **Node.js**: v16 or higher
@@ -147,8 +139,6 @@ Define servers in `src/main/config/servers.json`:
 
 - **sshHost**: Must match an entry in `~/.ssh/config`
 - **allowedDirectories**: Whitelist of directories under `/var/webs/`
-- All operations are constrained to whitelisted directories
-- Configuration changes require application restart
 
 ### SSH Access Requirements
 
@@ -196,7 +186,7 @@ Add a scoped sudo rule on the server for test service restarts:
 ```bash
 # On server, run: sudo visudo
 # Add this line:
-iwallet ALL=(root) NOPASSWD: /bin/systemctl restart test-*.service
+iwallet ALL=(root) NOPASSWD: /bin/systemctl restart *.service
 ```
 
 This allows igent to restart test services without password prompts while maintaining security.
@@ -298,7 +288,6 @@ igent/
 
 - **Main + Renderer**: ES Modules (`import`/`export`)
 - **Preload**: CommonJS (`require`/`module.exports`) for security bridge
-- File resolution: Use `import.meta.url` pattern in ES modules
 
 ### IPC Communication
 
@@ -370,15 +359,6 @@ tracker.complete();
 npm run lint
 npm run format
 ```
-
-### Adding New Agent Types
-
-1. Create directory in `src/main/agents/{agent-type}/`
-2. Implement `planner.js` (validation + command generation)
-3. Implement `executor.js` (SSH execution + progress tracking)
-4. Add type to `AGENT_TYPES` enum in `src/main/agents/planner.js`
-5. Register IPC handlers in `src/main/index.js`
-6. Add UI module in `src/renderer/agents/{agent-type}.js`
 
 ## License
 
