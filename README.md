@@ -1,6 +1,6 @@
 # igent
 
-Electron desktop application for automated remote server operations via SSH.
+Application for automated remote server operations via SSH.
 
 ## Overview
 
@@ -28,15 +28,6 @@ igent implements Electron's recommended security architecture with strict proces
 - **Main Process**: Full Node.js capabilities, handles IPC routing, agent coordination, SSH execution
 - **Preload Script**: Security bridge using `contextBridge` with explicit API whitelisting
 - **Renderer Process**: Sandboxed environment with zero Node.js access, communicates only via IPC
-
-### Type-Based Agent System
-
-Operations are organized into agent types with dedicated planning and execution logic:
-
-```
-User Input → IPC → Type Router → Type-Specific Planner → Validation → Plan
-Execution → Type Router → Type-Specific Executor → SSH → Progress Tracking → Result
-```
 
 **Agent Types:**
 
@@ -86,14 +77,6 @@ Each type operates independently with dedicated planner/executor modules.
 - Context isolation enforced at Electron level
 - Command injection prevention via shell escaping
 
-### Developer Experience
-
-- Real-time step-by-step progress tracking
-- Structured logging with timestamps and color coding
-- Duration tracking per operation and step
-- Detailed error messages with context
-- Multi-view UI with navigation
-
 ## Prerequisites
 
 - **Node.js**: v16 or higher
@@ -102,7 +85,33 @@ Each type operates independently with dedicated planner/executor modules.
 - **SSH Key Authentication**: Password-less SSH access to target servers
 - **Platform**: macOS, Windows, or Linux
 
-## Installation
+## Releases
+
+Pre-built binaries are available on the [GitHub Releases page](https://github.com/sametpolat7/igent/releases).
+
+### Installation by Platform
+
+**macOS:**
+
+- Download `igent-{VERSION}-universal.dmg`
+- Open the DMG file and drag igent to Applications
+- Universal binary supports both Intel and Apple Silicon
+
+**Windows:**
+
+- Download `igent-Setup-{VERSION}.exe`
+- Run the installer and follow the setup wizard
+- Application will be added to Start Menu
+
+**Linux:**
+
+- **AppImage**: Download `igent-{VERSION}.AppImage`
+  - Make executable: `chmod +x igent-{VERSION}.AppImage`
+  - Run directly: `./igent-{VERSION}.AppImage`
+- **Debian/Ubuntu**: Download `igent_{VERSION}_amd64.deb`
+  - Install: `sudo dpkg -i igent_{VERSION}_amd64.deb`
+
+## Installation (Development)
 
 ```bash
 # Clone repository
@@ -117,45 +126,70 @@ npm install
 
 ### Server Configuration
 
-Create or modify `src/main/config/servers.json`:
+Define servers in `src/main/config/servers.json`:
 
 ```json
 {
-  "server-key": {
-    "sshHost": "hostname-from-ssh-config",
-    "allowedDirectories": ["dir1", "dir2"]
+  "stest": {
+    "sshHost": "stest",
+    "allowedDirectories": ["test-tc", "test-cy"]
   }
 }
 ```
 
-**Rules:**
+- **sshHost**: Must match an entry in `~/.ssh/config`
+- **allowedDirectories**: Whitelist of directories under `/var/webs/`
 
-- `sshHost` must match an entry in `~/.ssh/config`
-- All directories must be explicitly whitelisted
-- Directory paths are resolved as `/var/webs/{directory}`
-- Changes require application restart
+### SSH Access Requirements
 
-### File Edit Functions
+igent requires **passwordless SSH access** to target servers. Each server must be configured with:
 
-Define custom file transformations in `src/main/config/fileEditConfigs.json`:
+#### 1. Public Key Authentication
 
-```json
-{
-  "function-id": {
-    "name": "Display Name",
-    "targetFile": "relative/path/to/file.rb",
-    "inputs": [
-      {
-        "key": "inputKey",
-        "label": "Input Label",
-        "placeholder": "Example value",
-        "type": "text",
-        "required": true
-      }
-    ]
-  }
-}
+Add your SSH public key to the server's authorized keys:
+
+```bash
+# On your local machine
+cat ~/.ssh/id_ed25519.pub
+
+# On the server (as iwallet user)
+vim ~/.ssh/authorized_keys
+# Paste: ssh-ed25519 AAAAC3NzaC1l...gVp9kvpb0yS6X3NTh5H name.surname@iwallet.com.tr
+
+chmod 600 ~/.ssh/authorized_keys
 ```
+
+#### 2. SSH Agent Forwarding (for Git operations)
+
+Enable agent forwarding in `~/.ssh/config`:
+
+```
+Host stest
+  HostName 192.168.1.100
+  User iwallet
+  ForwardAgent yes
+```
+
+Start SSH agent on your local machine:
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
+This allows Git operations on the server without password prompts.
+
+#### 3. Passwordless sudo for systemctl
+
+Add a scoped sudo rule on the server for test service restarts:
+
+```bash
+# On server, run: sudo visudo
+# Add this line (replace 'youruser' with your server username):
+youruser ALL=(root) NOPASSWD: /bin/systemctl restart *.service
+```
+
+This allows igent to restart test services without password prompts while maintaining security.
 
 ## Usage
 
@@ -254,7 +288,6 @@ igent/
 
 - **Main + Renderer**: ES Modules (`import`/`export`)
 - **Preload**: CommonJS (`require`/`module.exports`) for security bridge
-- File resolution: Use `import.meta.url` pattern in ES modules
 
 ### IPC Communication
 
@@ -312,14 +345,6 @@ tracker.complete();
 - **IPC channel whitelisting** — Only whitelisted channels can communicate between processes
 - **Context isolation** — Renderer process has zero Node.js/Electron API access
 
-### Best Practices
-
-- Keep `servers.json` out of version control if it contains sensitive hostnames
-- Rotate SSH keys regularly and use key-based authentication
-- Review generated commands in plan phase before execution
-- Monitor logs for unusual activity
-- Run with minimum required privileges
-
 ## Contributing
 
 1. Fork the repository
@@ -334,15 +359,6 @@ tracker.complete();
 npm run lint
 npm run format
 ```
-
-### Adding New Agent Types
-
-1. Create directory in `src/main/agents/{agent-type}/`
-2. Implement `planner.js` (validation + command generation)
-3. Implement `executor.js` (SSH execution + progress tracking)
-4. Add type to `AGENT_TYPES` enum in `src/main/agents/planner.js`
-5. Register IPC handlers in `src/main/index.js`
-6. Add UI module in `src/renderer/agents/{agent-type}.js`
 
 ## License
 
