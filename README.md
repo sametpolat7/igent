@@ -185,8 +185,8 @@ Add a scoped sudo rule on the server for test service restarts:
 
 ```bash
 # On server, run: sudo visudo
-# Add this line:
-iwallet ALL=(root) NOPASSWD: /bin/systemctl restart *.service
+# Add this line (replace 'youruser' with your server username):
+youruser ALL=(root) NOPASSWD: /bin/systemctl restart *.service
 ```
 
 This allows igent to restart test services without password prompts while maintaining security.
