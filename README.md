@@ -1,23 +1,15 @@
 # igent
 
-Application for automated remote server operations via SSH.
-
-## Overview
-
-igent is a desktop tool for managing remote server operations through an extensible agent-based architecture. Built with Electron, it provides automated workflows for server updates, file editing, and background job queue control with real-time progress tracking and comprehensive error handling.
-
-**Core Capabilities:** Git-based pull operations, remote file editings, Sidekiq queue management, and conflict-aware rollback mechanisms.
+**igent** is an Electron desktop application for automated remote server operations via SSH. It provides an extensible agent-based system for managing Git-based server updates, remote file editing, and Sidekiq queue operations with real-time progress tracking and error recovery.
 
 ## Tech Stack
 
-| Component        | Technology           | Version |
-| ---------------- | -------------------- | ------- |
-| Framework        | Electron             | 39.x    |
-| Runtime          | Node.js (ES Modules) | 16+     |
-| Frontend         | Vanilla JavaScript   | ES6+    |
-| Remote Execution | SSH                  | -       |
-| Code Quality     | ESLint + Prettier    | -       |
-| Build System     | electron-builder     | -       |
+- **Framework:** Electron 39.x
+- **Runtime:** Node.js 16+ (ES Modules)
+- **Frontend:** Vanilla JavaScript (ES6+)
+- **Remote Execution:** SSH
+- **Code Quality:** ESLint + Prettier
+- **Build System:** electron-builder
 
 ## Architecture
 
@@ -76,14 +68,6 @@ Each type operates independently with dedicated planner/executor modules.
 - No credential storage (relies on SSH key authentication)
 - Context isolation enforced at Electron level
 - Command injection prevention via shell escaping
-
-## Prerequisites
-
-- **Node.js**: v16 or higher
-- **npm**: v7 or higher
-- **SSH Configuration**: Hosts must be defined in `~/.ssh/config`
-- **SSH Key Authentication**: Password-less SSH access to target servers
-- **Platform**: macOS, Windows, or Linux
 
 ## Releases
 
