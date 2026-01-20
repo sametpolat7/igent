@@ -5,8 +5,13 @@ contextBridge.exposeInMainWorld('igent', {
   getServers: () => ipcRenderer.invoke('server-update:get-servers'),
 
   // Server Update
-  plan: ({ serverKey, directory, branch }) =>
-    ipcRenderer.invoke('server-update:plan', { serverKey, directory, branch }),
+  plan: ({ serverKey, directory, branch, rebuildAssets }) =>
+    ipcRenderer.invoke('server-update:plan', {
+      serverKey,
+      directory,
+      branch,
+      rebuildAssets,
+    }),
 
   execute: (payload) => ipcRenderer.invoke('server-update:execute', payload),
 

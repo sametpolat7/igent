@@ -52,6 +52,7 @@ export const elements = {
   serverSelect: document.getElementById('server'),
   directorySelect: document.getElementById('directory'),
   branchInput: document.getElementById('branch'),
+  rebuildAssetsCheckbox: document.getElementById('rebuild-assets'),
   planButton: document.getElementById('plan'),
 
   // Queue Control View Elements

@@ -63,6 +63,7 @@ async function handlePlan() {
       serverKey: elements.serverSelect.value,
       directory: elements.directorySelect.value,
       branch: elements.branchInput.value.trim(),
+      rebuildAssets: elements.rebuildAssetsCheckbox.checked,
     });
     displayPlan(state.currentPlan);
   } catch (error) {

@@ -10,7 +10,12 @@ import { logSuccess } from '../../utils/logger.js';
 const BASE_DIRECTORY = '/var/webs';
 const DEFAULT_MAIN_BRANCH = 'main';
 
-export function planServerUpdate({ serverKey, directory, branch }) {
+export function planServerUpdate({
+  serverKey,
+  directory,
+  branch,
+  rebuildAssets = false,
+}) {
   const serversConfig = loadServersConfig();
 
   validateString(serverKey, 'Server key');
@@ -39,6 +44,7 @@ export function planServerUpdate({ serverKey, directory, branch }) {
   const commands = generateServerUpdateCommands({
     directory,
     branch,
+    rebuildAssets,
   });
 
   const plan = {
@@ -60,10 +66,10 @@ export function planServerUpdate({ serverKey, directory, branch }) {
   return plan;
 }
 
-function generateServerUpdateCommands({ directory, branch }) {
+function generateServerUpdateCommands({ directory, branch, rebuildAssets }) {
   const appPath = `${BASE_DIRECTORY}/${directory}`;
 
-  return [
+  const commands = [
     `cd ${appPath}`,
     `git fetch origin`,
     `git stash -u`,
@@ -72,8 +78,14 @@ function generateServerUpdateCommands({ directory, branch }) {
     `git pull origin ${branch}`,
     `git stash pop || true`,
     `rails db:migrate RAILS_ENV=production`,
-    `rails assets:clobber RAILS_ENV=production`,
-    `rails assets:precompile RAILS_ENV=production`,
-    `sudo systemctl restart ${directory}.service`,
   ];
+
+  if (rebuildAssets) {
+    commands.push(`rails assets:clobber RAILS_ENV=production`);
+    commands.push(`rails assets:precompile RAILS_ENV=production`);
+  }
+
+  commands.push(`sudo systemctl restart ${directory}.service`);
+
+  return commands;
 }
