@@ -1,6 +1,6 @@
 {
   "name": "igent",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Intelligent Operations Manager - Electron application for automated server update and operations management",
   "main": "src/main/index.js",
   "scripts": {
