@@ -145,6 +145,17 @@ ipcMain.handle('agent:action', async (event, payload) => {
 - Separate namespaces: root (server-update), `queue`, `fileEdit`
 - Progress listeners: `onProgress()` and `removeProgressListener()` per agent
 
+**Server Update Parameters:**
+
+```javascript
+window.igent.plan({
+  serverKey: 'server-name',
+  directory: 'app-directory',
+  branch: 'branch-name',
+  rebuildAssets: false, // optional, defaults to false
+});
+```
+
 ### Validation Best Practices
 
 **Input Validation:**
