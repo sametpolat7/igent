@@ -246,6 +246,29 @@ body {
   cursor: not-allowed;
 }
 
+/* Checkbox Option */
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  cursor: pointer;
+  font-size: var(--font-sm);
+  color: var(--gray-600);
+}
+
+.checkbox-option input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.checkbox-option small {
+  color: var(--warning-dark);
+  font-weight: 500;
+}
+
 /* Buttons */
 .btn {
   padding: var(--space-md) var(--space-2xl);

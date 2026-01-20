@@ -136,7 +136,7 @@
                           ├─────────────────┤
                           │ • Git operations│
                           │ • DB migrations │
-                          │ • Asset compile │
+                          │ • Assets (opt.) │
                           │ • Service restart│
                           └─────────────────┘
 
@@ -315,7 +315,7 @@ ALL AGENT TYPES FULLY IMPLEMENTED:
 
   ✓ Server Update (server-update/)
     - Full planning and execution
-    - Git operations, Rails migrations, asset compilation
+    - Git operations, Rails migrations, optional asset rebuild
     - Service restart automation
     - Conflict detection and automatic rollback
 

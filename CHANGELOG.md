@@ -5,6 +5,15 @@ All notable changes to igent will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Server Update Agent**: Asset rebuild is now optional via checkbox
+  - Assets are no longer rebuilt automatically on every update
+  - Users can opt-in to rebuild assets when needed (takes 2-3 minutes)
+  - Reduces default update time for operations that don't require asset changes
+
 ## [1.0.1] - 2026-01-16
 
 ### Fixed

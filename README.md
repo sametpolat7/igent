@@ -35,7 +35,7 @@ Each type operates independently with dedicated planner/executor modules.
 
 - Automated Git operations (stash, checkout, pull, stash pop)
 - Rails database migrations with automatic rollback on failure
-- Asset precompilation and cache clearing
+- Optional asset rebuild (precompilation and cache clearing)
 - Test servers service restart
 - Intelligent conflict detection with automatic rollback
   - Handles merge conflicts, stash conflicts, unmerged indices
