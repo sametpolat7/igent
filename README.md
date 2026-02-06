@@ -136,9 +136,9 @@ Add your SSH public key to the server's authorized keys:
 # On your local machine
 cat ~/.ssh/id_ed25519.pub
 
-# On the server (as iwallet user)
+# On the server
 vim ~/.ssh/authorized_keys
-# Paste: ssh-ed25519 AAAAC3NzaC1l...gVp9kvpb0yS6X3NTh5H name.surname@iwallet.com.tr
+# Paste: ssh-ed25519 AAAAC3NzaC1l...gVp9kvpb0yS6X3NTh5H name.surname@example.com
 
 chmod 600 ~/.ssh/authorized_keys
 ```
@@ -150,7 +150,7 @@ Enable agent forwarding in `~/.ssh/config`:
 ```
 Host stest
   HostName 192.168.1.100
-  User iwallet
+  User your-username
   ForwardAgent yes
 ```
 
