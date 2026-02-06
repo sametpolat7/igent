@@ -115,8 +115,12 @@ Define servers in `src/main/config/servers.json`:
 ```json
 {
   "stest": {
-    "sshHost": "stest",
-    "allowedDirectories": ["test-tc", "test-cy"]
+    "sshHost": "exampleTestHost",
+    "allowedDirectories": [
+      "exampleDirectory1",
+      "exampleDirectory2",
+      "exampleDirectory3"
+    ]
   }
 }
 ```
@@ -148,8 +152,8 @@ chmod 600 ~/.ssh/authorized_keys
 Enable agent forwarding in `~/.ssh/config`:
 
 ```
-Host stest
-  HostName 192.168.1.100
+Host exampleTestHost
+  HostName example.server.hostname
   User your-username
   ForwardAgent yes
 ```
