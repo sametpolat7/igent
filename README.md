@@ -4,8 +4,8 @@
 
 ## Tech Stack
 
-- **Framework:** Electron 39.x
-- **Runtime:** Node.js 16+ (ES Modules)
+- **Framework:** Electron 45.x
+- **Runtime:** Node.js 22.13+ (ES Modules)
 - **Frontend:** Vanilla JavaScript (ES6+)
 - **Remote Execution:** SSH
 - **Code Quality:** ESLint + Prettier

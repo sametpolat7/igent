@@ -14,8 +14,8 @@
 
 **Tech Stack:**
 
-- **Framework**: Electron 39.x with three-process security architecture
-- **Runtime**: Node.js 16+ with ES Modules
+- **Framework**: Electron 45.x with three-process security architecture
+- **Runtime**: Node.js 22.13+ with ES Modules
 - **Frontend**: Vanilla JavaScript (ES6+) with multi-view navigation
 - **Communication**: SSH for remote execution via child_process
 - **Code Quality**: ESLint + Prettier
