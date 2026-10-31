@@ -40,7 +40,9 @@ function registerIPCHandlers() {
       return loadServersConfig();
     } catch (error) {
       logError('IPC', 'Failed to load servers', error);
-      throw new Error('Failed to load servers. Please check your settings.');
+      throw new Error('Failed to load servers. Please check your settings.', {
+        cause: error,
+      });
     }
   });
 
@@ -51,7 +53,8 @@ function registerIPCHandlers() {
     } catch (error) {
       logError('IPC', 'Planning failed', error);
       throw new Error(
-        'Planning failed. Please verify your server and branch configuration.'
+        'Planning failed. Please verify your server and branch configuration.',
+        { cause: error }
       );
     }
   });
@@ -83,7 +86,8 @@ function registerIPCHandlers() {
 
       logError('IPC', 'Execution failed', error);
       throw new Error(
-        'Process failed. Please check the data and try again. If the problem persists, contact the support team and ask them to review the log files.'
+        'Process failed. Please check the data and try again. If the problem persists, contact the support team and ask them to review the log files.',
+        { cause: error }
       );
     }
   });
@@ -102,7 +106,9 @@ function registerIPCHandlers() {
       });
     } catch (error) {
       logError('IPC', 'Queue status check failed', error);
-      throw new Error('Failed to check queue status. Please try again.');
+      throw new Error('Failed to check queue status. Please try again.', {
+        cause: error,
+      });
     }
   });
 
@@ -112,7 +118,8 @@ function registerIPCHandlers() {
     } catch (error) {
       logError('IPC', 'Queue planning failed', error);
       throw new Error(
-        'Planning failed. Please verify your server and directory configuration.'
+        'Planning failed. Please verify your server and directory configuration.',
+        { cause: error }
       );
     }
   });
@@ -149,7 +156,7 @@ function registerIPCHandlers() {
       return getFileEditFunctions();
     } catch (error) {
       logError('IPC', 'Failed to load file edit configs', error);
-      throw new Error('Failed to load file edit configs.');
+      throw new Error('Failed to load file edit configs.', { cause: error });
     }
   });
 
@@ -159,7 +166,8 @@ function registerIPCHandlers() {
     } catch (error) {
       logError('IPC', 'File edit planning failed', error);
       throw new Error(
-        'Planning failed. Please verify your configuration and inputs.'
+        'Planning failed. Please verify your configuration and inputs.',
+        { cause: error }
       );
     }
   });
@@ -206,7 +214,8 @@ function registerIPCHandlers() {
     } catch (error) {
       logError('IPC', 'File changes check failed', error);
       throw new Error(
-        'Process failed. Please check the data and try again. If the problem persists, contact the support team and ask them to review the log files.'
+        'Process failed. Please check the data and try again. If the problem persists, contact the support team and ask them to review the log files.',
+        { cause: error }
       );
     }
   });
@@ -227,7 +236,9 @@ function registerIPCHandlers() {
       });
     } catch (error) {
       logError('IPC', 'File restore failed', error);
-      throw new Error('Failed to restore file. Please try again.');
+      throw new Error('Failed to restore file. Please try again.', {
+        cause: error,
+      });
     }
   });
 }
