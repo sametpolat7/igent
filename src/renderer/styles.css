@@ -77,9 +77,11 @@ body {
   font-size: var(--font-base);
   line-height: 1.6;
   color: var(--gray-900);
-  background: linear-gradient(135deg,
-      var(--primary) 0%,
-      var(--primary-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
   padding: var(--space-lg);
   min-height: 100vh;
   display: flex;
@@ -288,9 +290,11 @@ body {
 
 .btn-primary {
   width: 100%;
-  background: linear-gradient(135deg,
-      var(--primary) 0%,
-      var(--primary-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
   color: white;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
@@ -359,7 +363,6 @@ body {
 }
 
 @media (min-width: 640px) {
-
   .status-section,
   .result-section {
     margin-top: var(--space-2xl);
@@ -393,7 +396,6 @@ body {
 }
 
 @media (min-width: 640px) {
-
   .status-section h3,
   .result-section h3,
   .progress-section h3 {
@@ -430,7 +432,6 @@ body {
 }
 
 @media (min-width: 640px) {
-
   .commands-display,
   .output-display {
     padding: var(--space-lg);
@@ -491,9 +492,11 @@ body {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg,
-      var(--success) 0%,
-      var(--success-dark) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--success) 0%,
+    var(--success-dark) 100%
+  );
   transition: width var(--transition-slow) ease;
   width: 0%;
   border-radius: 10px;
@@ -529,9 +532,11 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg,
-      var(--warning) 0%,
-      var(--warning-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--warning) 0%,
+    var(--warning-dark) 100%
+  );
   border-radius: var(--radius-md);
   padding: var(--space-md);
   margin-bottom: var(--space-md);
@@ -816,7 +821,6 @@ body {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;
@@ -1015,9 +1019,11 @@ body {
 }
 
 .btn-queue-start {
-  background: linear-gradient(135deg,
-      var(--success) 0%,
-      var(--success-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--success) 0%,
+    var(--success-dark) 100%
+  );
   color: white;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
@@ -1039,9 +1045,11 @@ body {
 }
 
 .btn-queue-restart {
-  background: linear-gradient(135deg,
-      var(--warning) 0%,
-      var(--warning-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--warning) 0%,
+    var(--warning-dark) 100%
+  );
   color: #78350f;
   box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
 }
