@@ -5,6 +5,19 @@ All notable changes to igent will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-11-01
+
+### Changed
+
+- Upgraded Electron from 39 to 45; macOS 13 or later is now required (Electron 44 dropped macOS 12 support)
+- Upgraded electron-builder to 26, ESLint to 10, Prettier to 3.9 and related dev tooling to their latest releases
+- Release workflow now builds with Node.js 22 and the latest GitHub Actions majors
+- Development runtime requirement raised to Node.js 22.13+
+
+### Fixed
+
+- IPC handlers now keep the original error attached as `cause` when rethrowing user-facing errors
+
 ## [1.0.4] - 2026-02-06
 
 ### Changed
@@ -97,5 +110,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automated build pipeline with electron-builder
 - MIT License
 
+[1.0.5]: https://github.com/sametpolat7/igent/releases/tag/v1.0.5
 [1.0.1]: https://github.com/sametpolat7/igent/releases/tag/v1.0.1
 [1.0.0]: https://github.com/sametpolat7/igent/releases/tag/v1.0.0
